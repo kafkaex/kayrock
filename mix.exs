@@ -27,6 +27,7 @@ defmodule Kayrock.MixProject do
       {:kafka_protocol, "~> 2.2.7"},
       {:connection, "~>1.0.4"},
       {:credo, "~>1.0.5", only: [:dev, :test]},
+      {:excoveralls, "~>0.11.1", only: :test},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:ex_doc, "~>0.20.2", only: [:dev], runtime: false}
