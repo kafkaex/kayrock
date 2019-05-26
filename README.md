@@ -1,5 +1,10 @@
 # Kayrock
 
+[![Build Status](https://travis-ci.org/dantswain/kayrock.svg?branch=master)](https://travis-ci.org/dantswain/kayrock)
+[![Coverage Status](https://coveralls.io/repos/github/dantswain/kayrock/badge.svg?branch=master)](https://coveralls.io/github/dantswain/kayrock?branch=master)
+[![License](https://img.shields.io/dantswain/kayrock.svg?style=flat-square)]
+
+
 WIP towards providing an idiomatic Elixir interface to the Kafka protocol.
 
 This work is based on [https://github.com/klarna/kafka_protocol](kafka_protocl)
