@@ -46,7 +46,7 @@ defmodule Kayrock.Message do
           }
 
         c ->
-          decompressed = KafkaEx.Compression.decompress(c, value)
+          decompressed = Kayrock.Compression.decompress(c, value)
           Enum.reverse(deserialize_messages(decompressed, []))
       end
 
@@ -67,7 +67,7 @@ defmodule Kayrock.Message do
   end
 
   defp create_message_set(messages, compression_type) do
-    alias KafkaEx.Compression
+    alias Kayrock.Compression
     {message_set, _} = create_message_set(messages, :none)
 
     {compressed_message_set, attribute} = Compression.compress(compression_type, message_set)
