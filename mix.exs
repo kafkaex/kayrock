@@ -25,10 +25,9 @@ defmodule Kayrock.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:kafka_ex, "~> 0.10.0"},
       {:kafka_protocol, "~> 2.2.7"},
       {:connection, "~>1.0.4"},
-      {:credo, "~>1.0.5", only: [:dev, :test]},
+      {:credo, "~>1.0.5", only: [:dev, :test], runtime: false},
       {:excoveralls, "~>0.11.1", only: :test},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},

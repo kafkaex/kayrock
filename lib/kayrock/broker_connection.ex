@@ -21,7 +21,7 @@ defmodule Kayrock.BrokerConnection do
 
   use Connection
 
-  alias KafkaEx.Socket
+  alias Kayrock.Socket
 
   require Logger
 
