@@ -134,7 +134,9 @@ defmodule Kayrock.Client do
   @impl true
   def terminate(_reason, state) do
     for {_node_id, broker} <- state.cluster_metadata.brokers do
-      BrokerConnection.stop(broker.pid)
+      if broker.pid do
+        BrokerConnection.stop(broker.pid)
+      end
     end
 
     :ok
