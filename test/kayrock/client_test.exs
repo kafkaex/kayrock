@@ -23,7 +23,7 @@ defmodule Kayrock.ClientTest do
   test "connecting to/disconnecting from the brokers does not leak processes" do
     p_before = Process.list()
 
-    {:ok, pid} = Kayrock.Client.start_link([{"localhost", 9092}])
+    {:ok, pid} = Kayrock.Client.start_link()
     assert Process.alive?(pid)
 
     Kayrock.Client.stop(pid)
@@ -37,7 +37,7 @@ defmodule Kayrock.ClientTest do
   test "connecting to/doing an operation/disconnecting from brokers does not leak processes" do
     p_before = Process.list()
 
-    {:ok, pid} = Kayrock.Client.start_link([{"localhost", 9092}])
+    {:ok, pid} = Kayrock.Client.start_link()
     assert Process.alive?(pid)
 
     {:ok, _} = Kayrock.api_versions(pid)
