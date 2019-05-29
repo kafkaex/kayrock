@@ -1,17 +1,8 @@
 defmodule Kayrock.Client.ApiVersionsTest do
-  use ExUnit.Case
+  use Kayrock.ClientCase
 
-  @moduletag :integration
-
-  def test_metadata do
-    assert Kayrock.ApiVersions.min_vsn() == 0
-    assert Kayrock.ApiVersions.max_vsn() == 1
-  end
-
-  test "v0" do
-    {:ok, pid} = Kayrock.Client.start_link()
-
-    {:ok, resp} = Kayrock.api_versions(pid, 0)
+  test "v0", %{client: client} do
+    {:ok, resp} = Kayrock.api_versions(client, 0)
 
     %Kayrock.ApiVersions.V0.Response{error_code: 0, api_versions: versions} = resp
 
@@ -20,13 +11,11 @@ defmodule Kayrock.Client.ApiVersionsTest do
     assert fetch_versions[:min_version] == 0
     assert fetch_versions[:max_version] == 10
 
-    Kayrock.Client.stop(pid)
+    assert Process.alive?(client)
   end
 
-  test "v1" do
-    {:ok, pid} = Kayrock.Client.start_link()
-
-    {:ok, resp} = Kayrock.api_versions(pid, 1)
+  test "v1", %{client: client} do
+    {:ok, resp} = Kayrock.api_versions(client, 1)
 
     %Kayrock.ApiVersions.V1.Response{error_code: 0, api_versions: versions, throttle_time_ms: 0} =
       resp
@@ -36,6 +25,6 @@ defmodule Kayrock.Client.ApiVersionsTest do
     assert fetch_versions[:min_version] == 0
     assert fetch_versions[:max_version] == 10
 
-    Kayrock.Client.stop(pid)
+    assert Process.alive?(client)
   end
 end

@@ -81,11 +81,11 @@ defmodule Kayrock do
   #  client_call(client_pid, request, {:topic_partition, topic, partition})
   # end
 
-  def topics_metadata(client_pid, topics) when is_list(topics) do
+  def topics_metadata(client_pid, topics) when is_list(topics) or topics == nil do
     # we use version 4 here so that it will not try to create topics
     request = %Kayrock.Metadata.V4.Request{topics: topics}
     {:ok, metadata} = client_call(client_pid, request, :controller)
-    metadata.topic_metadata
+    {:ok, metadata.topic_metadata}
   end
 
   @doc """
