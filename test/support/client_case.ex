@@ -1,4 +1,11 @@
 defmodule Kayrock.ClientCase do
+  @moduledoc """
+  Test case template for using a client
+
+  Note there is no cleanup as the linked process will automatically be killed on
+  exit
+  """
+
   use ExUnit.CaseTemplate
 
   using do
