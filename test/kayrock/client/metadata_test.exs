@@ -1,6 +1,8 @@
 defmodule Kayrock.Client.MetadataTest do
   use Kayrock.ClientCase
 
+  alias Kayrock.ErrorCode
+
   test "works with an empty list of topics", %{client: client} do
     {:ok, metadata} = Kayrock.topics_metadata(client, [])
     assert metadata == []
@@ -20,6 +22,6 @@ defmodule Kayrock.Client.MetadataTest do
 
   test "request metadata for a topic that does not exist", %{client: client} do
     {:ok, [topic]} = Kayrock.topics_metadata(client, ["floogleflarp"])
-    assert topic[:error_code] == 3
+    assert topic[:error_code] == ErrorCode.atom_to_code(:unknown_topic_or_partition)
   end
 end
