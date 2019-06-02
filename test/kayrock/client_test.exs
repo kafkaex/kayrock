@@ -49,4 +49,18 @@ defmodule Kayrock.ClientTest do
 
     assert unexpected_processes(p_now, p_before) == []
   end
+
+  test "sudden death does not leak processes" do
+    p_before = Process.list()
+
+    {:ok, client} = Kayrock.Client.start_link()
+    Process.unlink(client)
+    Process.exit(client, :kill)
+
+    refute Process.alive?(client)
+
+    p_now = Process.list()
+
+    assert unexpected_processes(p_now, p_before) == []
+  end
 end
