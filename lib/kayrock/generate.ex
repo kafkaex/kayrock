@@ -350,7 +350,7 @@ defmodule Kayrock.Generate do
           <<-1::32-signed>>
 
         [] ->
-          <<-1::32-signed>>
+          <<0::32-signed>>
 
         vals when is_list(vals) ->
           [
@@ -371,7 +371,7 @@ defmodule Kayrock.Generate do
           <<-1::32-signed>>
 
         [] ->
-          <<-1::32-signed>>
+          <<0::32-signed>>
 
         vals when is_list(vals) ->
           [
