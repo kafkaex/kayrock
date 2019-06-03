@@ -39,6 +39,9 @@ defmodule(Kayrock.OffsetCommit) do
         [
           serialize(:string, Map.get(struct, :group_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -49,6 +52,9 @@ defmodule(Kayrock.OffsetCommit) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -139,6 +145,9 @@ defmodule(Kayrock.OffsetCommit) do
           serialize(:int32, Map.get(struct, :generation_id)),
           serialize(:string, Map.get(struct, :member_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -149,6 +158,9 @@ defmodule(Kayrock.OffsetCommit) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -241,6 +253,9 @@ defmodule(Kayrock.OffsetCommit) do
           serialize(:string, Map.get(struct, :member_id)),
           serialize(:int64, Map.get(struct, :retention_time)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -251,6 +266,9 @@ defmodule(Kayrock.OffsetCommit) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -342,6 +360,9 @@ defmodule(Kayrock.OffsetCommit) do
           serialize(:string, Map.get(struct, :member_id)),
           serialize(:int64, Map.get(struct, :retention_time)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -352,6 +373,9 @@ defmodule(Kayrock.OffsetCommit) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

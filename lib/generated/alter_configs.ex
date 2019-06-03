@@ -39,6 +39,9 @@ defmodule(Kayrock.AlterConfigs) do
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
           case(Map.get(struct, :resources)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -50,6 +53,9 @@ defmodule(Kayrock.AlterConfigs) do
                     serialize(:int8, Map.get(v, :resource_type)),
                     serialize(:string, Map.get(v, :resource_name)),
                     case(Map.get(v, :config_entries)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

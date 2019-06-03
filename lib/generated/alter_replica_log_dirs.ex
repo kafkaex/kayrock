@@ -34,6 +34,9 @@ defmodule(Kayrock.AlterReplicaLogDirs) do
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
           case(Map.get(struct, :log_dirs)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -44,6 +47,9 @@ defmodule(Kayrock.AlterReplicaLogDirs) do
                   [
                     serialize(:string, Map.get(v, :log_dir)),
                     case(Map.get(v, :topics)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

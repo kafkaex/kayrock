@@ -37,6 +37,9 @@ defmodule(Kayrock.Produce) do
           serialize(:int16, Map.get(struct, :acks)),
           serialize(:int32, Map.get(struct, :timeout)),
           case(Map.get(struct, :topic_data)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -47,6 +50,9 @@ defmodule(Kayrock.Produce) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :data)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -119,6 +125,9 @@ defmodule(Kayrock.Produce) do
           serialize(:int16, Map.get(struct, :acks)),
           serialize(:int32, Map.get(struct, :timeout)),
           case(Map.get(struct, :topic_data)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -129,6 +138,9 @@ defmodule(Kayrock.Produce) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :data)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -201,6 +213,9 @@ defmodule(Kayrock.Produce) do
           serialize(:int16, Map.get(struct, :acks)),
           serialize(:int32, Map.get(struct, :timeout)),
           case(Map.get(struct, :topic_data)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -211,6 +226,9 @@ defmodule(Kayrock.Produce) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :data)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -294,6 +312,9 @@ defmodule(Kayrock.Produce) do
           serialize(:int16, Map.get(struct, :acks)),
           serialize(:int32, Map.get(struct, :timeout)),
           case(Map.get(struct, :topic_data)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -304,6 +325,9 @@ defmodule(Kayrock.Produce) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :data)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -387,6 +411,9 @@ defmodule(Kayrock.Produce) do
           serialize(:int16, Map.get(struct, :acks)),
           serialize(:int32, Map.get(struct, :timeout)),
           case(Map.get(struct, :topic_data)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -397,6 +424,9 @@ defmodule(Kayrock.Produce) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :data)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -480,6 +510,9 @@ defmodule(Kayrock.Produce) do
           serialize(:int16, Map.get(struct, :acks)),
           serialize(:int32, Map.get(struct, :timeout)),
           case(Map.get(struct, :topic_data)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -490,6 +523,9 @@ defmodule(Kayrock.Produce) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :data)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

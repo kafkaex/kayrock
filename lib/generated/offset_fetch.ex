@@ -34,6 +34,9 @@ defmodule(Kayrock.OffsetFetch) do
         [
           serialize(:string, Map.get(struct, :group_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -44,6 +47,9 @@ defmodule(Kayrock.OffsetFetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -110,6 +116,9 @@ defmodule(Kayrock.OffsetFetch) do
         [
           serialize(:string, Map.get(struct, :group_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -120,6 +129,9 @@ defmodule(Kayrock.OffsetFetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -186,6 +198,9 @@ defmodule(Kayrock.OffsetFetch) do
         [
           serialize(:string, Map.get(struct, :group_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -196,6 +211,9 @@ defmodule(Kayrock.OffsetFetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -262,6 +280,9 @@ defmodule(Kayrock.OffsetFetch) do
         [
           serialize(:string, Map.get(struct, :group_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -272,6 +293,9 @@ defmodule(Kayrock.OffsetFetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

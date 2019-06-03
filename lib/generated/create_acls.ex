@@ -41,6 +41,9 @@ defmodule(Kayrock.CreateAcls) do
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
           case(Map.get(struct, :creations)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 

@@ -39,6 +39,9 @@ defmodule(Kayrock.ListOffsets) do
         [
           serialize(:int32, Map.get(struct, :replica_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -49,6 +52,9 @@ defmodule(Kayrock.ListOffsets) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -120,6 +126,9 @@ defmodule(Kayrock.ListOffsets) do
         [
           serialize(:int32, Map.get(struct, :replica_id)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -130,6 +139,9 @@ defmodule(Kayrock.ListOffsets) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -210,6 +222,9 @@ defmodule(Kayrock.ListOffsets) do
           serialize(:int32, Map.get(struct, :replica_id)),
           serialize(:int8, Map.get(struct, :isolation_level)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -220,6 +235,9 @@ defmodule(Kayrock.ListOffsets) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

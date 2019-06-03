@@ -346,6 +346,9 @@ defmodule Kayrock.Generate do
 
     quote location: :keep do
       case Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
+        nil ->
+          <<-1::32-signed>>
+
         [] ->
           <<-1::32-signed>>
 
@@ -364,6 +367,9 @@ defmodule Kayrock.Generate do
        when type in Kayrock.Serialize.primitive_types() do
     quote location: :keep do
       case Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
+        nil ->
+          <<-1::32-signed>>
+
         [] ->
           <<-1::32-signed>>
 

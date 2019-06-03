@@ -41,6 +41,9 @@ defmodule(Kayrock.CreateTopics) do
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
           case(Map.get(struct, :create_topic_requests)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -53,6 +56,9 @@ defmodule(Kayrock.CreateTopics) do
                     serialize(:int32, Map.get(v, :num_partitions)),
                     serialize(:int16, Map.get(v, :replication_factor)),
                     case(Map.get(v, :replica_assignment)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -68,6 +74,9 @@ defmodule(Kayrock.CreateTopics) do
                         ]
                     end,
                     case(Map.get(v, :config_entries)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -154,6 +163,9 @@ defmodule(Kayrock.CreateTopics) do
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
           case(Map.get(struct, :create_topic_requests)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -166,6 +178,9 @@ defmodule(Kayrock.CreateTopics) do
                     serialize(:int32, Map.get(v, :num_partitions)),
                     serialize(:int16, Map.get(v, :replication_factor)),
                     case(Map.get(v, :replica_assignment)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -181,6 +196,9 @@ defmodule(Kayrock.CreateTopics) do
                         ]
                     end,
                     case(Map.get(v, :config_entries)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -268,6 +286,9 @@ defmodule(Kayrock.CreateTopics) do
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
           case(Map.get(struct, :create_topic_requests)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -280,6 +301,9 @@ defmodule(Kayrock.CreateTopics) do
                     serialize(:int32, Map.get(v, :num_partitions)),
                     serialize(:int16, Map.get(v, :replication_factor)),
                     case(Map.get(v, :replica_assignment)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -295,6 +319,9 @@ defmodule(Kayrock.CreateTopics) do
                         ]
                     end,
                     case(Map.get(v, :config_entries)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

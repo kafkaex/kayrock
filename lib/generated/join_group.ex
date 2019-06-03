@@ -50,6 +50,9 @@ defmodule(Kayrock.JoinGroup) do
           serialize(:string, Map.get(struct, :member_id)),
           serialize(:string, Map.get(struct, :protocol_type)),
           case(Map.get(struct, :group_protocols)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -134,6 +137,9 @@ defmodule(Kayrock.JoinGroup) do
           serialize(:string, Map.get(struct, :member_id)),
           serialize(:string, Map.get(struct, :protocol_type)),
           case(Map.get(struct, :group_protocols)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -218,6 +224,9 @@ defmodule(Kayrock.JoinGroup) do
           serialize(:string, Map.get(struct, :member_id)),
           serialize(:string, Map.get(struct, :protocol_type)),
           case(Map.get(struct, :group_protocols)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 

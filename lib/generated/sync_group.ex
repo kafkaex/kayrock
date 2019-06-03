@@ -47,6 +47,9 @@ defmodule(Kayrock.SyncGroup) do
           serialize(:int32, Map.get(struct, :generation_id)),
           serialize(:string, Map.get(struct, :member_id)),
           case(Map.get(struct, :group_assignment)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -125,6 +128,9 @@ defmodule(Kayrock.SyncGroup) do
           serialize(:int32, Map.get(struct, :generation_id)),
           serialize(:string, Map.get(struct, :member_id)),
           case(Map.get(struct, :group_assignment)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 

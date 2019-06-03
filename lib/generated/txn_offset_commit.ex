@@ -55,6 +55,9 @@ defmodule(Kayrock.TxnOffsetCommit) do
           serialize(:int64, Map.get(struct, :producer_id)),
           serialize(:int16, Map.get(struct, :producer_epoch)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -65,6 +68,9 @@ defmodule(Kayrock.TxnOffsetCommit) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

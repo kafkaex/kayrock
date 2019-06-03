@@ -52,6 +52,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :max_wait_time)),
           serialize(:int32, Map.get(struct, :min_bytes)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -62,6 +65,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -150,6 +156,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :max_wait_time)),
           serialize(:int32, Map.get(struct, :min_bytes)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -160,6 +169,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -248,6 +260,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :max_wait_time)),
           serialize(:int32, Map.get(struct, :min_bytes)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -258,6 +273,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -349,6 +367,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :min_bytes)),
           serialize(:int32, Map.get(struct, :max_bytes)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -359,6 +380,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -453,6 +477,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :max_bytes)),
           serialize(:int8, Map.get(struct, :isolation_level)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -463,6 +490,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -564,6 +594,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :max_bytes)),
           serialize(:int8, Map.get(struct, :isolation_level)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -574,6 +607,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -676,6 +712,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :max_bytes)),
           serialize(:int8, Map.get(struct, :isolation_level)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -686,6 +725,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -808,6 +850,9 @@ defmodule(Kayrock.Fetch) do
           serialize(:int32, Map.get(struct, :session_id)),
           serialize(:int32, Map.get(struct, :epoch)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -818,6 +863,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 
@@ -839,6 +887,9 @@ defmodule(Kayrock.Fetch) do
               ]
           end,
           case(Map.get(struct, :forgetten_topics_data)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -849,6 +900,9 @@ defmodule(Kayrock.Fetch) do
                   [
                     serialize(:string, Map.get(v, :topic)),
                     case(Map.get(v, :partitions)) do
+                      nil ->
+                        <<-1::32-signed>>
+
                       [] ->
                         <<-1::32-signed>>
 

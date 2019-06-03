@@ -47,6 +47,9 @@ defmodule(Kayrock.CreatePartitions) do
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
           case(Map.get(struct, :topic_partitions)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
@@ -61,6 +64,9 @@ defmodule(Kayrock.CreatePartitions) do
                       serialize(:int32, Map.get(v, :count))
 
                       case(Map.get(v, :assignment)) do
+                        nil ->
+                          <<-1::32-signed>>
+
                         [] ->
                           <<-1::32-signed>>
 

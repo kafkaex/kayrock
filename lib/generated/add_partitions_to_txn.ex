@@ -47,6 +47,9 @@ defmodule(Kayrock.AddPartitionsToTxn) do
           serialize(:int64, Map.get(struct, :producer_id)),
           serialize(:int16, Map.get(struct, :producer_epoch)),
           case(Map.get(struct, :topics)) do
+            nil ->
+              <<-1::32-signed>>
+
             [] ->
               <<-1::32-signed>>
 
