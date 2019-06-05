@@ -33,7 +33,6 @@ defmodule Kayrock.Serialize do
   def serialize(:nullable_bytes, val), do: serialize(:bytes, val)
 
   def serialize_array(_type, nil), do: <<-1::32-signed>>
-  # this may be incorrect by is what kafkaex does
   def serialize_array(_type, []), do: <<0::32-signed>>
 
   def serialize_array(type, vals) when is_list(vals) do
