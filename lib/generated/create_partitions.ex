@@ -61,23 +61,25 @@ defmodule(Kayrock.CreatePartitions) do
                     serialize(:string, Map.get(v, :topic)),
                     (
                       v = Map.get(v, :new_partitions)
-                      serialize(:int32, Map.get(v, :count))
 
-                      case(Map.get(v, :assignment)) do
-                        nil ->
-                          <<-1::32-signed>>
+                      [
+                        serialize(:int32, Map.get(v, :count)),
+                        case(Map.get(v, :assignment)) do
+                          nil ->
+                            <<-1::32-signed>>
 
-                        [] ->
-                          <<0::32-signed>>
+                          [] ->
+                            <<0::32-signed>>
 
-                        vals when is_list(vals) ->
-                          [
-                            <<length(vals)::32-signed>>,
-                            for(v <- vals) do
-                              serialize_array(:int32, v)
-                            end
-                          ]
-                      end
+                          vals when is_list(vals) ->
+                            [
+                              <<length(vals)::32-signed>>,
+                              for(v <- vals) do
+                                serialize_array(:int32, v)
+                              end
+                            ]
+                        end
+                      ]
                     )
                   ]
                 end

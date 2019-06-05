@@ -389,7 +389,7 @@ defmodule Kayrock.Generate do
 
     quote location: :keep do
       v = Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name))
-      unquote_splicing(subfield_serializers)
+      unquote(subfield_serializers)
     end
   end
 
