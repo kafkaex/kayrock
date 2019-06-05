@@ -11,7 +11,10 @@ defmodule Kayrock.MixProject do
       preferred_cli_env: [coveralls: :test],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix]]
+      dialyzer: [
+        plt_add_apps: [:mix],
+        flags: [:error_handling, :race_conditions]
+      ]
     ]
   end
 
