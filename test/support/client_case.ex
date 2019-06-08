@@ -6,11 +6,35 @@ defmodule Kayrock.ClientCase do
   exit
   """
 
+  defmodule ClientCaseHelpers do
+    @moduledoc """
+    Helper functions imported into ClientCase tests
+    """
+
+    def unique_topic() do
+      num = -:erlang.unique_integer([:positive])
+      "test_topic_#{num}"
+    end
+
+    def ensure_test_topic(client, topic) do
+      {:ok, _} =
+        Kayrock.create_topics(
+          client,
+          [%{topic: topic, num_partitions: 4, replication_factor: 2}],
+          1000
+        )
+
+      {:ok, topic}
+    end
+  end
+
   use ExUnit.CaseTemplate
 
   using do
     quote do
       @moduletag :integration
+
+      import ClientCaseHelpers
     end
   end
 

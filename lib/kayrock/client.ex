@@ -114,11 +114,15 @@ defmodule Kayrock.Client do
   def handle_call({:broker_call, node_selector, request}, _from, state) do
     {state_out, request} = State.request(state, request)
 
-    {:ok, node_id, state_out} = find_node(state_out, node_selector)
+    case find_node(state_out, node_selector) do
+      {:ok, node_id, state_out} ->
+        {broker_pid, state_out} = ensure_broker_connection(state_out, node_id)
+        resp = Kayrock.broker_sync_call(broker_pid, request)
+        {:reply, resp, state_out}
 
-    {broker_pid, state_out} = ensure_broker_connection(state_out, node_id)
-    resp = Kayrock.broker_sync_call(broker_pid, request)
-    {:reply, resp, state_out}
+      {:error, error, state_out} ->
+        {:reply, {:error, error}, state_out}
+    end
   end
 
   def handle_call(:cluster_metadata, _from, state) do
@@ -236,12 +240,15 @@ defmodule Kayrock.Client do
         # should better handle if a topic is out of sync or being created
 
         case ClusterMetadata.select_node(updated_state.cluster_metadata, node_selector) do
-          {:ok, node_id} -> {:ok, node_id, updated_state}
-          _ -> {:error, state}
+          {:ok, node_id} ->
+            {:ok, node_id, updated_state}
+
+          other ->
+            {:error, other, state}
         end
 
-      _ ->
-        {:error, state}
+      {:error, other} ->
+        {:error, other, state}
     end
   end
 end
