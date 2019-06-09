@@ -29,6 +29,7 @@ defmodule Kayrock.MixProject do
   defp deps do
     [
       {:kafka_protocol, "~> 2.2.7"},
+      {:crc32cer, "~>0.1.3"},
       {:varint, "~>1.2.0"},
       {:connection, "~>1.0.4"},
       {:credo, "~>1.0.5", only: [:dev, :test], runtime: false},
