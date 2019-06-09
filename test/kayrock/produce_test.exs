@@ -2,7 +2,8 @@ defmodule Kayrock.ProduceTest do
   defmodule V0 do
     use ExUnit.Case
 
-    alias Kayrock.Message
+    alias Kayrock.MessageSet
+    alias Kayrock.MessageSet.Message
     alias Kayrock.Produce.V0.Request
     alias Kayrock.Produce.V0.Response
 
@@ -25,9 +26,11 @@ defmodule Kayrock.ProduceTest do
             data: [
               %{
                 partition: 0,
-                record_set: [
-                  %Message{key: "", value: "hey"}
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{key: "", value: "hey"}
+                  ]
+                }
               }
             ]
           }
@@ -60,11 +63,13 @@ defmodule Kayrock.ProduceTest do
             data: [
               %{
                 partition: 0,
-                record_set: [
-                  %Message{key: "", value: "hey"},
-                  %Message{key: "", value: "hi"},
-                  %Message{key: "", value: "hello"}
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{key: "", value: "hey"},
+                    %Message{key: "", value: "hi"},
+                    %Message{key: "", value: "hello"}
+                  ]
+                }
               }
             ]
           }
@@ -91,10 +96,12 @@ defmodule Kayrock.ProduceTest do
       client_id = "compression_client_test"
       topic = "compressed_topic"
 
-      messages = [
-        %Kayrock.Message{key: "key a", value: "message a", compression: :gzip},
-        %Kayrock.Message{key: "key b", value: "message b", compression: :gzip}
-      ]
+      messages = %MessageSet{
+        messages: [
+          %Message{key: "key a", value: "message a", compression: :gzip},
+          %Message{key: "key b", value: "message b", compression: :gzip}
+        ]
+      }
 
       request = %Request{
         correlation_id: 1,
@@ -169,10 +176,12 @@ defmodule Kayrock.ProduceTest do
             data: [
               %{
                 partition: 0,
-                record_set: [
-                  %Message{key: "key a", value: "message a", compression: :snappy},
-                  %Message{key: "key b", value: "message b", compression: :snappy}
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{key: "key a", value: "message a", compression: :snappy},
+                    %Message{key: "key b", value: "message b", compression: :snappy}
+                  ]
+                }
               }
             ]
           }

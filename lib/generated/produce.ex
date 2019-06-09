@@ -62,7 +62,7 @@ defmodule(Kayrock.Produce) do
                           for(v <- vals) do
                             [
                               serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Message.serialize(Map.get(v, :record_set))
+                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
                             ]
                           end
                         ]
@@ -150,7 +150,7 @@ defmodule(Kayrock.Produce) do
                           for(v <- vals) do
                             [
                               serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Message.serialize(Map.get(v, :record_set))
+                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
                             ]
                           end
                         ]
@@ -238,7 +238,7 @@ defmodule(Kayrock.Produce) do
                           for(v <- vals) do
                             [
                               serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Message.serialize(Map.get(v, :record_set))
+                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
                             ]
                           end
                         ]
@@ -337,7 +337,7 @@ defmodule(Kayrock.Produce) do
                           for(v <- vals) do
                             [
                               serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Message.serialize(Map.get(v, :record_set))
+                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
                             ]
                           end
                         ]
@@ -436,7 +436,7 @@ defmodule(Kayrock.Produce) do
                           for(v <- vals) do
                             [
                               serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Message.serialize(Map.get(v, :record_set))
+                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
                             ]
                           end
                         ]
@@ -535,7 +535,7 @@ defmodule(Kayrock.Produce) do
                           for(v <- vals) do
                             [
                               serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Message.serialize(Map.get(v, :record_set))
+                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
                             ]
                           end
                         ]

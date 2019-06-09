@@ -5,7 +5,6 @@ defmodule Kayrock do
 
   alias Kayrock.BrokerConnection
   alias Kayrock.Client
-  # alias Kayrock.Message
   alias Kayrock.Request
 
   @typedoc """
@@ -62,24 +61,44 @@ defmodule Kayrock do
   """
   @type api_response :: map
 
-  # def produce(client_pid, messages, topic, partition, acks \\ 1, timeout \\ 1_000) do
-  #  record_set = Enum.map(messages, fn m -> %Message{value: m} end)
+  def produce(client_pid, messages, topic, partition, acks \\ -1, timeout \\ 1_000) do
+    record_set = Enum.map(messages, fn m -> %Kayrock.MessageSet.Message{value: m} end)
 
-  #  request = %Kayrock.Produce.V1.Request{
-  #    acks: acks,
-  #    timeout: timeout,
-  #    topic_data: [
-  #      %{
-  #        topic: topic,
-  #        data: [
-  #          %{partition: partition, record_set: record_set}
-  #        ]
-  #      }
-  #    ]
-  #  }
+    request = %Kayrock.Produce.V1.Request{
+      acks: acks,
+      timeout: timeout,
+      topic_data: [
+        %{
+          topic: topic,
+          data: [
+            %{partition: partition, record_set: %Kayrock.MessageSet{messages: record_set}}
+          ]
+        }
+      ]
+    }
 
-  #  client_call(client_pid, request, {:topic_partition, topic, partition})
-  # end
+    client_call(client_pid, request, {:topic_partition, topic, partition})
+  end
+
+  def fetch(client_pid, topic, partition, offset) do
+    request = %Kayrock.Fetch.V4.Request{
+      replica_id: -1,
+      max_wait_time: 1000,
+      min_bytes: 0,
+      max_bytes: 1_000_000,
+      isolation_level: 1,
+      topics: [
+        %{
+          topic: topic,
+          partitions: [
+            %{partition: partition, fetch_offset: offset, max_bytes: 1_000_000}
+          ]
+        }
+      ]
+    }
+
+    client_call(client_pid, request, {:topic_partition, topic, partition})
+  end
 
   def topics_metadata(client_pid, topics) when is_list(topics) or topics == nil do
     # we use version 4 here so that it will not try to create topics
@@ -98,6 +117,28 @@ defmodule Kayrock do
   @spec api_versions(client_pid, api_version, node_selector) :: {:ok, api_response}
   def api_versions(client_pid, version \\ 0, node_selector \\ :controller) do
     request = Kayrock.ApiVersions.get_request_struct(version)
+    client_call(client_pid, request, node_selector)
+  end
+
+  @doc """
+  Create one or more topics
+  """
+  def create_topics(client_pid, topics, timeout \\ -1, version \\ 2, node_selector \\ :controller) do
+    create_topic_requests =
+      for topic <- topics do
+        build_create_topic_request(topic)
+      end
+
+    request = Kayrock.CreateTopics.get_request_struct(version)
+    request = %{request | create_topic_requests: create_topic_requests, timeout: timeout}
+
+    client_call(client_pid, request, node_selector)
+  end
+
+  def delete_topics(client_pid, topics, timeout \\ -1, version \\ 1, node_selector \\ :controller) do
+    request = Kayrock.DeleteTopics.get_request_struct(version)
+    request = %{request | topics: topics, timeout: timeout}
+
     client_call(client_pid, request, node_selector)
   end
 
@@ -130,5 +171,12 @@ defmodule Kayrock do
     {deserialized_resp, _} = response_deserializer.(resp)
 
     {:ok, deserialized_resp}
+  end
+
+  defp build_create_topic_request(topic) when is_map(topic) do
+    Map.merge(
+      %{num_partitions: -1, replication_factor: -1, replica_assignment: [], config_entries: []},
+      topic
+    )
   end
 end

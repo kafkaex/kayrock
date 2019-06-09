@@ -263,7 +263,7 @@ defmodule Kayrock.Generate do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
         <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
 
-        val = Elixir.Kayrock.Message.deserialize_message_set(msg_set_size, msg_set_data)
+        val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
 
         deserialize_field(
           unquote(scope),
@@ -325,7 +325,7 @@ defmodule Kayrock.Generate do
 
   defp field_serializer({name, :records}, varname) do
     quote location: :keep do
-      Elixir.Kayrock.Message.serialize(
+      Elixir.Kayrock.Request.serialize(
         Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name))
       )
     end

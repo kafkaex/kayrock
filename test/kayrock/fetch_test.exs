@@ -4,7 +4,8 @@ defmodule Kayrock.FetchTest do
 
     alias Kayrock.Fetch.V0.Request
     alias Kayrock.Fetch.V0.Response
-    alias Kayrock.Message
+    alias Kayrock.MessageSet
+    alias Kayrock.MessageSet.Message
 
     import Kayrock.TestSupport
 
@@ -46,15 +47,17 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{partition: 0, error_code: 0, high_watermark: 10},
-                record_set: [
-                  %Message{
-                    attributes: 0,
-                    crc: 0,
-                    key: "foo",
-                    value: "bar",
-                    offset: 1
-                  }
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{
+                      attributes: 0,
+                      crc: 0,
+                      key: "foo",
+                      value: "bar",
+                      offset: 1
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -82,29 +85,31 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 56, partition: 0},
-                record_set: [
-                  %Message{
-                    attributes: 0,
-                    crc: 4_264_455_069,
-                    key: nil,
-                    offset: 0,
-                    value: "hey"
-                  },
-                  %Message{
-                    attributes: 0,
-                    crc: 4_264_455_069,
-                    key: nil,
-                    offset: 1,
-                    value: "hey"
-                  },
-                  %Message{
-                    attributes: 0,
-                    crc: 4_264_455_069,
-                    key: nil,
-                    offset: 2,
-                    value: "hey"
-                  }
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{
+                      attributes: 0,
+                      crc: 4_264_455_069,
+                      key: nil,
+                      offset: 0,
+                      value: "hey"
+                    },
+                    %Message{
+                      attributes: 0,
+                      crc: 4_264_455_069,
+                      key: nil,
+                      offset: 1,
+                      value: "hey"
+                    },
+                    %Message{
+                      attributes: 0,
+                      crc: 4_264_455_069,
+                      key: nil,
+                      offset: 2,
+                      value: "hey"
+                    }
+                  ]
+                }
               }
             ],
             topic: "food"
@@ -130,15 +135,17 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 10, partition: 0},
-                record_set: [
-                  %Message{
-                    attributes: 0,
-                    crc: 0,
-                    key: nil,
-                    offset: 1,
-                    value: "bar"
-                  }
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{
+                      attributes: 0,
+                      crc: 0,
+                      key: nil,
+                      offset: 1,
+                      value: "bar"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -162,15 +169,17 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 10, partition: 0},
-                record_set: [
-                  %Message{
-                    attributes: 0,
-                    crc: 0,
-                    key: "foo",
-                    offset: 1,
-                    value: nil
-                  }
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{
+                      attributes: 0,
+                      crc: 0,
+                      key: "foo",
+                      offset: 1,
+                      value: nil
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -195,10 +204,12 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 10, partition: 0},
-                record_set: [
-                  %Message{attributes: 0, crc: 0, key: nil, offset: 1, value: "bar"},
-                  %Message{attributes: 0, crc: 0, key: nil, offset: 2, value: "baz"}
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{attributes: 0, crc: 0, key: nil, offset: 1, value: "bar"},
+                    %Message{attributes: 0, crc: 0, key: nil, offset: 2, value: "baz"}
+                  ]
+                }
               }
             ]
           }
@@ -223,11 +234,15 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 10, partition: 0},
-                record_set: [%Message{attributes: 0, crc: 0, offset: 1, value: "bar"}]
+                record_set: %MessageSet{
+                  messages: [%Message{attributes: 0, crc: 0, offset: 1, value: "bar"}]
+                }
               },
               %{
                 partition_header: %{error_code: 0, high_watermark: 10, partition: 1},
-                record_set: [%Message{attributes: 0, crc: 0, offset: 1, value: "baz"}]
+                record_set: %MessageSet{
+                  messages: [%Message{attributes: 0, crc: 0, offset: 1, value: "baz"}]
+                }
               }
             ]
           }
@@ -252,7 +267,9 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 10, partition: 0},
-                record_set: [%Message{attributes: 0, crc: 0, offset: 1, value: "foo"}]
+                record_set: %MessageSet{
+                  messages: [%Message{attributes: 0, crc: 0, offset: 1, value: "foo"}]
+                }
               }
             ]
           },
@@ -261,7 +278,9 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 10, partition: 0},
-                record_set: [%Message{attributes: 0, crc: 0, offset: 1, value: "bar"}]
+                record_set: %MessageSet{
+                  messages: [%Message{attributes: 0, crc: 0, offset: 1, value: "bar"}]
+                }
               }
             ]
           }
@@ -288,14 +307,16 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 1, partition: 0},
-                record_set: [
-                  %Message{
-                    attributes: 0,
-                    crc: 2_799_750_541,
-                    offset: 0,
-                    value: "test message"
-                  }
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{
+                      attributes: 0,
+                      crc: 2_799_750_541,
+                      offset: 0,
+                      value: "test message"
+                    }
+                  ]
+                }
               }
             ]
           }
@@ -360,7 +381,7 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 4, partition: 0},
-                record_set: [message1, message2, message3, message4]
+                record_set: %MessageSet{messages: [message1, message2, message3, message4]}
               }
             ]
           }
@@ -388,9 +409,11 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 2, partition: 1},
-                record_set: [
-                  %Message{attributes: 0, crc: 2_799_750_541, offset: 1, value: "test message"}
-                ]
+                record_set: %MessageSet{
+                  messages: [
+                    %Message{attributes: 0, crc: 2_799_750_541, offset: 1, value: "test message"}
+                  ]
+                }
               }
             ]
           }
@@ -435,7 +458,7 @@ defmodule Kayrock.FetchTest do
             partition_responses: [
               %{
                 partition_header: %{error_code: 0, high_watermark: 2, partition: 0},
-                record_set: [message1, message2]
+                record_set: %MessageSet{messages: [message1, message2]}
               }
             ]
           }
