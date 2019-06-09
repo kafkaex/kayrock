@@ -61,9 +61,7 @@ defmodule Kayrock do
   """
   @type api_response :: map
 
-  def produce(client_pid, messages, topic, partition, acks \\ -1, timeout \\ 1_000) do
-    record_set = Enum.map(messages, fn m -> %Kayrock.MessageSet.Message{value: m} end)
-
+  def produce(client_pid, record_batch, topic, partition, acks \\ -1, timeout \\ 1_000) do
     request = %Kayrock.Produce.V1.Request{
       acks: acks,
       timeout: timeout,
@@ -71,7 +69,7 @@ defmodule Kayrock do
         %{
           topic: topic,
           data: [
-            %{partition: partition, record_set: %Kayrock.MessageSet{messages: record_set}}
+            %{partition: partition, record_set: record_batch}
           ]
         }
       ]

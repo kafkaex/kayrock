@@ -16,9 +16,9 @@ defmodule Kayrock.RecordBatch do
     See https://kafka.apache.org/documentation/#recordbatch
     """
     defstruct(
-      attributes: nil,
+      attributes: 0,
       timestamp: -1,
-      offset: nil,
+      offset: 0,
       key: nil,
       value: nil,
       headers: <<0>>
@@ -26,14 +26,14 @@ defmodule Kayrock.RecordBatch do
   end
 
   defstruct(
-    batch_offset: nil,
+    batch_offset: 0,
     batch_length: nil,
-    partition_leader_epoch: nil,
+    partition_leader_epoch: -1,
     crc: nil,
-    attributes: nil,
-    last_offset_delta: nil,
-    first_timestamp: nil,
-    max_timestamp: nil,
+    attributes: 0,
+    last_offset_delta: -1,
+    first_timestamp: -1,
+    max_timestamp: -1,
     producer_id: -1,
     producer_epoch: -1,
     base_sequence: -1,
@@ -41,6 +41,10 @@ defmodule Kayrock.RecordBatch do
   )
 
   alias Kayrock.MessageSet
+
+  def from_binary_list(messages) when is_list(messages) do
+    %__MODULE__{records: Enum.map(messages, fn m -> %Record{value: m} end)}
+  end
 
   # baseOffset: int64
   # batchLength: int32
@@ -68,7 +72,6 @@ defmodule Kayrock.RecordBatch do
 
   def serialize(%__MODULE__{} = record_batch) do
     [first_record | _] = record_batch.records
-    last_record = List.last(record_batch.records)
 
     num_records = length(record_batch.records)
 
@@ -87,7 +90,7 @@ defmodule Kayrock.RecordBatch do
         |> serialize_record
       end
 
-    last_offset_delta = last_record.offset - first_record.offset
+    last_offset_delta = num_records - 1
 
     header =
       <<record_batch.attributes::16-signed, last_offset_delta::32-signed,
@@ -103,7 +106,8 @@ defmodule Kayrock.RecordBatch do
       for_crc
     ]
 
-    [<<first_record.offset::64-signed, IO.iodata_length(for_size)::32-signed>>, for_size]
+    v = [<<first_record.offset::64-signed, IO.iodata_length(for_size)::32-signed>>, for_size]
+    [<<IO.iodata_length(v)::32-signed>>, v]
   end
 
   @doc """
@@ -282,8 +286,11 @@ defmodule Kayrock.RecordBatch do
   defp normalize_record(record, base_offset, base_timestamp) do
     %{
       record
-      | timestamp: record.timestamp - base_timestamp,
-        offset: record.offset - base_offset
+      | timestamp: maybe_delta(record.timestamp, base_timestamp),
+        offset: maybe_delta(record.offset, base_offset)
     }
   end
+
+  defp maybe_delta(nil, _), do: nil
+  defp maybe_delta(x, y), do: x - y
 end
