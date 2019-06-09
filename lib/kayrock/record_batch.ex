@@ -40,10 +40,16 @@ defmodule Kayrock.RecordBatch do
     records: []
   )
 
-  alias Kayrock.MessageSet
+  use Bitwise
 
-  def from_binary_list(messages) when is_list(messages) do
-    %__MODULE__{records: Enum.map(messages, fn m -> %Record{value: m} end)}
+  alias Kayrock.MessageSet
+  alias Kayrock.Compression
+
+  def from_binary_list(messages, compression \\ :none) when is_list(messages) do
+    %__MODULE__{
+      attributes: set_compression_bits(0, compression),
+      records: Enum.map(messages, fn m -> %Record{value: m} end)
+    }
   end
 
   # baseOffset: int64
@@ -88,6 +94,12 @@ defmodule Kayrock.RecordBatch do
         record
         |> normalize_record(base_offset, base_timestamp)
         |> serialize_record
+      end
+
+    records =
+      case compression_type(record_batch.attributes) do
+        :none -> records
+        other -> Compression.compress(records)
       end
 
     last_offset_delta = num_records - 1
@@ -146,8 +158,14 @@ defmodule Kayrock.RecordBatch do
     msgs = deserialize_message(rest, num_msgs, [])
 
     msgs =
-      Enum.map(msgs, fn msg ->
-        %{msg | offset: msg.offset + batch_offset, timestamp: msg.timestamp + first_timestamp}
+      msgs
+      |> Enum.zip(0..(num_msgs - 1))
+      |> Enum.map(fn {msg, ix} ->
+        %{
+          msg
+          | offset: determine_offset(batch_offset, msg.offset, ix),
+            timestamp: msg.timestamp + first_timestamp
+        }
       end)
 
     %__MODULE__{
@@ -293,4 +311,28 @@ defmodule Kayrock.RecordBatch do
 
   defp maybe_delta(nil, _), do: nil
   defp maybe_delta(x, y), do: x - y
+
+  defp compression_type(attributes) do
+    case attributes &&& 3 do
+      0 -> :none
+      1 -> :gzip
+      2 -> :snappy
+      3 -> :lz4
+      4 -> :zstd
+    end
+  end
+
+  defp set_compression_bits(val, :none), do: val
+  defp set_compression_bits(val, :gzip), do: set_compression_bits(val, 1)
+  defp set_compression_bits(val, :snappy), do: set_compression_bits(val, 2)
+  defp set_compression_bits(val, :lz4), do: set_compression_bits(val, 3)
+  defp set_compression_bits(val, :zstd), do: set_compression_bits(val, 4)
+
+  defp set_compression_bits(val, compression_val)
+       when is_integer(compression_val) and compression_val > 0 and compression_val <= 4 do
+    (val &&& bnot(3)) + compression_val
+  end
+
+  defp determine_offset(batch_offset, 0, ix), do: batch_offset + ix
+  defp determine_offset(batch_offset, offset_delta, _ix), do: batch_offset + offset_delta
 end
