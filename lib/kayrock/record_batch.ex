@@ -1,5 +1,20 @@
 defmodule Kayrock.RecordBatch do
+  @moduledoc """
+  Represents a batch of records (also called a record set)
+
+  This is the newer format in Kafka 0.11+
+
+  See https://kafka.apache.org/documentation/#recordbatch
+  """
+
   defmodule Record do
+    @moduledoc """
+    Represents a single record (message)
+
+    This is the newer format in Kafka 0.11+
+
+    See https://kafka.apache.org/documentation/#recordbatch
+    """
     defstruct(
       attributes: nil,
       timestamp: -1,

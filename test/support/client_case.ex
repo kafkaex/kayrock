@@ -11,7 +11,7 @@ defmodule Kayrock.ClientCase do
     Helper functions imported into ClientCase tests
     """
 
-    def unique_topic() do
+    def unique_topic do
       num = -:erlang.unique_integer([:positive])
       "test_topic_#{num}"
     end

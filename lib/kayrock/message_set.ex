@@ -1,5 +1,20 @@
 defmodule Kayrock.MessageSet do
+  @moduledoc """
+  Represents a set of messages with the v0 or v1 format
+
+  This is the old format that KafkaEx supported
+
+  See https://kafka.apache.org/documentation/#recordbatch
+  """
+
   defmodule Message do
+    @moduledoc """
+    Represents a single message with the v0 or v1 format
+
+    This is the old format that KafkaEx supported
+
+    See https://kafka.apache.org/documentation/#recordbatch
+    """
     defstruct offset: nil,
               compression: :none,
               key: nil,

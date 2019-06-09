@@ -103,5 +103,5 @@ defmodule Kayrock.ErrorCode do
   ######################################################################
   # convenience functions
   @spec unknown_topic() :: error_code
-  def unknown_topic(), do: atom_to_code!(:unknown_topic_or_partition)
+  def unknown_topic, do: atom_to_code!(:unknown_topic_or_partition)
 end

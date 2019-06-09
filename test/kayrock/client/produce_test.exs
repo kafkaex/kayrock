@@ -6,9 +6,9 @@ defmodule Kayrock.Client.ProduceTest do
     {:ok, _} = Kayrock.produce(client, ["foo", "bar", "baz"], topic, 0)
 
     offset = Kayrock.Convenience.partition_last_offset(client, topic, 0)
-    IO.inspect(offset)
+    # IO.inspect(offset)
 
     {:ok, resp} = Kayrock.fetch(client, topic, 0, offset - 1)
-    IO.inspect(resp)
+    # IO.inspect(resp)
   end
 end
