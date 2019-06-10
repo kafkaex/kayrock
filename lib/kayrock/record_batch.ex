@@ -42,8 +42,8 @@ defmodule Kayrock.RecordBatch do
 
   use Bitwise
 
-  alias Kayrock.MessageSet
   alias Kayrock.Compression
+  alias Kayrock.MessageSet
 
   def from_binary_list(messages, compression \\ :none) when is_list(messages) do
     %__MODULE__{
@@ -157,6 +157,8 @@ defmodule Kayrock.RecordBatch do
 
     msgs = deserialize_message(rest, num_msgs, [])
 
+    # NOTE we sometimes get record batches with all offset_delta = 0
+    # we use the order in the record batch to determine offset in that case
     msgs =
       msgs
       |> Enum.zip(0..(num_msgs - 1))
