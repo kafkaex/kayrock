@@ -266,7 +266,7 @@ defmodule Kayrock.MessageSerdeTest do
           attributes: 0,
           headers: <<0>>,
           key: nil,
-          offset: 0,
+          offset: 1,
           timestamp: -1,
           value: "bar"
         },
@@ -274,23 +274,21 @@ defmodule Kayrock.MessageSerdeTest do
           attributes: 0,
           headers: <<0>>,
           key: nil,
-          offset: 0,
+          offset: 2,
           timestamp: -1,
           value: "baz"
         }
       ]
     }
 
-    expect =
-      <<0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 88, 255, 255, 255, 255, 2, 114, 69, 255,
-        84, 0, 1, 0, 0, 0, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0,
-        0, 3, 31, 139, 8, 0, 0, 0, 0, 0, 0, 19, 19, 98, 96, 96, 96, 100, 75, 203, 207, 103, 16, 2,
-        179, 146, 18, 139, 224, 172, 42, 6, 0, 160, 136, 44, 185, 30, 0, 0, 0>>
-
     got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
+    <<size::32-signed, rest::bits>> = got
+    assert byte_size(rest) == size
 
-    assert got == expect, compare_binaries(got, expect)
+    # gzip changes with versions, so deserialize to make sure we got what we put
+    # in
+    record_batch = %{record_batch | batch_length: 94, crc: 171_851_896, last_offset_delta: 2}
+    assert RecordBatch.deserialize(rest) == record_batch
   end
 
   test "deserialize v2 message with gzip compression" do

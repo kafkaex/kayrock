@@ -12,7 +12,7 @@ defmodule Kayrock.Client.ListOffsetsTest do
 
     record_batch = RecordBatch.from_binary_list(["one", "two", "three"])
     {:ok, resp} = Kayrock.produce(client, record_batch, topic, 0)
-    IO.inspect(resp)
+    IO.puts(inspect(resp))
 
     offset =
       fn ->
