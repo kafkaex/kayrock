@@ -13,7 +13,15 @@ defmodule Kayrock.Client.ListOffsetsTest do
     record_batch = RecordBatch.from_binary_list(["one", "two", "three"])
     {:ok, _} = Kayrock.produce(client, record_batch, topic, 0)
 
-    offset = Kayrock.Convenience.partition_last_offset(client, topic, 0)
+    offset =
+      fn ->
+        :timer.sleep(10)
+        Kayrock.Convenience.partition_last_offset(client, topic, 0)
+      end
+      |> Stream.repeatedly()
+      |> Stream.drop_while(fn x -> x <= first_offset end)
+      |> Enum.take(1)
+      |> List.last()
 
     assert offset == first_offset + 3
   end
