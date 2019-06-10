@@ -98,8 +98,12 @@ defmodule Kayrock.RecordBatch do
 
     records =
       case compression_type(record_batch.attributes) do
-        :none -> records
-        other -> Compression.compress(records)
+        :none ->
+          records
+
+        other ->
+          {compressed_records, _} = Compression.compress(other, records)
+          compressed_records
       end
 
     last_offset_delta = num_records - 1
@@ -155,7 +159,13 @@ defmodule Kayrock.RecordBatch do
       producer_epoch::16-signed, base_sequence::32-signed, num_msgs::32-signed,
       rest::bits>> = rest
 
-    msgs = deserialize_message(rest, num_msgs, [])
+    msg_data =
+      case compression_from_attributes(attributes) do
+        0 -> rest
+        other -> Compression.decompress(other, rest)
+      end
+
+    msgs = deserialize_message(msg_data, num_msgs, [])
 
     # NOTE we sometimes get record batches with all offset_delta = 0
     # we use the order in the record batch to determine offset in that case
@@ -337,4 +347,7 @@ defmodule Kayrock.RecordBatch do
 
   defp determine_offset(batch_offset, 0, ix), do: batch_offset + ix
   defp determine_offset(batch_offset, offset_delta, _ix), do: batch_offset + offset_delta
+
+  # the 2 lsb specifies compression
+  defp compression_from_attributes(a), do: a &&& 3
 end
