@@ -287,7 +287,15 @@ defmodule Kayrock.MessageSerdeTest do
 
     # gzip changes with versions, so deserialize to make sure we got what we put
     # in
-    record_batch = %{record_batch | batch_length: 94, crc: 171_851_896, last_offset_delta: 2}
+    got_batch = RecordBatch.deserialize(rest)
+
+    record_batch = %{
+      record_batch
+      | batch_length: got_batch.batch_length,
+        crc: got_batch.crc,
+        last_offset_delta: 2
+    }
+
     assert RecordBatch.deserialize(rest) == record_batch
   end
 
