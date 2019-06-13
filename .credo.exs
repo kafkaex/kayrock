@@ -101,7 +101,12 @@
         ## Refactoring Opportunities
         #
         {Credo.Check.Refactor.CondStatements, []},
-        {Credo.Check.Refactor.CyclomaticComplexity, []},
+        {
+          Credo.Check.Refactor.CyclomaticComplexity,
+          # increased for Kayrock.Generate.generate_schema_metadata
+          # this function could be split up into smaller chunk
+          [max_complexity: 10]
+        },
         {Credo.Check.Refactor.FunctionArity, []},
         {Credo.Check.Refactor.LongQuoteBlocks, []},
         {Credo.Check.Refactor.MapInto, []},
