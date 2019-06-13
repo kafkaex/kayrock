@@ -18,7 +18,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -122,7 +122,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -226,7 +226,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -331,7 +331,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -439,7 +439,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -549,7 +549,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -667,7 +667,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -788,7 +788,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -982,7 +982,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -1101,7 +1101,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -1232,7 +1232,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -1363,7 +1363,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -1494,7 +1494,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -1681,7 +1681,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -1880,7 +1880,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do
@@ -2087,7 +2087,7 @@ defmodule(Kayrock.Fetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:fetch)
     end
 
     def(api_vsn) do

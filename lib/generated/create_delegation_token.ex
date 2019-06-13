@@ -9,7 +9,7 @@ defmodule(Kayrock.CreateDelegationToken) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:create_delegation_token)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_delegation_token)
     end
 
     def(api_vsn) do
@@ -91,7 +91,7 @@ defmodule(Kayrock.CreateDelegationToken) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:create_delegation_token)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_delegation_token)
     end
 
     def(api_vsn) do

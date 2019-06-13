@@ -9,7 +9,7 @@ defmodule(Kayrock.AlterConfigs) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:alter_configs)
+      Kayrock.KafkaSchemaMetadata.api_key(:alter_configs)
     end
 
     def(api_vsn) do
@@ -106,7 +106,7 @@ defmodule(Kayrock.AlterConfigs) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:alter_configs)
+      Kayrock.KafkaSchemaMetadata.api_key(:alter_configs)
     end
 
     def(api_vsn) do

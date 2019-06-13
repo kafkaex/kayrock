@@ -9,7 +9,7 @@ defmodule(Kayrock.CreateTopics) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:create_topics)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_topics)
     end
 
     def(api_vsn) do
@@ -130,7 +130,7 @@ defmodule(Kayrock.CreateTopics) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:create_topics)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_topics)
     end
 
     def(api_vsn) do
@@ -253,7 +253,7 @@ defmodule(Kayrock.CreateTopics) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:create_topics)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_topics)
     end
 
     def(api_vsn) do
@@ -381,7 +381,7 @@ defmodule(Kayrock.CreateTopics) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:create_topics)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_topics)
     end
 
     def(api_vsn) do
@@ -436,7 +436,7 @@ defmodule(Kayrock.CreateTopics) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:create_topics)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_topics)
     end
 
     def(api_vsn) do
@@ -499,7 +499,7 @@ defmodule(Kayrock.CreateTopics) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:create_topics)
+      Kayrock.KafkaSchemaMetadata.api_key(:create_topics)
     end
 
     def(api_vsn) do

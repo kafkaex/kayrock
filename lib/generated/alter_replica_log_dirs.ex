@@ -9,7 +9,7 @@ defmodule(Kayrock.AlterReplicaLogDirs) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:alter_replica_log_dirs)
+      Kayrock.KafkaSchemaMetadata.api_key(:alter_replica_log_dirs)
     end
 
     def(api_vsn) do
@@ -99,7 +99,7 @@ defmodule(Kayrock.AlterReplicaLogDirs) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:alter_replica_log_dirs)
+      Kayrock.KafkaSchemaMetadata.api_key(:alter_replica_log_dirs)
     end
 
     def(api_vsn) do

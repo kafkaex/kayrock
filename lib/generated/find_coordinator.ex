@@ -9,7 +9,7 @@ defmodule(Kayrock.FindCoordinator) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:find_coordinator)
+      Kayrock.KafkaSchemaMetadata.api_key(:find_coordinator)
     end
 
     def(api_vsn) do
@@ -54,7 +54,7 @@ defmodule(Kayrock.FindCoordinator) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:find_coordinator)
+      Kayrock.KafkaSchemaMetadata.api_key(:find_coordinator)
     end
 
     def(api_vsn) do
@@ -111,7 +111,7 @@ defmodule(Kayrock.FindCoordinator) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:find_coordinator)
+      Kayrock.KafkaSchemaMetadata.api_key(:find_coordinator)
     end
 
     def(api_vsn) do
@@ -173,7 +173,7 @@ defmodule(Kayrock.FindCoordinator) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:find_coordinator)
+      Kayrock.KafkaSchemaMetadata.api_key(:find_coordinator)
     end
 
     def(api_vsn) do

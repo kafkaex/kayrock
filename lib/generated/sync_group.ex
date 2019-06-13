@@ -18,7 +18,7 @@ defmodule(Kayrock.SyncGroup) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:sync_group)
+      Kayrock.KafkaSchemaMetadata.api_key(:sync_group)
     end
 
     def(api_vsn) do
@@ -99,7 +99,7 @@ defmodule(Kayrock.SyncGroup) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:sync_group)
+      Kayrock.KafkaSchemaMetadata.api_key(:sync_group)
     end
 
     def(api_vsn) do
@@ -180,7 +180,7 @@ defmodule(Kayrock.SyncGroup) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:sync_group)
+      Kayrock.KafkaSchemaMetadata.api_key(:sync_group)
     end
 
     def(api_vsn) do
@@ -219,7 +219,7 @@ defmodule(Kayrock.SyncGroup) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:sync_group)
+      Kayrock.KafkaSchemaMetadata.api_key(:sync_group)
     end
 
     def(api_vsn) do

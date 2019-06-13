@@ -9,7 +9,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do
@@ -91,7 +91,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do
@@ -173,7 +173,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do
@@ -255,7 +255,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do
@@ -354,7 +354,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do
@@ -459,7 +459,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do
@@ -564,7 +564,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do
@@ -675,7 +675,7 @@ defmodule(Kayrock.OffsetFetch) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_fetch)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_fetch)
     end
 
     def(api_vsn) do

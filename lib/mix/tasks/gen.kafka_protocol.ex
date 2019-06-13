@@ -9,22 +9,36 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
 
   @shortdoc "Generates code for the protocol"
   def run(_) do
+    if not Code.ensure_compiled?(:kpro_schema) do
+      IO.puts(
+        ":kpro_schema is not loaded.  " <>
+          "Note, this task should only be run when developing Kayrock."
+      )
+
+      exit({:shutdown, 1})
+    end
+
     output_dir = "lib/generated"
 
     File.rm_rf!(output_dir)
     File.mkdir_p!(output_dir)
 
+    ast = Kayrock.Generate.generate_schema_metadata(:kpro_schema)
+    write_ast(ast, Path.join(output_dir, "kafka_schema_metadata.ex"))
+
     for api <- :kpro_schema.all_apis() do
       Logger.info("Generating modules for #{api}")
 
-      ast = Kayrock.Generate.build_all(api)
+      ast = Kayrock.Generate.build_all(api, :kpro_schema)
 
-      path = Path.join(output_dir, "#{api}.ex")
-
-      code = Macro.to_string(ast)
-      File.write!(path, code)
+      write_ast(ast, Path.join(output_dir, "#{api}.ex"))
     end
 
     Mix.Task.run("format", [Path.join(output_dir, "*.ex")])
+  end
+
+  defp write_ast(ast, path) do
+    code = Macro.to_string(ast)
+    File.write!(path, code)
   end
 end

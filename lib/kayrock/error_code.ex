@@ -34,8 +34,12 @@ defmodule Kayrock.ErrorCode do
     end
   end
 
+  alias Kayrock.KafkaSchemaMetadata
+
   @known_codes -1..71
-  @atom_to_code Enum.into(@known_codes, %{}, fn c -> {:kpro_schema.ec(c), c} end)
+  @atom_to_code Enum.into(@known_codes, %{}, fn c ->
+                  {KafkaSchemaMetadata.error_code_to_error(c), c}
+                end)
 
   @typedoc """
   A numeric Kafka error code
@@ -44,8 +48,6 @@ defmodule Kayrock.ErrorCode do
 
   @typedoc """
   An erlang/elixir atom representation of an error code
-
-  As determined by `:kpro_schema.ec/1`.
   """
   @type error_atom :: atom
 
@@ -58,7 +60,7 @@ defmodule Kayrock.ErrorCode do
   """
   @spec code_to_atom(error_code) :: error_atom
   def code_to_atom(code) when code in @known_codes do
-    :kpro_schema.ec(code)
+    KafkaSchemaMetadata.error_code_to_error(code)
   end
 
   def code_to_atom(code) do

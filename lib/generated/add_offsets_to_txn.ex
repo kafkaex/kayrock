@@ -18,7 +18,7 @@ defmodule(Kayrock.AddOffsetsToTxn) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:add_offsets_to_txn)
+      Kayrock.KafkaSchemaMetadata.api_key(:add_offsets_to_txn)
     end
 
     def(api_vsn) do
@@ -73,7 +73,7 @@ defmodule(Kayrock.AddOffsetsToTxn) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:add_offsets_to_txn)
+      Kayrock.KafkaSchemaMetadata.api_key(:add_offsets_to_txn)
     end
 
     def(api_vsn) do

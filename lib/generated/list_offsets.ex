@@ -9,7 +9,7 @@ defmodule(Kayrock.ListOffsets) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:list_offsets)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_offsets)
     end
 
     def(api_vsn) do
@@ -100,7 +100,7 @@ defmodule(Kayrock.ListOffsets) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:list_offsets)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_offsets)
     end
 
     def(api_vsn) do
@@ -194,7 +194,7 @@ defmodule(Kayrock.ListOffsets) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:list_offsets)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_offsets)
     end
 
     def(api_vsn) do
@@ -295,7 +295,7 @@ defmodule(Kayrock.ListOffsets) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:list_offsets)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_offsets)
     end
 
     def(api_vsn) do
@@ -395,7 +395,7 @@ defmodule(Kayrock.ListOffsets) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:list_offsets)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_offsets)
     end
 
     def(api_vsn) do
@@ -495,7 +495,7 @@ defmodule(Kayrock.ListOffsets) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:list_offsets)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_offsets)
     end
 
     def(api_vsn) do

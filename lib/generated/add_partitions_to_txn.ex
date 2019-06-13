@@ -18,7 +18,7 @@ defmodule(Kayrock.AddPartitionsToTxn) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:add_partitions_to_txn)
+      Kayrock.KafkaSchemaMetadata.api_key(:add_partitions_to_txn)
     end
 
     def(api_vsn) do
@@ -95,7 +95,7 @@ defmodule(Kayrock.AddPartitionsToTxn) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:add_partitions_to_txn)
+      Kayrock.KafkaSchemaMetadata.api_key(:add_partitions_to_txn)
     end
 
     def(api_vsn) do

@@ -17,7 +17,7 @@ defmodule(Kayrock.Heartbeat) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:heartbeat)
+      Kayrock.KafkaSchemaMetadata.api_key(:heartbeat)
     end
 
     def(api_vsn) do
@@ -74,7 +74,7 @@ defmodule(Kayrock.Heartbeat) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:heartbeat)
+      Kayrock.KafkaSchemaMetadata.api_key(:heartbeat)
     end
 
     def(api_vsn) do
@@ -132,7 +132,7 @@ defmodule(Kayrock.Heartbeat) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:heartbeat)
+      Kayrock.KafkaSchemaMetadata.api_key(:heartbeat)
     end
 
     def(api_vsn) do
@@ -166,7 +166,7 @@ defmodule(Kayrock.Heartbeat) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:heartbeat)
+      Kayrock.KafkaSchemaMetadata.api_key(:heartbeat)
     end
 
     def(api_vsn) do

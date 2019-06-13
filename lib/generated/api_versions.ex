@@ -8,7 +8,7 @@ defmodule(Kayrock.ApiVersions) do
     defstruct(correlation_id: nil, client_id: nil)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:api_versions)
+      Kayrock.KafkaSchemaMetadata.api_key(:api_versions)
     end
 
     def(api_vsn) do
@@ -52,7 +52,7 @@ defmodule(Kayrock.ApiVersions) do
     defstruct(correlation_id: nil, client_id: nil)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:api_versions)
+      Kayrock.KafkaSchemaMetadata.api_key(:api_versions)
     end
 
     def(api_vsn) do
@@ -106,7 +106,7 @@ defmodule(Kayrock.ApiVersions) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:api_versions)
+      Kayrock.KafkaSchemaMetadata.api_key(:api_versions)
     end
 
     def(api_vsn) do
@@ -174,7 +174,7 @@ defmodule(Kayrock.ApiVersions) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:api_versions)
+      Kayrock.KafkaSchemaMetadata.api_key(:api_versions)
     end
 
     def(api_vsn) do

@@ -9,7 +9,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do
@@ -109,7 +109,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do
@@ -217,7 +217,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do
@@ -324,7 +324,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Serialize)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do
@@ -438,7 +438,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do
@@ -526,7 +526,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do
@@ -614,7 +614,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do
@@ -702,7 +702,7 @@ defmodule(Kayrock.OffsetCommit) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:offset_commit)
+      Kayrock.KafkaSchemaMetadata.api_key(:offset_commit)
     end
 
     def(api_vsn) do

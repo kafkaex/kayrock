@@ -8,7 +8,7 @@ defmodule(Kayrock.ListGroups) do
     defstruct(correlation_id: nil, client_id: nil)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:list_groups)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_groups)
     end
 
     def(api_vsn) do
@@ -52,7 +52,7 @@ defmodule(Kayrock.ListGroups) do
     defstruct(correlation_id: nil, client_id: nil)
     @type t :: %__MODULE__{}
     def(api_key) do
-      :kpro_schema.api_key(:list_groups)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_groups)
     end
 
     def(api_vsn) do
@@ -106,7 +106,7 @@ defmodule(Kayrock.ListGroups) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:list_groups)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_groups)
     end
 
     def(api_vsn) do
@@ -166,7 +166,7 @@ defmodule(Kayrock.ListGroups) do
     import(Elixir.Kayrock.Deserialize)
 
     def(api_key) do
-      :kpro_schema.api_key(:list_groups)
+      Kayrock.KafkaSchemaMetadata.api_key(:list_groups)
     end
 
     def(api_vsn) do
