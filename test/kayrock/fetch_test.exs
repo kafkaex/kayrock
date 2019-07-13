@@ -468,5 +468,43 @@ defmodule Kayrock.FetchTest do
       {got, <<>>} = Kayrock.Fetch.deserialize(0, response)
       assert got == expect
     end
+
+    test "deserialize an empty record batch" do
+      data =
+        <<0, 0, 0, 4, 0, 0, 0, 1, 0, 20, 86, 81, 68, 78, 78, 81, 90, 67, 67, 88, 85, 84, 76, 77,
+          71, 70, 68, 75, 90, 89, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+          0>>
+
+      expect = %Kayrock.Fetch.V0.Response{
+        correlation_id: 4,
+        responses: [
+          %{
+            partition_responses: [
+              %{
+                partition_header: %{error_code: 0, high_watermark: 0, partition: 0},
+                record_set: %Kayrock.RecordBatch{
+                  attributes: 0,
+                  base_sequence: -1,
+                  batch_length: nil,
+                  batch_offset: nil,
+                  crc: nil,
+                  first_timestamp: -1,
+                  last_offset_delta: -1,
+                  max_timestamp: -1,
+                  partition_leader_epoch: -1,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: []
+                }
+              }
+            ],
+            topic: "VQDNNQZCCXUTLMGFDKZY"
+          }
+        ]
+      }
+
+      {got, ""} = Kayrock.Fetch.V0.Response.deserialize(data)
+      assert got == expect
+    end
   end
 end

@@ -135,6 +135,10 @@ defmodule Kayrock.RecordBatch do
     deserialize(byte_size(record_batch_data), record_batch_data)
   end
 
+  def deserialize(0, "") do
+    %__MODULE__{batch_offset: nil}
+  end
+
   def deserialize(msg_set_size, msg_set_data)
       when byte_size(msg_set_data) == msg_set_size do
     case get_magic_byte(msg_set_data) do
