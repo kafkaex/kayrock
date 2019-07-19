@@ -202,7 +202,7 @@ defmodule(Kayrock.SyncGroup) do
     end
 
     defp(deserialize_field(:root, :member_assignment, acc, data)) do
-      {val, rest} = deserialize(:bytes, data)
+      {val, rest} = Kayrock.MemberAssignment.deserialize(data)
       deserialize_field(:root, nil, Map.put(acc, :member_assignment, val), rest)
     end
 
@@ -252,7 +252,7 @@ defmodule(Kayrock.SyncGroup) do
     end
 
     defp(deserialize_field(:root, :member_assignment, acc, data)) do
-      {val, rest} = deserialize(:bytes, data)
+      {val, rest} = Kayrock.MemberAssignment.deserialize(data)
       deserialize_field(:root, nil, Map.put(acc, :member_assignment, val), rest)
     end
 

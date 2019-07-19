@@ -279,6 +279,21 @@ defmodule Kayrock.Generate do
     {first_field_name, fields_with_next_field}
   end
 
+  def generate_field_deserializer(scope, {:member_assignment, :bytes}, next_field_name) do
+    quote do
+      defp deserialize_field(unquote(scope), :member_assignment, acc, data) do
+        {val, rest} = Kayrock.MemberAssignment.deserialize(data)
+
+        deserialize_field(
+          unquote(scope),
+          unquote(next_field_name),
+          Map.put(acc, :member_assignment, val),
+          rest
+        )
+      end
+    end
+  end
+
   def generate_field_deserializer(scope, {field_name, {:array, type}}, next_field_name)
       when type in Kayrock.Deserialize.primitive_types() do
     quote do
