@@ -29,7 +29,7 @@ defmodule(Kayrock.DescribeLogDirs) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :topics)) do
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -41,8 +41,8 @@ defmodule(Kayrock.DescribeLogDirs) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    serialize_array(:int32, Map.get(v, :partitions))
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    serialize_array(:int32, Map.fetch!(v, :partitions))
                   ]
                 end
               ]

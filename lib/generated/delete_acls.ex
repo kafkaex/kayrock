@@ -40,7 +40,7 @@ defmodule(Kayrock.DeleteAcls) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :filters)) do
+          case(Map.fetch!(struct, :filters)) do
             nil ->
               <<-1::32-signed>>
 
@@ -52,12 +52,12 @@ defmodule(Kayrock.DeleteAcls) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:int8, Map.get(v, :resource_type)),
-                    serialize(:nullable_string, Map.get(v, :resource_name)),
-                    serialize(:nullable_string, Map.get(v, :principal)),
-                    serialize(:nullable_string, Map.get(v, :host)),
-                    serialize(:int8, Map.get(v, :operation)),
-                    serialize(:int8, Map.get(v, :permission_type))
+                    serialize(:int8, Map.fetch!(v, :resource_type)),
+                    serialize(:nullable_string, Map.fetch!(v, :resource_name)),
+                    serialize(:nullable_string, Map.fetch!(v, :principal)),
+                    serialize(:nullable_string, Map.fetch!(v, :host)),
+                    serialize(:int8, Map.fetch!(v, :operation)),
+                    serialize(:int8, Map.fetch!(v, :permission_type))
                   ]
                 end
               ]

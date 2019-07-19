@@ -40,7 +40,7 @@ defmodule(Kayrock.CreateTopics) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :create_topic_requests)) do
+          case(Map.fetch!(struct, :create_topic_requests)) do
             nil ->
               <<-1::32-signed>>
 
@@ -52,10 +52,10 @@ defmodule(Kayrock.CreateTopics) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    serialize(:int32, Map.get(v, :num_partitions)),
-                    serialize(:int16, Map.get(v, :replication_factor)),
-                    case(Map.get(v, :replica_assignment)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    serialize(:int32, Map.fetch!(v, :num_partitions)),
+                    serialize(:int16, Map.fetch!(v, :replication_factor)),
+                    case(Map.fetch!(v, :replica_assignment)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -67,13 +67,13 @@ defmodule(Kayrock.CreateTopics) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize_array(:int32, Map.get(v, :replicas))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize_array(:int32, Map.fetch!(v, :replicas))
                             ]
                           end
                         ]
                     end,
-                    case(Map.get(v, :config_entries)) do
+                    case(Map.fetch!(v, :config_entries)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -85,8 +85,8 @@ defmodule(Kayrock.CreateTopics) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:string, Map.get(v, :config_name)),
-                              serialize(:nullable_string, Map.get(v, :config_value))
+                              serialize(:string, Map.fetch!(v, :config_name)),
+                              serialize(:nullable_string, Map.fetch!(v, :config_value))
                             ]
                           end
                         ]
@@ -95,7 +95,7 @@ defmodule(Kayrock.CreateTopics) do
                 end
               ]
           end,
-          serialize(:int32, Map.get(struct, :timeout))
+          serialize(:int32, Map.fetch!(struct, :timeout))
         ]
       ]
     end
@@ -162,7 +162,7 @@ defmodule(Kayrock.CreateTopics) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :create_topic_requests)) do
+          case(Map.fetch!(struct, :create_topic_requests)) do
             nil ->
               <<-1::32-signed>>
 
@@ -174,10 +174,10 @@ defmodule(Kayrock.CreateTopics) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    serialize(:int32, Map.get(v, :num_partitions)),
-                    serialize(:int16, Map.get(v, :replication_factor)),
-                    case(Map.get(v, :replica_assignment)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    serialize(:int32, Map.fetch!(v, :num_partitions)),
+                    serialize(:int16, Map.fetch!(v, :replication_factor)),
+                    case(Map.fetch!(v, :replica_assignment)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -189,13 +189,13 @@ defmodule(Kayrock.CreateTopics) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize_array(:int32, Map.get(v, :replicas))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize_array(:int32, Map.fetch!(v, :replicas))
                             ]
                           end
                         ]
                     end,
-                    case(Map.get(v, :config_entries)) do
+                    case(Map.fetch!(v, :config_entries)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -207,8 +207,8 @@ defmodule(Kayrock.CreateTopics) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:string, Map.get(v, :config_name)),
-                              serialize(:nullable_string, Map.get(v, :config_value))
+                              serialize(:string, Map.fetch!(v, :config_name)),
+                              serialize(:nullable_string, Map.fetch!(v, :config_value))
                             ]
                           end
                         ]
@@ -217,8 +217,8 @@ defmodule(Kayrock.CreateTopics) do
                 end
               ]
           end,
-          serialize(:int32, Map.get(struct, :timeout)),
-          serialize(:boolean, Map.get(struct, :validate_only))
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          serialize(:boolean, Map.fetch!(struct, :validate_only))
         ]
       ]
     end
@@ -285,7 +285,7 @@ defmodule(Kayrock.CreateTopics) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :create_topic_requests)) do
+          case(Map.fetch!(struct, :create_topic_requests)) do
             nil ->
               <<-1::32-signed>>
 
@@ -297,10 +297,10 @@ defmodule(Kayrock.CreateTopics) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    serialize(:int32, Map.get(v, :num_partitions)),
-                    serialize(:int16, Map.get(v, :replication_factor)),
-                    case(Map.get(v, :replica_assignment)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    serialize(:int32, Map.fetch!(v, :num_partitions)),
+                    serialize(:int16, Map.fetch!(v, :replication_factor)),
+                    case(Map.fetch!(v, :replica_assignment)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -312,13 +312,13 @@ defmodule(Kayrock.CreateTopics) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize_array(:int32, Map.get(v, :replicas))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize_array(:int32, Map.fetch!(v, :replicas))
                             ]
                           end
                         ]
                     end,
-                    case(Map.get(v, :config_entries)) do
+                    case(Map.fetch!(v, :config_entries)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -330,8 +330,8 @@ defmodule(Kayrock.CreateTopics) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:string, Map.get(v, :config_name)),
-                              serialize(:nullable_string, Map.get(v, :config_value))
+                              serialize(:string, Map.fetch!(v, :config_name)),
+                              serialize(:nullable_string, Map.fetch!(v, :config_value))
                             ]
                           end
                         ]
@@ -340,8 +340,8 @@ defmodule(Kayrock.CreateTopics) do
                 end
               ]
           end,
-          serialize(:int32, Map.get(struct, :timeout)),
-          serialize(:boolean, Map.get(struct, :validate_only))
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          serialize(:boolean, Map.fetch!(struct, :validate_only))
         ]
       ]
     end

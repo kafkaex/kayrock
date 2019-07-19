@@ -38,10 +38,10 @@ defmodule(Kayrock.AddOffsetsToTxn) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:string, Map.get(struct, :transactional_id)),
-          serialize(:int64, Map.get(struct, :producer_id)),
-          serialize(:int16, Map.get(struct, :producer_epoch)),
-          serialize(:string, Map.get(struct, :group_id))
+          serialize(:string, Map.fetch!(struct, :transactional_id)),
+          serialize(:int64, Map.fetch!(struct, :producer_id)),
+          serialize(:int16, Map.fetch!(struct, :producer_epoch)),
+          serialize(:string, Map.fetch!(struct, :group_id))
         ]
       ]
     end

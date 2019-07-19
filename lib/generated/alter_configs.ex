@@ -38,7 +38,7 @@ defmodule(Kayrock.AlterConfigs) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :resources)) do
+          case(Map.fetch!(struct, :resources)) do
             nil ->
               <<-1::32-signed>>
 
@@ -50,9 +50,9 @@ defmodule(Kayrock.AlterConfigs) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:int8, Map.get(v, :resource_type)),
-                    serialize(:string, Map.get(v, :resource_name)),
-                    case(Map.get(v, :config_entries)) do
+                    serialize(:int8, Map.fetch!(v, :resource_type)),
+                    serialize(:string, Map.fetch!(v, :resource_name)),
+                    case(Map.fetch!(v, :config_entries)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -64,8 +64,8 @@ defmodule(Kayrock.AlterConfigs) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:string, Map.get(v, :config_name)),
-                              serialize(:nullable_string, Map.get(v, :config_value))
+                              serialize(:string, Map.fetch!(v, :config_name)),
+                              serialize(:nullable_string, Map.fetch!(v, :config_value))
                             ]
                           end
                         ]
@@ -74,7 +74,7 @@ defmodule(Kayrock.AlterConfigs) do
                 end
               ]
           end,
-          serialize(:boolean, Map.get(struct, :validate_only))
+          serialize(:boolean, Map.fetch!(struct, :validate_only))
         ]
       ]
     end

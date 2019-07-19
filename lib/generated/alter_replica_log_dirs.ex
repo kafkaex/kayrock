@@ -33,7 +33,7 @@ defmodule(Kayrock.AlterReplicaLogDirs) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :log_dirs)) do
+          case(Map.fetch!(struct, :log_dirs)) do
             nil ->
               <<-1::32-signed>>
 
@@ -45,8 +45,8 @@ defmodule(Kayrock.AlterReplicaLogDirs) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :log_dir)),
-                    case(Map.get(v, :topics)) do
+                    serialize(:string, Map.fetch!(v, :log_dir)),
+                    case(Map.fetch!(v, :topics)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -58,8 +58,8 @@ defmodule(Kayrock.AlterReplicaLogDirs) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:string, Map.get(v, :topic)),
-                              serialize_array(:int32, Map.get(v, :partitions))
+                              serialize(:string, Map.fetch!(v, :topic)),
+                              serialize_array(:int32, Map.fetch!(v, :partitions))
                             ]
                           end
                         ]

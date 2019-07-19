@@ -48,10 +48,10 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -63,8 +63,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -76,9 +76,9 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -152,10 +152,10 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -167,8 +167,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -180,9 +180,9 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -256,10 +256,10 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -271,8 +271,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -284,9 +284,9 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -362,11 +362,11 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          serialize(:int32, Map.get(struct, :max_bytes)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          serialize(:int32, Map.fetch!(struct, :max_bytes)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -378,8 +378,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -391,9 +391,9 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -471,12 +471,12 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          serialize(:int32, Map.get(struct, :max_bytes)),
-          serialize(:int8, Map.get(struct, :isolation_level)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          serialize(:int32, Map.fetch!(struct, :max_bytes)),
+          serialize(:int8, Map.fetch!(struct, :isolation_level)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -488,8 +488,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -501,9 +501,9 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -588,12 +588,12 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          serialize(:int32, Map.get(struct, :max_bytes)),
-          serialize(:int8, Map.get(struct, :isolation_level)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          serialize(:int32, Map.fetch!(struct, :max_bytes)),
+          serialize(:int8, Map.fetch!(struct, :isolation_level)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -605,8 +605,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -618,10 +618,10 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int64, Map.get(v, :log_start_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -706,12 +706,12 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          serialize(:int32, Map.get(struct, :max_bytes)),
-          serialize(:int8, Map.get(struct, :isolation_level)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          serialize(:int32, Map.fetch!(struct, :max_bytes)),
+          serialize(:int8, Map.fetch!(struct, :isolation_level)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -723,8 +723,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -736,10 +736,10 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int64, Map.get(v, :log_start_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -842,14 +842,14 @@ defmodule(Kayrock.Fetch) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int32, Map.get(struct, :max_wait_time)),
-          serialize(:int32, Map.get(struct, :min_bytes)),
-          serialize(:int32, Map.get(struct, :max_bytes)),
-          serialize(:int8, Map.get(struct, :isolation_level)),
-          serialize(:int32, Map.get(struct, :session_id)),
-          serialize(:int32, Map.get(struct, :epoch)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int32, Map.fetch!(struct, :max_wait_time)),
+          serialize(:int32, Map.fetch!(struct, :min_bytes)),
+          serialize(:int32, Map.fetch!(struct, :max_bytes)),
+          serialize(:int8, Map.fetch!(struct, :isolation_level)),
+          serialize(:int32, Map.fetch!(struct, :session_id)),
+          serialize(:int32, Map.fetch!(struct, :epoch)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -861,8 +861,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -874,10 +874,10 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int64, Map.get(v, :log_start_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]
@@ -886,7 +886,7 @@ defmodule(Kayrock.Fetch) do
                 end
               ]
           end,
-          case(Map.get(struct, :forgetten_topics_data)) do
+          case(Map.fetch!(struct, :forgetten_topics_data)) do
             nil ->
               <<-1::32-signed>>
 
@@ -898,8 +898,8 @@ defmodule(Kayrock.Fetch) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -911,10 +911,10 @@ defmodule(Kayrock.Fetch) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :fetch_offset)),
-                              serialize(:int64, Map.get(v, :log_start_offset)),
-                              serialize(:int32, Map.get(v, :max_bytes))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
+                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
+                              serialize(:int32, Map.fetch!(v, :max_bytes))
                             ]
                           end
                         ]

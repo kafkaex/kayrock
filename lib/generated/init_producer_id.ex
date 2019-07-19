@@ -36,8 +36,8 @@ defmodule(Kayrock.InitProducerId) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:nullable_string, Map.get(struct, :transactional_id)),
-          serialize(:int32, Map.get(struct, :transaction_timeout_ms))
+          serialize(:nullable_string, Map.fetch!(struct, :transactional_id)),
+          serialize(:int32, Map.fetch!(struct, :transaction_timeout_ms))
         ]
       ]
     end

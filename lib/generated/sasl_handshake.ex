@@ -28,7 +28,7 @@ defmodule(Kayrock.SaslHandshake) do
       [
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
-        [serialize(:string, Map.get(struct, :mechanism))]
+        [serialize(:string, Map.fetch!(struct, :mechanism))]
       ]
     end
   end
@@ -73,7 +73,7 @@ defmodule(Kayrock.SaslHandshake) do
       [
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
-        [serialize(:string, Map.get(struct, :mechanism))]
+        [serialize(:string, Map.fetch!(struct, :mechanism))]
       ]
     end
   end

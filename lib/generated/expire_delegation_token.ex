@@ -29,8 +29,8 @@ defmodule(Kayrock.ExpireDelegationToken) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:bytes, Map.get(struct, :hmac)),
-          serialize(:int64, Map.get(struct, :expiry_time_period))
+          serialize(:bytes, Map.fetch!(struct, :hmac)),
+          serialize(:int64, Map.fetch!(struct, :expiry_time_period))
         ]
       ]
     end

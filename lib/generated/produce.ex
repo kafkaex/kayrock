@@ -34,9 +34,9 @@ defmodule(Kayrock.Produce) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int16, Map.get(struct, :acks)),
-          serialize(:int32, Map.get(struct, :timeout)),
-          case(Map.get(struct, :topic_data)) do
+          serialize(:int16, Map.fetch!(struct, :acks)),
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          case(Map.fetch!(struct, :topic_data)) do
             nil ->
               <<-1::32-signed>>
 
@@ -48,8 +48,8 @@ defmodule(Kayrock.Produce) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :data)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :data)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -61,8 +61,8 @@ defmodule(Kayrock.Produce) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              Elixir.Kayrock.Request.serialize(Map.fetch!(v, :record_set))
                             ]
                           end
                         ]
@@ -122,9 +122,9 @@ defmodule(Kayrock.Produce) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int16, Map.get(struct, :acks)),
-          serialize(:int32, Map.get(struct, :timeout)),
-          case(Map.get(struct, :topic_data)) do
+          serialize(:int16, Map.fetch!(struct, :acks)),
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          case(Map.fetch!(struct, :topic_data)) do
             nil ->
               <<-1::32-signed>>
 
@@ -136,8 +136,8 @@ defmodule(Kayrock.Produce) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :data)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :data)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -149,8 +149,8 @@ defmodule(Kayrock.Produce) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              Elixir.Kayrock.Request.serialize(Map.fetch!(v, :record_set))
                             ]
                           end
                         ]
@@ -210,9 +210,9 @@ defmodule(Kayrock.Produce) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int16, Map.get(struct, :acks)),
-          serialize(:int32, Map.get(struct, :timeout)),
-          case(Map.get(struct, :topic_data)) do
+          serialize(:int16, Map.fetch!(struct, :acks)),
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          case(Map.fetch!(struct, :topic_data)) do
             nil ->
               <<-1::32-signed>>
 
@@ -224,8 +224,8 @@ defmodule(Kayrock.Produce) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :data)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :data)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -237,8 +237,8 @@ defmodule(Kayrock.Produce) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              Elixir.Kayrock.Request.serialize(Map.fetch!(v, :record_set))
                             ]
                           end
                         ]
@@ -308,10 +308,10 @@ defmodule(Kayrock.Produce) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:nullable_string, Map.get(struct, :transactional_id)),
-          serialize(:int16, Map.get(struct, :acks)),
-          serialize(:int32, Map.get(struct, :timeout)),
-          case(Map.get(struct, :topic_data)) do
+          serialize(:nullable_string, Map.fetch!(struct, :transactional_id)),
+          serialize(:int16, Map.fetch!(struct, :acks)),
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          case(Map.fetch!(struct, :topic_data)) do
             nil ->
               <<-1::32-signed>>
 
@@ -323,8 +323,8 @@ defmodule(Kayrock.Produce) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :data)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :data)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -336,8 +336,8 @@ defmodule(Kayrock.Produce) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              Elixir.Kayrock.Request.serialize(Map.fetch!(v, :record_set))
                             ]
                           end
                         ]
@@ -407,10 +407,10 @@ defmodule(Kayrock.Produce) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:nullable_string, Map.get(struct, :transactional_id)),
-          serialize(:int16, Map.get(struct, :acks)),
-          serialize(:int32, Map.get(struct, :timeout)),
-          case(Map.get(struct, :topic_data)) do
+          serialize(:nullable_string, Map.fetch!(struct, :transactional_id)),
+          serialize(:int16, Map.fetch!(struct, :acks)),
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          case(Map.fetch!(struct, :topic_data)) do
             nil ->
               <<-1::32-signed>>
 
@@ -422,8 +422,8 @@ defmodule(Kayrock.Produce) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :data)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :data)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -435,8 +435,8 @@ defmodule(Kayrock.Produce) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              Elixir.Kayrock.Request.serialize(Map.fetch!(v, :record_set))
                             ]
                           end
                         ]
@@ -506,10 +506,10 @@ defmodule(Kayrock.Produce) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:nullable_string, Map.get(struct, :transactional_id)),
-          serialize(:int16, Map.get(struct, :acks)),
-          serialize(:int32, Map.get(struct, :timeout)),
-          case(Map.get(struct, :topic_data)) do
+          serialize(:nullable_string, Map.fetch!(struct, :transactional_id)),
+          serialize(:int16, Map.fetch!(struct, :acks)),
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          case(Map.fetch!(struct, :topic_data)) do
             nil ->
               <<-1::32-signed>>
 
@@ -521,8 +521,8 @@ defmodule(Kayrock.Produce) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :data)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :data)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -534,8 +534,8 @@ defmodule(Kayrock.Produce) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              Elixir.Kayrock.Request.serialize(Map.get(v, :record_set))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              Elixir.Kayrock.Request.serialize(Map.fetch!(v, :record_set))
                             ]
                           end
                         ]

@@ -28,7 +28,7 @@ defmodule(Kayrock.SaslAuthenticate) do
       [
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
-        [serialize(:bytes, Map.get(struct, :sasl_auth_bytes))]
+        [serialize(:bytes, Map.fetch!(struct, :sasl_auth_bytes))]
       ]
     end
   end

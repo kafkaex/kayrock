@@ -43,10 +43,10 @@ defmodule(Kayrock.AddPartitionsToTxn) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:string, Map.get(struct, :transactional_id)),
-          serialize(:int64, Map.get(struct, :producer_id)),
-          serialize(:int16, Map.get(struct, :producer_epoch)),
-          case(Map.get(struct, :topics)) do
+          serialize(:string, Map.fetch!(struct, :transactional_id)),
+          serialize(:int64, Map.fetch!(struct, :producer_id)),
+          serialize(:int16, Map.fetch!(struct, :producer_epoch)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -58,8 +58,8 @@ defmodule(Kayrock.AddPartitionsToTxn) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    serialize_array(:int32, Map.get(v, :partitions))
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    serialize_array(:int32, Map.fetch!(v, :partitions))
                   ]
                 end
               ]

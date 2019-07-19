@@ -45,11 +45,11 @@ defmodule(Kayrock.JoinGroup) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:string, Map.get(struct, :group_id)),
-          serialize(:int32, Map.get(struct, :session_timeout)),
-          serialize(:string, Map.get(struct, :member_id)),
-          serialize(:string, Map.get(struct, :protocol_type)),
-          case(Map.get(struct, :group_protocols)) do
+          serialize(:string, Map.fetch!(struct, :group_id)),
+          serialize(:int32, Map.fetch!(struct, :session_timeout)),
+          serialize(:string, Map.fetch!(struct, :member_id)),
+          serialize(:string, Map.fetch!(struct, :protocol_type)),
+          case(Map.fetch!(struct, :group_protocols)) do
             nil ->
               <<-1::32-signed>>
 
@@ -61,8 +61,8 @@ defmodule(Kayrock.JoinGroup) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :protocol_name)),
-                    serialize(:bytes, Map.get(v, :protocol_metadata))
+                    serialize(:string, Map.fetch!(v, :protocol_name)),
+                    serialize(:bytes, Map.fetch!(v, :protocol_metadata))
                   ]
                 end
               ]
@@ -131,12 +131,12 @@ defmodule(Kayrock.JoinGroup) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:string, Map.get(struct, :group_id)),
-          serialize(:int32, Map.get(struct, :session_timeout)),
-          serialize(:int32, Map.get(struct, :rebalance_timeout)),
-          serialize(:string, Map.get(struct, :member_id)),
-          serialize(:string, Map.get(struct, :protocol_type)),
-          case(Map.get(struct, :group_protocols)) do
+          serialize(:string, Map.fetch!(struct, :group_id)),
+          serialize(:int32, Map.fetch!(struct, :session_timeout)),
+          serialize(:int32, Map.fetch!(struct, :rebalance_timeout)),
+          serialize(:string, Map.fetch!(struct, :member_id)),
+          serialize(:string, Map.fetch!(struct, :protocol_type)),
+          case(Map.fetch!(struct, :group_protocols)) do
             nil ->
               <<-1::32-signed>>
 
@@ -148,8 +148,8 @@ defmodule(Kayrock.JoinGroup) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :protocol_name)),
-                    serialize(:bytes, Map.get(v, :protocol_metadata))
+                    serialize(:string, Map.fetch!(v, :protocol_name)),
+                    serialize(:bytes, Map.fetch!(v, :protocol_metadata))
                   ]
                 end
               ]
@@ -218,12 +218,12 @@ defmodule(Kayrock.JoinGroup) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:string, Map.get(struct, :group_id)),
-          serialize(:int32, Map.get(struct, :session_timeout)),
-          serialize(:int32, Map.get(struct, :rebalance_timeout)),
-          serialize(:string, Map.get(struct, :member_id)),
-          serialize(:string, Map.get(struct, :protocol_type)),
-          case(Map.get(struct, :group_protocols)) do
+          serialize(:string, Map.fetch!(struct, :group_id)),
+          serialize(:int32, Map.fetch!(struct, :session_timeout)),
+          serialize(:int32, Map.fetch!(struct, :rebalance_timeout)),
+          serialize(:string, Map.fetch!(struct, :member_id)),
+          serialize(:string, Map.fetch!(struct, :protocol_type)),
+          case(Map.fetch!(struct, :group_protocols)) do
             nil ->
               <<-1::32-signed>>
 
@@ -235,8 +235,8 @@ defmodule(Kayrock.JoinGroup) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :protocol_name)),
-                    serialize(:bytes, Map.get(v, :protocol_metadata))
+                    serialize(:string, Map.fetch!(v, :protocol_name)),
+                    serialize(:bytes, Map.fetch!(v, :protocol_metadata))
                   ]
                 end
               ]

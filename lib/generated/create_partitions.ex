@@ -46,7 +46,7 @@ defmodule(Kayrock.CreatePartitions) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :topic_partitions)) do
+          case(Map.fetch!(struct, :topic_partitions)) do
             nil ->
               <<-1::32-signed>>
 
@@ -58,13 +58,13 @@ defmodule(Kayrock.CreatePartitions) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
+                    serialize(:string, Map.fetch!(v, :topic)),
                     (
-                      v = Map.get(v, :new_partitions)
+                      v = Map.fetch!(v, :new_partitions)
 
                       [
-                        serialize(:int32, Map.get(v, :count)),
-                        case(Map.get(v, :assignment)) do
+                        serialize(:int32, Map.fetch!(v, :count)),
+                        case(Map.fetch!(v, :assignment)) do
                           nil ->
                             <<-1::32-signed>>
 
@@ -85,8 +85,8 @@ defmodule(Kayrock.CreatePartitions) do
                 end
               ]
           end,
-          serialize(:int32, Map.get(struct, :timeout)),
-          serialize(:boolean, Map.get(struct, :validate_only))
+          serialize(:int32, Map.fetch!(struct, :timeout)),
+          serialize(:boolean, Map.fetch!(struct, :validate_only))
         ]
       ]
     end

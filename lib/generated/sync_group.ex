@@ -43,10 +43,10 @@ defmodule(Kayrock.SyncGroup) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:string, Map.get(struct, :group_id)),
-          serialize(:int32, Map.get(struct, :generation_id)),
-          serialize(:string, Map.get(struct, :member_id)),
-          case(Map.get(struct, :group_assignment)) do
+          serialize(:string, Map.fetch!(struct, :group_id)),
+          serialize(:int32, Map.fetch!(struct, :generation_id)),
+          serialize(:string, Map.fetch!(struct, :member_id)),
+          case(Map.fetch!(struct, :group_assignment)) do
             nil ->
               <<-1::32-signed>>
 
@@ -58,8 +58,8 @@ defmodule(Kayrock.SyncGroup) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :member_id)),
-                    serialize(:bytes, Map.get(v, :member_assignment))
+                    serialize(:string, Map.fetch!(v, :member_id)),
+                    serialize(:bytes, Map.fetch!(v, :member_assignment))
                   ]
                 end
               ]
@@ -124,10 +124,10 @@ defmodule(Kayrock.SyncGroup) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:string, Map.get(struct, :group_id)),
-          serialize(:int32, Map.get(struct, :generation_id)),
-          serialize(:string, Map.get(struct, :member_id)),
-          case(Map.get(struct, :group_assignment)) do
+          serialize(:string, Map.fetch!(struct, :group_id)),
+          serialize(:int32, Map.fetch!(struct, :generation_id)),
+          serialize(:string, Map.fetch!(struct, :member_id)),
+          case(Map.fetch!(struct, :group_assignment)) do
             nil ->
               <<-1::32-signed>>
 
@@ -139,8 +139,8 @@ defmodule(Kayrock.SyncGroup) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :member_id)),
-                    serialize(:bytes, Map.get(v, :member_assignment))
+                    serialize(:string, Map.fetch!(v, :member_id)),
+                    serialize(:bytes, Map.fetch!(v, :member_assignment))
                   ]
                 end
               ]

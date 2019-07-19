@@ -47,12 +47,12 @@ defmodule(Kayrock.DescribeAcls) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int8, Map.get(struct, :resource_type)),
-          serialize(:nullable_string, Map.get(struct, :resource_name)),
-          serialize(:nullable_string, Map.get(struct, :principal)),
-          serialize(:nullable_string, Map.get(struct, :host)),
-          serialize(:int8, Map.get(struct, :operation)),
-          serialize(:int8, Map.get(struct, :permission_type))
+          serialize(:int8, Map.fetch!(struct, :resource_type)),
+          serialize(:nullable_string, Map.fetch!(struct, :resource_name)),
+          serialize(:nullable_string, Map.fetch!(struct, :principal)),
+          serialize(:nullable_string, Map.fetch!(struct, :host)),
+          serialize(:int8, Map.fetch!(struct, :operation)),
+          serialize(:int8, Map.fetch!(struct, :permission_type))
         ]
       ]
     end

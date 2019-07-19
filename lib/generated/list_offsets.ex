@@ -37,8 +37,8 @@ defmodule(Kayrock.ListOffsets) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -50,8 +50,8 @@ defmodule(Kayrock.ListOffsets) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -63,9 +63,9 @@ defmodule(Kayrock.ListOffsets) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :timestamp)),
-                              serialize(:int32, Map.get(v, :max_num_offsets))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :timestamp)),
+                              serialize(:int32, Map.fetch!(v, :max_num_offsets))
                             ]
                           end
                         ]
@@ -124,8 +124,8 @@ defmodule(Kayrock.ListOffsets) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -137,8 +137,8 @@ defmodule(Kayrock.ListOffsets) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -150,8 +150,8 @@ defmodule(Kayrock.ListOffsets) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :timestamp))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :timestamp))
                             ]
                           end
                         ]
@@ -219,9 +219,9 @@ defmodule(Kayrock.ListOffsets) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          serialize(:int32, Map.get(struct, :replica_id)),
-          serialize(:int8, Map.get(struct, :isolation_level)),
-          case(Map.get(struct, :topics)) do
+          serialize(:int32, Map.fetch!(struct, :replica_id)),
+          serialize(:int8, Map.fetch!(struct, :isolation_level)),
+          case(Map.fetch!(struct, :topics)) do
             nil ->
               <<-1::32-signed>>
 
@@ -233,8 +233,8 @@ defmodule(Kayrock.ListOffsets) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :topic)),
-                    case(Map.get(v, :partitions)) do
+                    serialize(:string, Map.fetch!(v, :topic)),
+                    case(Map.fetch!(v, :partitions)) do
                       nil ->
                         <<-1::32-signed>>
 
@@ -246,8 +246,8 @@ defmodule(Kayrock.ListOffsets) do
                           <<length(vals)::32-signed>>,
                           for(v <- vals) do
                             [
-                              serialize(:int32, Map.get(v, :partition)),
-                              serialize(:int64, Map.get(v, :timestamp))
+                              serialize(:int32, Map.fetch!(v, :partition)),
+                              serialize(:int64, Map.fetch!(v, :timestamp))
                             ]
                           end
                         ]

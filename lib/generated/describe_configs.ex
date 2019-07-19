@@ -33,7 +33,7 @@ defmodule(Kayrock.DescribeConfigs) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :resources)) do
+          case(Map.fetch!(struct, :resources)) do
             nil ->
               <<-1::32-signed>>
 
@@ -45,9 +45,9 @@ defmodule(Kayrock.DescribeConfigs) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:int8, Map.get(v, :resource_type)),
-                    serialize(:string, Map.get(v, :resource_name)),
-                    serialize_array(:string, Map.get(v, :config_names))
+                    serialize(:int8, Map.fetch!(v, :resource_type)),
+                    serialize(:string, Map.fetch!(v, :resource_name)),
+                    serialize_array(:string, Map.fetch!(v, :config_names))
                   ]
                 end
               ]
@@ -103,7 +103,7 @@ defmodule(Kayrock.DescribeConfigs) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :resources)) do
+          case(Map.fetch!(struct, :resources)) do
             nil ->
               <<-1::32-signed>>
 
@@ -115,14 +115,14 @@ defmodule(Kayrock.DescribeConfigs) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:int8, Map.get(v, :resource_type)),
-                    serialize(:string, Map.get(v, :resource_name)),
-                    serialize_array(:string, Map.get(v, :config_names))
+                    serialize(:int8, Map.fetch!(v, :resource_type)),
+                    serialize(:string, Map.fetch!(v, :resource_name)),
+                    serialize_array(:string, Map.fetch!(v, :config_names))
                   ]
                 end
               ]
           end,
-          serialize(:boolean, Map.get(struct, :include_synonyms))
+          serialize(:boolean, Map.fetch!(struct, :include_synonyms))
         ]
       ]
     end

@@ -29,7 +29,7 @@ defmodule(Kayrock.CreateDelegationToken) do
         <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
           byte_size(struct.client_id())::16, struct.client_id()::binary>>,
         [
-          case(Map.get(struct, :renewers)) do
+          case(Map.fetch!(struct, :renewers)) do
             nil ->
               <<-1::32-signed>>
 
@@ -41,13 +41,13 @@ defmodule(Kayrock.CreateDelegationToken) do
                 <<length(vals)::32-signed>>,
                 for(v <- vals) do
                   [
-                    serialize(:string, Map.get(v, :principal_type)),
-                    serialize(:string, Map.get(v, :name))
+                    serialize(:string, Map.fetch!(v, :principal_type)),
+                    serialize(:string, Map.fetch!(v, :name))
                   ]
                 end
               ]
           end,
-          serialize(:int64, Map.get(struct, :max_life_time))
+          serialize(:int64, Map.fetch!(struct, :max_life_time))
         ]
       ]
     end

@@ -406,14 +406,14 @@ defmodule Kayrock.Generate do
 
   defp field_serializer({name, type}, varname) when type in Kayrock.Serialize.primitive_types() do
     quote do
-      serialize(unquote(type), Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name)))
+      serialize(unquote(type), Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)))
     end
   end
 
   defp field_serializer({name, :records}, varname) do
     quote do
       Elixir.Kayrock.Request.serialize(
-        Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name))
+        Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name))
       )
     end
   end
@@ -423,7 +423,7 @@ defmodule Kayrock.Generate do
     quote do
       serialize_array(
         unquote(type),
-        Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name))
+        Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name))
       )
     end
   end
@@ -432,7 +432,7 @@ defmodule Kayrock.Generate do
     subfield_serializers = Enum.map(el, &field_serializer(&1, :v))
 
     quote do
-      case Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
         nil ->
           <<-1::32-signed>>
 
@@ -453,7 +453,7 @@ defmodule Kayrock.Generate do
   defp field_serializer({name, {:array, {:array, type}}}, varname)
        when type in Kayrock.Serialize.primitive_types() do
     quote do
-      case Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
         nil ->
           <<-1::32-signed>>
 
@@ -475,7 +475,7 @@ defmodule Kayrock.Generate do
     subfield_serializers = Enum.map(schema, &field_serializer(&1, :v))
 
     quote do
-      v = Map.get(unquote(Macro.var(varname, __MODULE__)), unquote(name))
+      v = Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name))
       unquote(subfield_serializers)
     end
   end
