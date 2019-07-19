@@ -419,6 +419,15 @@ defmodule Kayrock.Generate do
     end
   end
 
+  defp field_serializer({:member_assignment, :bytes}, varname) do
+    quote do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :member_assignment) do
+        b when is_binary(b) -> b
+        %Kayrock.MemberAssignment{} = m -> Kayrock.MemberAssignment.serialize(m)
+      end
+    end
+  end
+
   defp field_serializer({name, type}, varname) when type in Kayrock.Serialize.primitive_types() do
     quote do
       serialize(unquote(type), Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)))

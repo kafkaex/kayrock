@@ -6,7 +6,22 @@ defmodule Kayrock.MemberAssignment do
   defstruct version: 0, partition_assignments: [], user_data: ""
 
   defmodule PartitionAssignment do
+    @moduledoc false
     defstruct topic: nil, partitions: []
+  end
+
+  def serialize(%__MODULE__{
+        version: version,
+        partition_assignments: partition_assignments,
+        user_data: user_data
+      }) do
+    data = [
+      <<version::16-signed, length(partition_assignments)::32-signed>>,
+      Enum.map(partition_assignments, &serialize_partition_assignment/1),
+      Kayrock.Serialize.serialize(:bytes, user_data)
+    ]
+
+    [IO.iodata_length(data), data]
   end
 
   def deserialize(<<>>), do: {%__MODULE__{}, <<>>}
@@ -17,9 +32,9 @@ defmodule Kayrock.MemberAssignment do
     {deserialize_member_assignments(data), rest}
   end
 
-  def deserialize_member_assignments(
-        <<version::16-signed, assignments_size::32-signed, rest::binary>>
-      ) do
+  defp deserialize_member_assignments(
+         <<version::16-signed, assignments_size::32-signed, rest::binary>>
+       ) do
     {partition_assignments, user_data} = parse_assignments(assignments_size, rest, [])
 
     %__MODULE__{
@@ -52,5 +67,12 @@ defmodule Kayrock.MemberAssignment do
          partitions
        ) do
     parse_partitions(size - 1, rest, [partition | partitions])
+  end
+
+  defp serialize_partition_assignment(%PartitionAssignment{topic: topic, partitions: partitions}) do
+    [
+      Kayrock.Serialize.serialize(:string, topic),
+      Kayrock.Serialize.serialize_array(:int32, partitions)
+    ]
   end
 end
