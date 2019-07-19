@@ -18,7 +18,7 @@ defmodule Kayrock.MemberAssignment do
   end
 
   def deserialize_member_assignments(
-        <<version::16-signed, assignments_size::32-signed, rest::binary>> = data
+        <<version::16-signed, assignments_size::32-signed, rest::binary>>
       ) do
     {partition_assignments, user_data} = parse_assignments(assignments_size, rest, [])
 
