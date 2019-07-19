@@ -9,9 +9,17 @@ defmodule Kayrock.MemberAssignment do
     defstruct topic: nil, partitions: []
   end
 
-  def deserialize(<<>>), do: %__MODULE__{}
+  def deserialize(<<>>), do: {%__MODULE__{}, <<>>}
 
-  def deserialize(<<version::16-signed, assignments_size::32-signed, rest::binary>>) do
+  def deserialize(<<0::32-signed, rest>>), do: {%__MODULE__{}, rest}
+
+  def deserialize(<<data_size::32-signed, data::size(data_size)-binary, rest::bits>>) do
+    {deserialize_member_assignments(data), rest}
+  end
+
+  def deserialize_member_assignments(
+        <<version::16-signed, assignments_size::32-signed, rest::binary>> = data
+      ) do
     {partition_assignments, user_data} = parse_assignments(assignments_size, rest, [])
 
     %__MODULE__{
