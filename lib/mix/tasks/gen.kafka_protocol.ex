@@ -26,7 +26,7 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
     ast = Kayrock.Generate.generate_schema_metadata(:kpro_schema)
     write_ast(ast, Path.join(output_dir, "kafka_schema_metadata.ex"))
 
-    for api <- :kpro_schema.all_apis() do
+    for api <- all_apis(:kpro_schema) do
       Logger.info("Generating modules for #{api}")
 
       ast = Kayrock.Generate.build_all(api, :kpro_schema)
@@ -40,5 +40,9 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
   defp write_ast(ast, path) do
     code = Macro.to_string(ast)
     File.write!(path, code)
+  end
+
+  defp all_apis(module) do
+    module.all_apis()
   end
 end
