@@ -21,7 +21,7 @@ defmodule Kayrock.MemberAssignment do
       Kayrock.Serialize.serialize(:bytes, user_data)
     ]
 
-    [IO.iodata_length(data), data]
+    [<<IO.iodata_length(data)::32-signed>>, data]
   end
 
   def deserialize(<<>>), do: {%__MODULE__{}, <<>>}
