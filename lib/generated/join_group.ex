@@ -62,7 +62,10 @@ defmodule(Kayrock.JoinGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :protocol_name)),
-                    serialize(:bytes, Map.fetch!(v, :protocol_metadata))
+                    Kayrock.Serialize.serialize(
+                      :iodata_bytes,
+                      Kayrock.GroupProtocolMetadata.serialize(Map.fetch!(v, :protocol_metadata))
+                    )
                   ]
                 end
               ]
@@ -149,7 +152,10 @@ defmodule(Kayrock.JoinGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :protocol_name)),
-                    serialize(:bytes, Map.fetch!(v, :protocol_metadata))
+                    Kayrock.Serialize.serialize(
+                      :iodata_bytes,
+                      Kayrock.GroupProtocolMetadata.serialize(Map.fetch!(v, :protocol_metadata))
+                    )
                   ]
                 end
               ]
@@ -236,7 +242,10 @@ defmodule(Kayrock.JoinGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :protocol_name)),
-                    serialize(:bytes, Map.fetch!(v, :protocol_metadata))
+                    Kayrock.Serialize.serialize(
+                      :iodata_bytes,
+                      Kayrock.GroupProtocolMetadata.serialize(Map.fetch!(v, :protocol_metadata))
+                    )
                   ]
                 end
               ]

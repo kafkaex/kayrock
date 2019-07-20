@@ -419,12 +419,25 @@ defmodule Kayrock.Generate do
     end
   end
 
+  defp field_serializer({:protocol_metadata, :bytes}, varname) do
+    quote do
+      Kayrock.Serialize.serialize(
+        :iodata_bytes,
+        Kayrock.GroupProtocolMetadata.serialize(
+          Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :protocol_metadata)
+        )
+      )
+    end
+  end
+
   defp field_serializer({:member_assignment, :bytes}, varname) do
     quote do
-      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :member_assignment) do
-        b when is_binary(b) -> b
-        %Kayrock.MemberAssignment{} = m -> Kayrock.MemberAssignment.serialize(m)
-      end
+      Kayrock.Serialize.serialize(
+        :iodata_bytes,
+        Kayrock.MemberAssignment.serialize(
+          Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :member_assignment)
+        )
+      )
     end
   end
 

@@ -15,13 +15,11 @@ defmodule Kayrock.MemberAssignment do
         partition_assignments: partition_assignments,
         user_data: user_data
       }) do
-    data = [
+    [
       <<version::16-signed, length(partition_assignments)::32-signed>>,
       Enum.map(partition_assignments, &serialize_partition_assignment/1),
       Kayrock.Serialize.serialize(:bytes, user_data)
     ]
-
-    [<<IO.iodata_length(data)::32-signed>>, data]
   end
 
   def deserialize(<<>>), do: {%__MODULE__{}, <<>>}

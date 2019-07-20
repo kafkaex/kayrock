@@ -29,6 +29,7 @@ defmodule Kayrock.Serialize do
   def serialize(:nullable_string, nil), do: <<-1::16-signed>>
   def serialize(:nullable_string, val), do: [<<byte_size(val)::16-signed>>, val]
   def serialize(:bytes, val), do: [<<byte_size(val)::32-signed>>, val]
+  def serialize(:iodata_bytes, val), do: [<<IO.iodata_length(val)::32-signed>>, val]
   def serialize(:nullable_bytes, nil), do: <<-1::32-signed>>
   def serialize(:nullable_bytes, val), do: serialize(:bytes, val)
 
