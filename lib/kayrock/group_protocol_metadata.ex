@@ -1,5 +1,9 @@
 defmodule Kayrock.GroupProtocolMetadata do
-  @moduledoc false
+  @moduledoc """
+  Code to serialize consumer group ProtocolMetadata messages
+
+  See https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-JoinGroupRequest
+  """
 
   alias Kayrock.Serialize
 

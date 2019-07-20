@@ -419,27 +419,50 @@ defmodule Kayrock.Generate do
     end
   end
 
+  ######################################################################
+  # SPECIAL CASES
+  #
+
+  # protocol metadata for JoinGroup request
+  # this is 'bytes' in the spec but it is expected to be the serialization of a
+  # ProtocolMetadata message defined in the consumer group API, so we handle
+  # both cases here
   defp field_serializer({:protocol_metadata, :bytes}, varname) do
     quote do
-      Kayrock.Serialize.serialize(
-        :iodata_bytes,
-        Kayrock.GroupProtocolMetadata.serialize(
-          Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :protocol_metadata)
-        )
-      )
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :protocol_metadata) do
+        %Kayrock.GroupProtocolMetadata{} = m ->
+          Kayrock.Serialize.serialize(
+            :iodata_bytes,
+            Kayrock.GroupProtocolMetadata.serialize(m)
+          )
+
+        b when is_binary(b) ->
+          Kayrock.Serialize.serialize(:bytes, b)
+      end
     end
   end
 
+  # member assignment for SyncGroup request
+  # this is 'bytes' in the spec but it is expected to be the serialization of a
+  # MemberAssignment message defined in the consumer group API, so we handle
+  # both cases here
   defp field_serializer({:member_assignment, :bytes}, varname) do
     quote do
-      Kayrock.Serialize.serialize(
-        :iodata_bytes,
-        Kayrock.MemberAssignment.serialize(
-          Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :member_assignment)
-        )
-      )
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :member_assignment) do
+        %Kayrock.MemberAssignment{} = m ->
+          Kayrock.Serialize.serialize(
+            :iodata_bytes,
+            Kayrock.MemberAssignment.serialize(m)
+          )
+
+        b when is_binary(b) ->
+          Kayrock.Serialize.serialize(:bytes, b)
+      end
     end
   end
+
+  # END SPECIAL CASES
+  ######################################################################
 
   defp field_serializer({name, type}, varname) when type in Kayrock.Serialize.primitive_types() do
     quote do

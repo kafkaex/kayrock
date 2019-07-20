@@ -1,6 +1,8 @@
 defmodule Kayrock.MemberAssignment do
   @moduledoc """
   Code to serialize/deserialize Kafka consumer group member assignments
+
+  See https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-SyncGroupRequest
   """
 
   defstruct version: 0, partition_assignments: [], user_data: ""

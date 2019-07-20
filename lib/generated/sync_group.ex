@@ -59,10 +59,16 @@ defmodule(Kayrock.SyncGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :member_id)),
-                    Kayrock.Serialize.serialize(
-                      :iodata_bytes,
-                      Kayrock.MemberAssignment.serialize(Map.fetch!(v, :member_assignment))
-                    )
+                    case(Map.fetch!(v, :member_assignment)) do
+                      %Kayrock.MemberAssignment{} = m ->
+                        Kayrock.Serialize.serialize(
+                          :iodata_bytes,
+                          Kayrock.MemberAssignment.serialize(m)
+                        )
+
+                      b when is_binary(b) ->
+                        Kayrock.Serialize.serialize(:bytes, b)
+                    end
                   ]
                 end
               ]
@@ -143,10 +149,16 @@ defmodule(Kayrock.SyncGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :member_id)),
-                    Kayrock.Serialize.serialize(
-                      :iodata_bytes,
-                      Kayrock.MemberAssignment.serialize(Map.fetch!(v, :member_assignment))
-                    )
+                    case(Map.fetch!(v, :member_assignment)) do
+                      %Kayrock.MemberAssignment{} = m ->
+                        Kayrock.Serialize.serialize(
+                          :iodata_bytes,
+                          Kayrock.MemberAssignment.serialize(m)
+                        )
+
+                      b when is_binary(b) ->
+                        Kayrock.Serialize.serialize(:bytes, b)
+                    end
                   ]
                 end
               ]

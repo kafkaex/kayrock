@@ -95,4 +95,30 @@ defmodule Kayrock.MemberAssignmentTest do
 
     assert IO.iodata_to_binary(Kayrock.Request.serialize(request)) == expect
   end
+
+  test "serialize sync_group request - member assignment preserialized" do
+    expect =
+      <<0, 14, 0, 0, 0, 0, 0, 99, 0, 3, 102, 111, 111, 0, 5, 103, 114, 111, 117, 112, 0, 0, 0, 0,
+        0, 5, 109, 97, 114, 103, 101, 0, 0, 0, 1, 0, 6, 116, 104, 101, 108, 109, 97, 0, 0, 0, 36,
+        0, 0, 0, 0, 0, 1, 0, 12, 99, 104, 97, 105, 110, 115, 109, 111, 107, 105, 110, 103, 0, 0,
+        0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0>>
+
+    request = %Kayrock.SyncGroup.V0.Request{
+      client_id: "foo",
+      correlation_id: 99,
+      generation_id: 0,
+      group_assignment: [
+        %{
+          member_assignment:
+            <<0, 0, 0, 0, 0, 1, 0, 12, 99, 104, 97, 105, 110, 115, 109, 111, 107, 105, 110, 103,
+              0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0>>,
+          member_id: "thelma"
+        }
+      ],
+      group_id: "group",
+      member_id: "marge"
+    }
+
+    assert IO.iodata_to_binary(Kayrock.Request.serialize(request)) == expect
+  end
 end

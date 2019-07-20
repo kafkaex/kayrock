@@ -62,10 +62,16 @@ defmodule(Kayrock.JoinGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :protocol_name)),
-                    Kayrock.Serialize.serialize(
-                      :iodata_bytes,
-                      Kayrock.GroupProtocolMetadata.serialize(Map.fetch!(v, :protocol_metadata))
-                    )
+                    case(Map.fetch!(v, :protocol_metadata)) do
+                      %Kayrock.GroupProtocolMetadata{} = m ->
+                        Kayrock.Serialize.serialize(
+                          :iodata_bytes,
+                          Kayrock.GroupProtocolMetadata.serialize(m)
+                        )
+
+                      b when is_binary(b) ->
+                        Kayrock.Serialize.serialize(:bytes, b)
+                    end
                   ]
                 end
               ]
@@ -152,10 +158,16 @@ defmodule(Kayrock.JoinGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :protocol_name)),
-                    Kayrock.Serialize.serialize(
-                      :iodata_bytes,
-                      Kayrock.GroupProtocolMetadata.serialize(Map.fetch!(v, :protocol_metadata))
-                    )
+                    case(Map.fetch!(v, :protocol_metadata)) do
+                      %Kayrock.GroupProtocolMetadata{} = m ->
+                        Kayrock.Serialize.serialize(
+                          :iodata_bytes,
+                          Kayrock.GroupProtocolMetadata.serialize(m)
+                        )
+
+                      b when is_binary(b) ->
+                        Kayrock.Serialize.serialize(:bytes, b)
+                    end
                   ]
                 end
               ]
@@ -242,10 +254,16 @@ defmodule(Kayrock.JoinGroup) do
                 for(v <- vals) do
                   [
                     serialize(:string, Map.fetch!(v, :protocol_name)),
-                    Kayrock.Serialize.serialize(
-                      :iodata_bytes,
-                      Kayrock.GroupProtocolMetadata.serialize(Map.fetch!(v, :protocol_metadata))
-                    )
+                    case(Map.fetch!(v, :protocol_metadata)) do
+                      %Kayrock.GroupProtocolMetadata{} = m ->
+                        Kayrock.Serialize.serialize(
+                          :iodata_bytes,
+                          Kayrock.GroupProtocolMetadata.serialize(m)
+                        )
+
+                      b when is_binary(b) ->
+                        Kayrock.Serialize.serialize(:bytes, b)
+                    end
                   ]
                 end
               ]

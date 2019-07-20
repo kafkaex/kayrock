@@ -42,6 +42,8 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
     File.write!(path, code)
   end
 
+  # this slight indirection avoids a compiler warning in user modules that don't
+  # have `:kpro_schema`.
   defp all_apis(module) do
     module.all_apis()
   end
