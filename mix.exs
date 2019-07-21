@@ -14,6 +14,13 @@ defmodule Kayrock.MixProject do
       dialyzer: [
         plt_add_apps: [:mix],
         flags: [:error_handling, :race_conditions]
+      ],
+      description: "Elixir interface to the Kafka protocol",
+      package: package(),
+      docs: [
+        main: "readme",
+        extras: ["README.md"],
+        source_url: "https://github.com/kafkaex/kafka_ex"
       ]
     ]
   end
@@ -43,4 +50,13 @@ defmodule Kayrock.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(:dev), do: ["lib", "generated_code"]
   defp elixirc_paths(_), do: ["lib"]
+
+  defp package do
+    [
+      maintainers: ["Dan Swain"],
+      files: ["lib", "config/config.exs", "mix.exs", "README.md"],
+      licenses: ["MIT"],
+      links: %{"Github" => "https://github.com/dantswain/kayrock"}
+    ]
+  end
 end

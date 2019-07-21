@@ -4,11 +4,12 @@
 [![Coverage Status](https://coveralls.io/repos/github/dantswain/kayrock/badge.svg?branch=master)](https://coveralls.io/github/dantswain/kayrock?branch=master)
 
 
-WIP towards providing an idiomatic Elixir interface to the Kafka protocol.
+Aims to provide an idiomatic Elixir interface to the Kafka protocol.
 
 This work is based on [https://github.com/klarna/kafka_protocol](kafka_protocl)
 for Erlang, which is used in [https://github.com/klarna/brod](brod).  It is
-intended to eventually work with [https://github.com/kafkaex/kafka_ex](KafkaEx).
+built to work with [https://github.com/kafkaex/kafka_ex](KafkaEx) though there
+is no reason why it couldn't be used elsewhere.
 
 ## Basic architecture and usage
 
@@ -65,8 +66,7 @@ itself and `kafka_protocol` because
 1. `kafka_protocol` produces Erlang records whereas Kayrock aims to provide
    Elixir structs.
 2. `kafka_protocol` provides network-level implementation whereas Kayrock is
-   intended to eventually work with KafkaEx which provides its own network-level
-   implementation.
+   intended to only provide serialization and deserialization of the protocol.
 3. `kpro_schema` is itself automatically generated from the Java source code of
    Kafka, meaning that Kayrock could feasibly reproduce this without needing an
    intermediate dependency.
