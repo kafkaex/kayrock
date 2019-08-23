@@ -21,7 +21,8 @@ defmodule Kayrock.MessageSet do
               value: nil,
               attributes: nil,
               crc: nil,
-              timestamp: nil
+              timestamp: nil,
+              timestamp_type: nil
   end
 
   use Bitwise
@@ -46,7 +47,13 @@ defmodule Kayrock.MessageSet do
          <<offset::64-signed, msg_size::32-signed, msg::size(msg_size)-binary, orig_rest::bits>>,
          acc
        ) do
-    <<crc::32, 0::8-signed, attributes::8-signed, rest::bits>> = msg
+    <<crc::32, magic::8-signed, attributes::8-signed, rest::bits>> = msg
+
+    {timestamp, rest} =
+      case magic do
+        0 -> {nil, rest}
+        1 -> Kayrock.Deserialize.deserialize(:int64, rest)
+      end
 
     {key, rest} = deserialize_string(rest)
     {value, <<>>} = deserialize_string(rest)
@@ -54,12 +61,16 @@ defmodule Kayrock.MessageSet do
     msg =
       case compression_from_attributes(attributes) do
         0 ->
+          timestamp_type = timestamp_type_from_attributes(attributes, magic)
+
           %Message{
             offset: offset,
             crc: crc,
             attributes: attributes,
             key: key,
-            value: value
+            value: value,
+            timestamp: timestamp,
+            timestamp_type: timestamp_type
           }
 
         c ->
@@ -108,8 +119,11 @@ defmodule Kayrock.MessageSet do
     {[<<crc::32>>, sub], 4 + 2 + skey + svalue}
   end
 
-  # the 2 lsb specifies compression
-  defp compression_from_attributes(a), do: a &&& 3
+  # the 3 lsb specifies compression
+  defp compression_from_attributes(a), do: a &&& 7
+
+  defp timestamp_type_from_attributes(a, 1), do: a &&& 8
+  defp timestamp_type_from_attributes(_, _), do: nil
 
   defp deserialize_string(<<-1::32-signed, rest::bits>>), do: {nil, rest}
 

@@ -329,7 +329,7 @@ defmodule Kayrock.RecordBatch do
   defp maybe_delta(x, y), do: x - y
 
   defp compression_type(attributes) do
-    case attributes &&& 3 do
+    case attributes &&& 7 do
       0 -> :none
       1 -> :gzip
       2 -> :snappy
@@ -346,12 +346,12 @@ defmodule Kayrock.RecordBatch do
 
   defp set_compression_bits(val, compression_val)
        when is_integer(compression_val) and compression_val > 0 and compression_val <= 4 do
-    (val &&& bnot(3)) + compression_val
+    (val &&& bnot(7)) + compression_val
   end
 
   defp determine_offset(batch_offset, 0, ix), do: batch_offset + ix
   defp determine_offset(batch_offset, offset_delta, _ix), do: batch_offset + offset_delta
 
   # the 2 lsb specifies compression
-  defp compression_from_attributes(a), do: a &&& 3
+  defp compression_from_attributes(a), do: a &&& 7
 end
