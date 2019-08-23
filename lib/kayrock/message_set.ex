@@ -46,7 +46,13 @@ defmodule Kayrock.MessageSet do
          <<offset::64-signed, msg_size::32-signed, msg::size(msg_size)-binary, orig_rest::bits>>,
          acc
        ) do
-    <<crc::32, 0::8-signed, attributes::8-signed, rest::bits>> = msg
+    <<crc::32, magic::8-signed, attributes::8-signed, rest::bits>> = msg
+
+    {timestamp, rest} =
+      case magic do
+        0 -> {nil, rest}
+        1 -> Kayrock.Deserialize.deserialize(:int64, rest)
+      end
 
     {key, rest} = deserialize_string(rest)
     {value, <<>>} = deserialize_string(rest)
@@ -59,7 +65,8 @@ defmodule Kayrock.MessageSet do
             crc: crc,
             attributes: attributes,
             key: key,
-            value: value
+            value: value,
+            timestamp: timestamp
           }
 
         c ->

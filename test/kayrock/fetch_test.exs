@@ -506,5 +506,252 @@ defmodule Kayrock.FetchTest do
       {got, ""} = Kayrock.Fetch.V0.Response.deserialize(data)
       assert got == expect
     end
+
+    test "deserialize v3 bug case" do
+      data =
+        <<0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 102, 111, 111, 100, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+          0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 2, 228, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 25, 34, 95,
+          161, 130, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 3,
+          104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 25, 182, 39, 239, 145, 1, 0, 255, 255,
+          255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0,
+          0, 2, 0, 0, 0, 25, 34, 95, 161, 130, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+          255, 255, 255, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 25, 182, 39,
+          239, 145, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104,
+          101, 121, 0, 0, 0, 0, 0, 0, 0, 4, 0, 0, 0, 25, 34, 95, 161, 130, 1, 0, 255, 255, 255,
+          255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0,
+          0, 0, 5, 0, 0, 0, 25, 182, 39, 239, 145, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255,
+          0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 25, 34, 95, 161,
+          130, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 3, 104,
+          101, 121, 0, 0, 0, 0, 0, 0, 0, 7, 0, 0, 0, 25, 182, 39, 239, 145, 1, 0, 255, 255, 255,
+          255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 8,
+          0, 0, 0, 25, 34, 95, 161, 130, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+          255, 255, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 25, 182, 39, 239,
+          145, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101,
+          121, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0, 0, 25, 182, 39, 239, 145, 1, 0, 255, 255, 255, 255,
+          255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 11, 0,
+          0, 0, 25, 34, 95, 161, 130, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+          255, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 12, 0, 0, 0, 25, 182, 39, 239, 145,
+          1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0,
+          0, 0, 0, 0, 0, 0, 13, 0, 0, 0, 25, 34, 95, 161, 130, 1, 0, 255, 255, 255, 255, 255, 255,
+          255, 255, 255, 255, 255, 255, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0,
+          0, 25, 34, 95, 161, 130, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+          255, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 15, 0, 0, 0, 25, 182, 39, 239, 145,
+          1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0,
+          0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 25, 182, 39, 239, 145, 1, 0, 255, 255, 255, 255, 255,
+          255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 17, 0, 0, 0,
+          25, 182, 39, 239, 145, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0,
+          0, 3, 104, 101, 121, 0, 0, 0, 0, 0, 0, 0, 18, 0, 0, 0, 25, 182, 39, 239, 145, 1, 0, 255,
+          255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121, 0, 0, 0, 0, 0,
+          0, 0, 19, 0, 0, 0, 25, 182, 39, 239, 145, 1, 0, 255, 255, 255, 255, 255, 255, 255, 255,
+          0, 0, 0, 0, 0, 0, 0, 3, 104, 101, 121>>
+
+      expect = %Kayrock.Fetch.V3.Response{
+        correlation_id: 4,
+        responses: [
+          %{
+            partition_responses: [
+              %{
+                partition_header: %{
+                  error_code: 0,
+                  high_watermark: 20,
+                  partition: 0
+                },
+                record_set: %Kayrock.MessageSet{
+                  magic: 1,
+                  messages: [
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 0,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 1,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 2,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 3,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 4,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 5,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 6,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 7,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 8,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 9,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 10,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 11,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 12,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 13,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 576_692_610,
+                      key: nil,
+                      offset: 14,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 15,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 16,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 17,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 18,
+                      timestamp: -1,
+                      value: "hey"
+                    },
+                    %Kayrock.MessageSet.Message{
+                      attributes: 0,
+                      compression: :none,
+                      crc: 3_056_070_545,
+                      key: "",
+                      offset: 19,
+                      timestamp: -1,
+                      value: "hey"
+                    }
+                  ]
+                }
+              }
+            ],
+            topic: "food"
+          }
+        ],
+        throttle_time_ms: 0
+      }
+
+      {got, ""} = Kayrock.Fetch.V3.Response.deserialize(data)
+
+      assert got == expect
+    end
   end
 end
