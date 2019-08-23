@@ -547,15 +547,13 @@ defmodule Kayrock.FetchTest do
 
       expect = %Kayrock.Fetch.V3.Response{
         correlation_id: 4,
+        throttle_time_ms: 0,
         responses: [
           %{
+            topic: "food",
             partition_responses: [
               %{
-                partition_header: %{
-                  error_code: 0,
-                  high_watermark: 20,
-                  partition: 0
-                },
+                partition_header: %{error_code: 0, high_watermark: 20, partition: 0},
                 record_set: %Kayrock.MessageSet{
                   magic: 1,
                   messages: [
@@ -566,7 +564,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 0,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -575,7 +574,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 1,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -584,7 +584,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 2,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -593,7 +594,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 3,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -602,7 +604,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 4,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -611,7 +614,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 5,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -620,7 +624,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 6,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -629,7 +634,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 7,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -638,7 +644,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 8,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -647,7 +654,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 9,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -656,7 +664,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 10,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -665,7 +674,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 11,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -674,7 +684,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 12,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -683,7 +694,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 13,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -692,7 +704,8 @@ defmodule Kayrock.FetchTest do
                       key: nil,
                       offset: 14,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -701,7 +714,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 15,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -710,7 +724,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 16,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -719,7 +734,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 17,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -728,7 +744,8 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 18,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     },
                     %Kayrock.MessageSet.Message{
                       attributes: 0,
@@ -737,16 +754,15 @@ defmodule Kayrock.FetchTest do
                       key: "",
                       offset: 19,
                       timestamp: -1,
-                      value: "hey"
+                      value: "hey",
+                      timestamp_type: 0
                     }
                   ]
                 }
               }
-            ],
-            topic: "food"
+            ]
           }
-        ],
-        throttle_time_ms: 0
+        ]
       }
 
       {got, ""} = Kayrock.Fetch.V3.Response.deserialize(data)
