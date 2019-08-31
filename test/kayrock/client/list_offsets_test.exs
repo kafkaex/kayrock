@@ -11,8 +11,7 @@ defmodule Kayrock.Client.ListOffsetsTest do
     assert first_offset >= 0
 
     record_batch = RecordBatch.from_binary_list(["one", "two", "three"])
-    {:ok, resp} = Kayrock.produce(client, record_batch, topic, 0)
-    IO.puts(inspect(resp))
+    {:ok, _resp} = Kayrock.produce(client, record_batch, topic, 0)
 
     offset =
       fn ->

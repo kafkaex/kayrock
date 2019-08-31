@@ -16,7 +16,14 @@ defmodule Kayrock.Client.ProduceTest do
 
     [main_resp] = resp.responses
     [partition_resp] = main_resp.partition_responses
-    %RecordBatch{records: [%Record{offset: first_offset} | _]} = partition_resp.record_set
+
+    [
+      %RecordBatch{
+        partition_leader_epoch: partition_leader_epoch,
+        records: [%Record{offset: first_offset} | _]
+      }
+      | _
+    ] = partition_resp.record_set
 
     assert resp == %Kayrock.Fetch.V4.Response{
              correlation_id: 4,
@@ -31,45 +38,47 @@ defmodule Kayrock.Client.ProduceTest do
                        last_stable_offset: offset,
                        partition: 0
                      },
-                     record_set: %Kayrock.RecordBatch{
-                       attributes: 0,
-                       base_sequence: -1,
-                       batch_length: 79,
-                       batch_offset: first_offset,
-                       crc: -784_342_914,
-                       first_timestamp: -1,
-                       last_offset_delta: 2,
-                       max_timestamp: -1,
-                       partition_leader_epoch: partition_resp.record_set.partition_leader_epoch,
-                       producer_epoch: -1,
-                       producer_id: -1,
-                       records: [
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset,
-                           timestamp: -1,
-                           value: "foo"
-                         },
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset + 1,
-                           timestamp: -1,
-                           value: "bar"
-                         },
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset + 2,
-                           timestamp: -1,
-                           value: "baz"
-                         }
-                       ]
-                     }
+                     record_set: [
+                       %Kayrock.RecordBatch{
+                         attributes: 0,
+                         base_sequence: -1,
+                         batch_length: 79,
+                         batch_offset: first_offset,
+                         crc: -784_342_914,
+                         first_timestamp: -1,
+                         last_offset_delta: 2,
+                         max_timestamp: -1,
+                         partition_leader_epoch: partition_leader_epoch,
+                         producer_epoch: -1,
+                         producer_id: -1,
+                         records: [
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset,
+                             timestamp: -1,
+                             value: "foo"
+                           },
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset + 1,
+                             timestamp: -1,
+                             value: "bar"
+                           },
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset + 2,
+                             timestamp: -1,
+                             value: "baz"
+                           }
+                         ]
+                       }
+                     ]
                    }
                  ],
                  topic: "simple_produce"
@@ -83,7 +92,7 @@ defmodule Kayrock.Client.ProduceTest do
     {:ok, topic} = ensure_test_topic(client, "simple_produce")
 
     record_batch = RecordBatch.from_binary_list(["foo", "bar", "baz"], :gzip)
-    {:ok, resp} = Kayrock.produce(client, record_batch, topic, 0)
+    {:ok, _resp} = Kayrock.produce(client, record_batch, topic, 0)
 
     offset = Kayrock.Convenience.partition_last_offset(client, topic, 0)
 
@@ -91,7 +100,14 @@ defmodule Kayrock.Client.ProduceTest do
 
     [main_resp] = resp.responses
     [partition_resp] = main_resp.partition_responses
-    %RecordBatch{records: [%Record{offset: first_offset} | _]} = partition_resp.record_set
+
+    [
+      %RecordBatch{
+        partition_leader_epoch: partition_leader_epoch,
+        records: [%Record{offset: first_offset} | _]
+      }
+      | _
+    ] = partition_resp.record_set
 
     assert resp == %Kayrock.Fetch.V4.Response{
              correlation_id: 4,
@@ -106,45 +122,47 @@ defmodule Kayrock.Client.ProduceTest do
                        last_stable_offset: offset,
                        partition: 0
                      },
-                     record_set: %Kayrock.RecordBatch{
-                       attributes: 1,
-                       base_sequence: -1,
-                       batch_length: 94,
-                       batch_offset: first_offset,
-                       crc: 1_821_682_799,
-                       first_timestamp: -1,
-                       last_offset_delta: 2,
-                       max_timestamp: -1,
-                       partition_leader_epoch: partition_resp.record_set.partition_leader_epoch,
-                       producer_epoch: -1,
-                       producer_id: -1,
-                       records: [
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset,
-                           timestamp: -1,
-                           value: "foo"
-                         },
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset + 1,
-                           timestamp: -1,
-                           value: "bar"
-                         },
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset + 2,
-                           timestamp: -1,
-                           value: "baz"
-                         }
-                       ]
-                     }
+                     record_set: [
+                       %Kayrock.RecordBatch{
+                         attributes: 1,
+                         base_sequence: -1,
+                         batch_length: 94,
+                         batch_offset: first_offset,
+                         crc: 1_821_682_799,
+                         first_timestamp: -1,
+                         last_offset_delta: 2,
+                         max_timestamp: -1,
+                         partition_leader_epoch: partition_leader_epoch,
+                         producer_epoch: -1,
+                         producer_id: -1,
+                         records: [
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset,
+                             timestamp: -1,
+                             value: "foo"
+                           },
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset + 1,
+                             timestamp: -1,
+                             value: "bar"
+                           },
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset + 2,
+                             timestamp: -1,
+                             value: "baz"
+                           }
+                         ]
+                       }
+                     ]
                    }
                  ],
                  topic: "simple_produce"
@@ -158,7 +176,7 @@ defmodule Kayrock.Client.ProduceTest do
     {:ok, topic} = ensure_test_topic(client, "simple_produce")
 
     record_batch = RecordBatch.from_binary_list(["foo", "bar", "baz"], :snappy)
-    {:ok, resp} = Kayrock.produce(client, record_batch, topic, 0)
+    {:ok, _resp} = Kayrock.produce(client, record_batch, topic, 0)
 
     offset = Kayrock.Convenience.partition_last_offset(client, topic, 0)
 
@@ -166,7 +184,14 @@ defmodule Kayrock.Client.ProduceTest do
 
     [main_resp] = resp.responses
     [partition_resp] = main_resp.partition_responses
-    %RecordBatch{records: [%Record{offset: first_offset} | _]} = partition_resp.record_set
+
+    [
+      %RecordBatch{
+        partition_leader_epoch: partition_leader_epoch,
+        records: [%Record{offset: first_offset} | _]
+      }
+      | _
+    ] = partition_resp.record_set
 
     assert resp == %Kayrock.Fetch.V4.Response{
              correlation_id: 4,
@@ -181,45 +206,47 @@ defmodule Kayrock.Client.ProduceTest do
                        last_stable_offset: offset,
                        partition: 0
                      },
-                     record_set: %Kayrock.RecordBatch{
-                       attributes: 2,
-                       base_sequence: -1,
-                       batch_length: 101,
-                       batch_offset: first_offset,
-                       crc: 468_182_773,
-                       first_timestamp: -1,
-                       last_offset_delta: 2,
-                       max_timestamp: -1,
-                       partition_leader_epoch: partition_resp.record_set.partition_leader_epoch,
-                       producer_epoch: -1,
-                       producer_id: -1,
-                       records: [
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset,
-                           timestamp: -1,
-                           value: "foo"
-                         },
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset + 1,
-                           timestamp: -1,
-                           value: "bar"
-                         },
-                         %Kayrock.RecordBatch.Record{
-                           attributes: 0,
-                           headers: <<0>>,
-                           key: nil,
-                           offset: first_offset + 2,
-                           timestamp: -1,
-                           value: "baz"
-                         }
-                       ]
-                     }
+                     record_set: [
+                       %Kayrock.RecordBatch{
+                         attributes: 2,
+                         base_sequence: -1,
+                         batch_length: 101,
+                         batch_offset: first_offset,
+                         crc: 468_182_773,
+                         first_timestamp: -1,
+                         last_offset_delta: 2,
+                         max_timestamp: -1,
+                         partition_leader_epoch: partition_leader_epoch,
+                         producer_epoch: -1,
+                         producer_id: -1,
+                         records: [
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset,
+                             timestamp: -1,
+                             value: "foo"
+                           },
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset + 1,
+                             timestamp: -1,
+                             value: "bar"
+                           },
+                           %Kayrock.RecordBatch.Record{
+                             attributes: 0,
+                             headers: <<0>>,
+                             key: nil,
+                             offset: first_offset + 2,
+                             timestamp: -1,
+                             value: "baz"
+                           }
+                         ]
+                       }
+                     ]
                    }
                  ],
                  topic: "simple_produce"
