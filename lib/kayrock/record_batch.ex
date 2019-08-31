@@ -143,7 +143,7 @@ defmodule Kayrock.RecordBatch do
       when byte_size(msg_set_data) == msg_set_size do
     case get_magic_byte(msg_set_data) do
       {2, batch_offset, batch_length, partition_leader_epoch, rest} ->
-        deserialize(batch_offset, batch_length, partition_leader_epoch, rest)
+        deserialize(rest, [], batch_offset, batch_length, partition_leader_epoch)
 
       {magic, _, _, _, _} ->
         # old code
@@ -157,7 +157,7 @@ defmodule Kayrock.RecordBatch do
             "received #{byte_size(partial_message_data)} bytes. Try increasing max_bytes."
   end
 
-  defp deserialize(batch_offset, batch_length, partition_leader_epoch, rest) do
+  defp deserialize(rest, acc, batch_offset, batch_length, partition_leader_epoch) do
     <<crc::32-signed, attributes::16-signed, last_offset_delta::32-signed,
       first_timestamp::64-signed, max_timestamp::64-signed, producer_id::64-signed,
       producer_epoch::16-signed, base_sequence::32-signed, num_msgs::32-signed,
@@ -169,7 +169,7 @@ defmodule Kayrock.RecordBatch do
         other -> Compression.decompress(other, rest)
       end
 
-    msgs = deserialize_message(msg_data, num_msgs, [])
+    {msgs, rest} = deserialize_message(msg_data, num_msgs, [])
 
     # NOTE we sometimes get record batches with all offset_delta = 0
     # we use the order in the record batch to determine offset in that case
@@ -184,7 +184,7 @@ defmodule Kayrock.RecordBatch do
         }
       end)
 
-    %__MODULE__{
+    record_batch = %__MODULE__{
       batch_offset: batch_offset,
       batch_length: batch_length,
       partition_leader_epoch: partition_leader_epoch,
@@ -198,10 +198,21 @@ defmodule Kayrock.RecordBatch do
       base_sequence: base_sequence,
       records: msgs
     }
+
+    acc = [record_batch | acc]
+
+    case rest do
+      "" ->
+        Enum.reverse(acc)
+
+      _ ->
+        {2, batch_offset, batch_length, partition_leader_epoch, new_rest} = get_magic_byte(rest)
+        deserialize(new_rest, acc, batch_offset, batch_length, partition_leader_epoch)
+    end
   end
 
-  defp deserialize_message(_data, 0, acc) do
-    Enum.reverse(acc)
+  defp deserialize_message(data, 0, acc) do
+    {Enum.reverse(acc), data}
   end
 
   defp deserialize_message(data, num_left, acc) do

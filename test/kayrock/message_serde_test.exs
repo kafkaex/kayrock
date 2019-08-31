@@ -54,39 +54,41 @@ defmodule Kayrock.MessageSerdeTest do
 
     msg_set = RecordBatch.deserialize(msg_set_data)
 
-    assert msg_set == %RecordBatch{
-             attributes: 0,
-             base_sequence: -1,
-             batch_length: 79,
-             batch_offset: 36,
-             crc: -887_710_447,
-             first_timestamp: -1,
-             last_offset_delta: 2,
-             max_timestamp: -1,
-             partition_leader_epoch: 0,
-             producer_epoch: -1,
-             producer_id: -1,
-             records: [
-               %Record{
-                 attributes: 0,
-                 key: nil,
-                 offset: 36,
-                 value: "foo"
-               },
-               %Record{
-                 attributes: 0,
-                 key: nil,
-                 offset: 37,
-                 value: "bar"
-               },
-               %Record{
-                 attributes: 0,
-                 key: nil,
-                 offset: 38,
-                 value: "baz"
-               }
-             ]
-           }
+    assert msg_set == [
+             %RecordBatch{
+               attributes: 0,
+               base_sequence: -1,
+               batch_length: 79,
+               batch_offset: 36,
+               crc: -887_710_447,
+               first_timestamp: -1,
+               last_offset_delta: 2,
+               max_timestamp: -1,
+               partition_leader_epoch: 0,
+               producer_epoch: -1,
+               producer_id: -1,
+               records: [
+                 %Record{
+                   attributes: 0,
+                   key: nil,
+                   offset: 36,
+                   value: "foo"
+                 },
+                 %Record{
+                   attributes: 0,
+                   key: nil,
+                   offset: 37,
+                   value: "bar"
+                 },
+                 %Record{
+                   attributes: 0,
+                   key: nil,
+                   offset: 38,
+                   value: "baz"
+                 }
+               ]
+             }
+           ]
   end
 
   test "serialize v2 record batch" do
@@ -196,45 +198,47 @@ defmodule Kayrock.MessageSerdeTest do
         65, 80, 80, 89, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 32, 30, 116, 18, 0, 0, 0, 1, 6, 102,
         111, 111, 0, 18, 0, 0, 2, 1, 6, 98, 97, 114, 0, 18, 0, 0, 4, 1, 6, 98, 97, 122, 0>>
 
-    expect = %Kayrock.RecordBatch{
-      attributes: 2,
-      base_sequence: -1,
-      batch_length: 101,
-      batch_offset: 126,
-      crc: 468_182_773,
-      first_timestamp: -1,
-      last_offset_delta: 2,
-      max_timestamp: -1,
-      partition_leader_epoch: 4,
-      producer_epoch: -1,
-      producer_id: -1,
-      records: [
-        %Kayrock.RecordBatch.Record{
-          attributes: 0,
-          headers: <<0>>,
-          key: nil,
-          offset: 126,
-          timestamp: -1,
-          value: "foo"
-        },
-        %Kayrock.RecordBatch.Record{
-          attributes: 0,
-          headers: <<0>>,
-          key: nil,
-          offset: 127,
-          timestamp: -1,
-          value: "bar"
-        },
-        %Kayrock.RecordBatch.Record{
-          attributes: 0,
-          headers: <<0>>,
-          key: nil,
-          offset: 128,
-          timestamp: -1,
-          value: "baz"
-        }
-      ]
-    }
+    expect = [
+      %Kayrock.RecordBatch{
+        attributes: 2,
+        base_sequence: -1,
+        batch_length: 101,
+        batch_offset: 126,
+        crc: 468_182_773,
+        first_timestamp: -1,
+        last_offset_delta: 2,
+        max_timestamp: -1,
+        partition_leader_epoch: 4,
+        producer_epoch: -1,
+        producer_id: -1,
+        records: [
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: <<0>>,
+            key: nil,
+            offset: 126,
+            timestamp: -1,
+            value: "foo"
+          },
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: <<0>>,
+            key: nil,
+            offset: 127,
+            timestamp: -1,
+            value: "bar"
+          },
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: <<0>>,
+            key: nil,
+            offset: 128,
+            timestamp: -1,
+            value: "baz"
+          }
+        ]
+      }
+    ]
 
     got = RecordBatch.deserialize(data)
     assert got == expect
@@ -287,14 +291,16 @@ defmodule Kayrock.MessageSerdeTest do
 
     # gzip changes with versions, so deserialize to make sure we got what we put
     # in
-    got_batch = RecordBatch.deserialize(rest)
+    [got_batch | _] = RecordBatch.deserialize(rest)
 
-    record_batch = %{
-      record_batch
-      | batch_length: got_batch.batch_length,
-        crc: got_batch.crc,
-        last_offset_delta: 2
-    }
+    record_batch = [
+      %{
+        record_batch
+        | batch_length: got_batch.batch_length,
+          crc: got_batch.crc,
+          last_offset_delta: 2
+      }
+    ]
 
     assert RecordBatch.deserialize(rest) == record_batch
   end
@@ -307,45 +313,47 @@ defmodule Kayrock.MessageSerdeTest do
         0, 0, 0, 0, 0, 0, 0, 19, 98, 96, 96, 96, 100, 75, 203, 207, 103, 16, 98, 96, 96, 98, 100,
         75, 74, 44, 2, 177, 88, 64, 172, 42, 6, 0, 116, 60, 95, 153, 30, 0, 0, 0>>
 
-    expect = %Kayrock.RecordBatch{
-      attributes: 1,
-      base_sequence: -1,
-      batch_length: 94,
-      batch_offset: 132,
-      crc: 1_821_682_799,
-      first_timestamp: -1,
-      last_offset_delta: 2,
-      max_timestamp: -1,
-      partition_leader_epoch: 4,
-      producer_epoch: -1,
-      producer_id: -1,
-      records: [
-        %Kayrock.RecordBatch.Record{
-          attributes: 0,
-          headers: <<0>>,
-          key: nil,
-          offset: 132,
-          timestamp: -1,
-          value: "foo"
-        },
-        %Kayrock.RecordBatch.Record{
-          attributes: 0,
-          headers: <<0>>,
-          key: nil,
-          offset: 133,
-          timestamp: -1,
-          value: "bar"
-        },
-        %Kayrock.RecordBatch.Record{
-          attributes: 0,
-          headers: <<0>>,
-          key: nil,
-          offset: 134,
-          timestamp: -1,
-          value: "baz"
-        }
-      ]
-    }
+    expect = [
+      %Kayrock.RecordBatch{
+        attributes: 1,
+        base_sequence: -1,
+        batch_length: 94,
+        batch_offset: 132,
+        crc: 1_821_682_799,
+        first_timestamp: -1,
+        last_offset_delta: 2,
+        max_timestamp: -1,
+        partition_leader_epoch: 4,
+        producer_epoch: -1,
+        producer_id: -1,
+        records: [
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: <<0>>,
+            key: nil,
+            offset: 132,
+            timestamp: -1,
+            value: "foo"
+          },
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: <<0>>,
+            key: nil,
+            offset: 133,
+            timestamp: -1,
+            value: "bar"
+          },
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: <<0>>,
+            key: nil,
+            offset: 134,
+            timestamp: -1,
+            value: "baz"
+          }
+        ]
+      }
+    ]
 
     got = RecordBatch.deserialize(data)
     assert got == expect
