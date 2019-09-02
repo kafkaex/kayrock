@@ -479,20 +479,7 @@ defmodule Kayrock.FetchTest do
           partition_responses: [
             %{
               partition_header: %{error_code: 0, high_watermark: 0, partition: 0},
-              record_set: %Kayrock.RecordBatch{
-                attributes: 0,
-                base_sequence: -1,
-                batch_length: nil,
-                batch_offset: nil,
-                crc: nil,
-                first_timestamp: -1,
-                last_offset_delta: -1,
-                max_timestamp: -1,
-                partition_leader_epoch: -1,
-                producer_epoch: -1,
-                producer_id: -1,
-                records: []
-              }
+              record_set: nil
             }
           ],
           topic: "VQDNNQZCCXUTLMGFDKZY"
@@ -913,6 +900,32 @@ defmodule Kayrock.FetchTest do
     }
 
     {got, ""} = Kayrock.Fetch.V5.Response.deserialize(data)
+
+    assert got == expect
+  end
+
+  test "deserialize v0 messages - empty record set" do
+    data =
+      <<0, 0, 0, 4, 0, 0, 0, 1, 0, 20, 78, 76, 68, 69, 68, 88, 68, 83, 80, 67, 68, 83, 88, 71, 87,
+        72, 67, 86, 81, 77, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 255, 255, 255, 255, 255, 255, 255, 255,
+        0, 0, 0, 0>>
+
+    expect = %Kayrock.Fetch.V0.Response{
+      correlation_id: 4,
+      responses: [
+        %{
+          partition_responses: [
+            %{
+              partition_header: %{error_code: 1, high_watermark: -1, partition: 0},
+              record_set: nil
+            }
+          ],
+          topic: "NLDEDXDSPCDSXGWHCVQM"
+        }
+      ]
+    }
+
+    {got, ""} = Kayrock.Fetch.V0.Response.deserialize(data)
 
     assert got == expect
   end
