@@ -136,7 +136,7 @@ defmodule Kayrock.RecordBatch do
   end
 
   def deserialize(0, "") do
-    %__MODULE__{batch_offset: nil}
+    nil
   end
 
   def deserialize(msg_set_size, msg_set_data)
