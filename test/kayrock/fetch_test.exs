@@ -929,4 +929,75 @@ defmodule Kayrock.FetchTest do
 
     assert got == expect
   end
+
+  test "deserialize v3 gzip compressed" do
+    data =
+      <<0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 102, 111, 111, 100, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 83, 0, 0, 1, 14, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0, 78, 158, 168,
+        240, 102, 1, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 56,
+        31, 139, 8, 0, 0, 0, 0, 0, 0, 0, 99, 96, 128, 3, 173, 181, 149, 231, 38, 50, 50, 252, 135,
+        2, 168, 168, 72, 120, 96, 96, 144, 171, 179, 143, 127, 164, 115, 136, 187, 123, 164, 179,
+        183, 139, 91, 132, 11, 0, 26, 55, 249, 139, 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 0, 0, 0,
+        78, 204, 203, 91, 57, 1, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0,
+        0, 0, 56, 31, 139, 8, 0, 0, 0, 0, 0, 0, 0, 99, 96, 128, 3, 173, 238, 9, 255, 131, 25, 25,
+        254, 67, 1, 84, 84, 196, 223, 195, 53, 210, 199, 47, 208, 49, 192, 53, 40, 48, 56, 60, 60,
+        220, 203, 205, 217, 21, 0, 162, 215, 57, 253, 54, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 82, 0, 0,
+        0, 78, 238, 162, 113, 219, 1, 1, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 0, 0, 0, 56, 31, 139, 8, 0, 0, 0, 0, 0, 0, 0, 99, 96, 128, 3, 173, 70, 203, 222, 78,
+        70, 134, 255, 80, 0, 21, 21, 9, 140, 12, 12, 119, 114, 14, 244, 12, 246, 112, 10, 10, 117,
+        142, 8, 142, 8, 11, 119, 7, 0, 92, 38, 33, 180, 54, 0, 0, 0>>
+
+    expect = %Kayrock.Fetch.V3.Response{
+      correlation_id: 4,
+      throttle_time_ms: 0,
+      responses: [
+        %{
+          topic: "food",
+          partition_responses: [
+            %{
+              partition_header: %{error_code: 0, partition: 0, high_watermark: 83},
+              record_set: %Kayrock.MessageSet{
+                magic: 1,
+                messages: [
+                  %Kayrock.MessageSet.Message{
+                    attributes: 0,
+                    compression: :none,
+                    key: "",
+                    timestamp: -1,
+                    timestamp_type: 0,
+                    crc: 2_910_441_105,
+                    offset: 80,
+                    value: "WQQRECLOYCTGGYCKDFXD"
+                  },
+                  %Kayrock.MessageSet.Message{
+                    attributes: 0,
+                    compression: :none,
+                    crc: 2_341_535_571,
+                    key: "",
+                    offset: 81,
+                    timestamp: -1,
+                    timestamp_type: 0,
+                    value: "OHEYLNQAPERQSWWWJFCE"
+                  },
+                  %Kayrock.MessageSet.Message{
+                    attributes: 0,
+                    compression: :none,
+                    crc: 2_168_032_649,
+                    key: "",
+                    offset: 82,
+                    timestamp: -1,
+                    timestamp_type: 0,
+                    value: "QYQWBCQISHBRUCXSXVWG"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+
+    {got, ""} = Kayrock.Fetch.V3.Response.deserialize(data)
+    assert got == expect
+  end
 end

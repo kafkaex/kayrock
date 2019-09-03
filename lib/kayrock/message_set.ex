@@ -39,13 +39,14 @@ defmodule Kayrock.MessageSet do
   def deserialize(data), do: deserialize(data, 0)
 
   def deserialize(data, magic) do
-    msgs = do_deserialize(data, [])
+    msgs = do_deserialize(data, [], 0)
     %__MODULE__{messages: msgs, magic: magic}
   end
 
   defp do_deserialize(
          <<offset::64-signed, msg_size::32-signed, msg::size(msg_size)-binary, orig_rest::bits>>,
-         acc
+         acc,
+         add_offset
        ) do
     <<crc::32, magic::8-signed, attributes::8-signed, rest::bits>> = msg
 
@@ -64,7 +65,7 @@ defmodule Kayrock.MessageSet do
           timestamp_type = timestamp_type_from_attributes(attributes, magic)
 
           %Message{
-            offset: offset,
+            offset: offset + add_offset,
             crc: crc,
             attributes: attributes,
             key: key,
@@ -75,13 +76,18 @@ defmodule Kayrock.MessageSet do
 
         c ->
           decompressed = Kayrock.Compression.decompress(c, value)
-          Enum.reverse(do_deserialize(decompressed, []))
+
+          if magic == 1 do
+            Enum.reverse(do_deserialize(decompressed, [], offset))
+          else
+            Enum.reverse(do_deserialize(decompressed, [], 0))
+          end
       end
 
-    do_deserialize(orig_rest, [msg | acc])
+    do_deserialize(orig_rest, [msg | acc], add_offset)
   end
 
-  defp do_deserialize(_, acc) do
+  defp do_deserialize(_, acc, _add_offset) do
     Enum.reverse(List.flatten(acc))
   end
 
