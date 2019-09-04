@@ -19,14 +19,10 @@ matrix:
       otp_release: 20.2
 dist: trusty
 sudo: required
-services:
-  - docker
 env:
   global:
     - COVERALLS=false
     - CREDO=false
-before_script:
-  - IP_IFACE=eth0 ./scripts/docker_up.sh
 script:
   - MIX_ENV=test mix deps.compile
   - MIX_ENV=test mix compile --warnings-as-errors
