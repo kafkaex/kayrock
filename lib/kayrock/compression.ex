@@ -30,8 +30,11 @@ defmodule Kayrock.Compression do
   the decompressed data.
   """
   @spec decompress(attribute_t, binary) :: binary
-  def decompress(@gzip_attribute, data) do
-    :zlib.gunzip(data)
+  def decompress(@gzip_attribute, data = <<window_size::8-signed, _::bits>>) do
+    z = :zlib.open()
+    :zlib.inflateInit(z, window_size)
+    [v | _] = :zlib.inflate(z, data)
+    v
   end
 
   def decompress(@snappy_attribute, data) do
