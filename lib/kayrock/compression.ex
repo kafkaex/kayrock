@@ -62,6 +62,10 @@ defmodule Kayrock.Compression do
     so_far
   end
 
+  def snappy_decompress_chunk(<<0::32-signed, _rest::binary>>, so_far) do
+    so_far
+  end
+
   def snappy_decompress_chunk(
         <<valsize::32-unsigned, value::size(valsize)-binary, rest::binary>>,
         so_far

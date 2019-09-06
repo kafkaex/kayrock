@@ -1071,4 +1071,75 @@ defmodule Kayrock.FetchTest do
     {got, ""} = Kayrock.Fetch.V5.Response.deserialize(data)
     assert got == expect
   end
+
+  test "v5 fetch with snappy compression with extra data" do
+    data =
+      <<0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 102, 111, 111, 100, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 206, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0,
+        0, 255, 255, 255, 255, 0, 0, 1, 74, 0, 0, 0, 0, 0, 0, 0, 203, 0, 0, 0, 98, 0, 0, 0, 33, 2,
+        44, 121, 75, 132, 0, 2, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 0, 0, 0, 1, 130, 83, 78, 65, 80, 80, 89, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 29, 27,
+        104, 52, 0, 0, 0, 0, 40, 85, 75, 75, 70, 66, 77, 85, 90, 68, 88, 83, 77, 82, 83, 81, 65,
+        87, 66, 67, 90, 0, 0, 0, 0, 0, 0, 0, 0, 204, 0, 0, 0, 98, 0, 0, 0, 33, 2, 147, 152, 102,
+        235, 0, 2, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0,
+        0, 1, 130, 83, 78, 65, 80, 80, 89, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 29, 27, 104, 52, 0,
+        0, 0, 0, 40, 67, 87, 85, 69, 66, 74, 83, 81, 74, 82, 68, 77, 85, 83, 73, 83, 77, 80, 82,
+        66, 0, 0, 0, 0, 0, 0, 0, 0, 205, 0, 0, 0, 98, 0, 0, 0, 33, 2, 168, 136, 246, 28, 0, 2, 0,
+        0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 1, 130, 83,
+        78, 65, 80, 80, 89, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 29, 27, 104, 52, 0, 0, 0, 0, 40,
+        77, 75, 88, 70, 81, 66, 88, 89, 86, 81, 74, 73, 67, 67, 72, 78, 76, 69, 75, 87, 0>>
+
+    expect = %Kayrock.Fetch.V5.Response{
+      correlation_id: 4,
+      responses: [
+        %{
+          partition_responses: [
+            %{
+              partition_header: %{
+                aborted_transactions: [],
+                error_code: 0,
+                high_watermark: 206,
+                last_stable_offset: -1,
+                log_start_offset: 0,
+                partition: 0
+              },
+              record_set: [
+                %Kayrock.RecordBatch{
+                  attributes: 2,
+                  base_sequence: -1,
+                  batch_length: 98,
+                  batch_offset: 203,
+                  crc: 746_146_692,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 203,
+                      timestamp: -1,
+                      value: "UKKFBMUZDXSMRSQAWBCZ"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          topic: "food"
+        }
+      ],
+      throttle_time_ms: 0
+    }
+
+    {got, ""} = Kayrock.Fetch.V5.Response.deserialize(data)
+    assert got == expect
+  end
 end
