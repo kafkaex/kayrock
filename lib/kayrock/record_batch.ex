@@ -143,6 +143,7 @@ defmodule Kayrock.RecordBatch do
       when byte_size(msg_set_data) == msg_set_size do
     case get_magic_byte(msg_set_data) do
       {2, batch_offset, batch_length, partition_leader_epoch, rest} ->
+        <<>>
         deserialize(rest, [], batch_offset, batch_length, partition_leader_epoch)
 
       {magic, _, _, _, _} ->
@@ -158,18 +159,25 @@ defmodule Kayrock.RecordBatch do
   end
 
   defp deserialize(rest, acc, batch_offset, batch_length, partition_leader_epoch) do
+    # we alraedy parsed off 5 bytes in get_magic_byte
+    real_size = batch_length - 5
+    <<batch_data::size(real_size)-binary, body_rest::binary>> = rest
+
     <<crc::32-signed, attributes::16-signed, last_offset_delta::32-signed,
       first_timestamp::64-signed, max_timestamp::64-signed, producer_id::64-signed,
       producer_epoch::16-signed, base_sequence::32-signed, num_msgs::32-signed,
-      rest::bits>> = rest
+      batch_rest::bits>> = batch_data
 
     msg_data =
       case compression_from_attributes(attributes) do
-        0 -> rest
-        other -> Compression.decompress(other, rest)
+        0 ->
+          batch_rest
+
+        other ->
+          Compression.decompress(other, batch_rest)
       end
 
-    {msgs, rest} = deserialize_message(msg_data, num_msgs, [])
+    {msgs, _trailing_bytes} = deserialize_message(msg_data, num_msgs, [])
 
     # NOTE we sometimes get record batches with all offset_delta = 0
     # we use the order in the record batch to determine offset in that case
@@ -201,12 +209,14 @@ defmodule Kayrock.RecordBatch do
 
     acc = [record_batch | acc]
 
-    case rest do
+    case body_rest do
       "" ->
         Enum.reverse(acc)
 
       _ ->
-        {2, batch_offset, batch_length, partition_leader_epoch, new_rest} = get_magic_byte(rest)
+        {2, batch_offset, batch_length, partition_leader_epoch, new_rest} =
+          get_magic_byte(body_rest)
+
         deserialize(new_rest, acc, batch_offset, batch_length, partition_leader_epoch)
     end
   end

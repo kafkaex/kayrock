@@ -38,8 +38,14 @@ defmodule Kayrock.Compression do
   end
 
   def decompress(@snappy_attribute, data) do
-    <<_snappy_header::64, _snappy_version_info::64, rest::binary>> = data
-    snappy_decompress_chunk(rest, <<>>)
+    case data do
+      <<130, "SNAPPY", 0, _snappy_version_info::64, rest::binary>> ->
+        snappy_decompress_chunk(rest, <<>>)
+
+      _ ->
+        {:ok, decompressed_value} = :snappy.decompress(data)
+        decompressed_value
+    end
   end
 
   @doc """
@@ -62,12 +68,12 @@ defmodule Kayrock.Compression do
     so_far
   end
 
-  def snappy_decompress_chunk(<<0::32-signed, _rest::binary>>, so_far) do
+  def snappy_decompress_chunk(<<0::32-signed, _rest::bits>>, so_far) do
     so_far
   end
 
   def snappy_decompress_chunk(
-        <<valsize::32-unsigned, value::size(valsize)-binary, rest::binary>>,
+        <<valsize::32-unsigned, value::size(valsize)-binary, rest::bits>>,
         so_far
       ) do
     {:ok, decompressed_value} = :snappy.decompress(value)

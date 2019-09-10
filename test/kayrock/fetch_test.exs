@@ -1058,6 +1058,52 @@ defmodule Kayrock.FetchTest do
                       value: "TMXQHNGDUPFDDQPNJGNG"
                     }
                   ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 1,
+                  base_sequence: -1,
+                  batch_length: 94,
+                  batch_offset: 84,
+                  crc: 80_008_838,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 18,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 84,
+                      timestamp: -1,
+                      value: "WUTJVVUDYLIJMFEEMHYA"
+                    }
+                  ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 1,
+                  base_sequence: -1,
+                  batch_length: 94,
+                  batch_offset: 85,
+                  crc: 1_632_716_222,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 24,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 85,
+                      timestamp: -1,
+                      value: "ELUXFTFWOXGJNRNNQVLK"
+                    }
+                  ]
                 }
               ]
             }
@@ -1127,6 +1173,168 @@ defmodule Kayrock.FetchTest do
                       offset: 203,
                       timestamp: -1,
                       value: "UKKFBMUZDXSMRSQAWBCZ"
+                    }
+                  ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 2,
+                  base_sequence: -1,
+                  batch_length: 98,
+                  batch_offset: 204,
+                  crc: -1_818_728_725,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 204,
+                      timestamp: -1,
+                      value: "CWUEBJSQJRDMUSISMPRB"
+                    }
+                  ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 2,
+                  base_sequence: -1,
+                  batch_length: 98,
+                  batch_offset: 205,
+                  crc: -1_467_419_108,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 205,
+                      timestamp: -1,
+                      value: "MKXFQBXYVQJICCHNLEKW"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          topic: "food"
+        }
+      ],
+      throttle_time_ms: 0
+    }
+
+    {got, ""} = Kayrock.Fetch.V5.Response.deserialize(data)
+    assert got == expect
+  end
+
+  test "v5 fetch snappy (case 2)" do
+    data =
+      <<0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 102, 111, 111, 100, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 231, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0,
+        0, 255, 255, 255, 255, 0, 0, 1, 32, 0, 0, 0, 0, 0, 0, 0, 228, 0, 0, 0, 78, 0, 0, 0, 33, 2,
+        106, 8, 42, 102, 0, 2, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 0, 0, 0, 1, 27, 104, 52, 0, 0, 0, 0, 40, 75, 81, 76, 84, 67, 69, 67, 88, 68, 81, 66,
+        82, 81, 67, 89, 73, 65, 68, 84, 79, 0, 0, 0, 0, 0, 0, 0, 0, 229, 0, 0, 0, 76, 0, 0, 0, 33,
+        2, 232, 120, 45, 102, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 0, 0, 0, 1, 52, 0, 0, 0, 0, 40, 84, 87, 73, 73, 83, 71, 73, 73, 69, 72, 72, 72,
+        79, 88, 70, 79, 74, 73, 86, 79, 0, 0, 0, 0, 0, 0, 0, 0, 230, 0, 0, 0, 98, 0, 0, 0, 33, 2,
+        35, 151, 146, 115, 0, 2, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 0, 0, 0, 1, 130, 83, 78, 65, 80, 80, 89, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 29,
+        27, 104, 52, 0, 0, 0, 0, 40, 72, 67, 85, 80, 72, 73, 85, 78, 75, 84, 67, 86, 82, 80, 66,
+        86, 70, 77, 73, 82, 0>>
+
+    expect = %Kayrock.Fetch.V5.Response{
+      correlation_id: 4,
+      responses: [
+        %{
+          partition_responses: [
+            %{
+              partition_header: %{
+                aborted_transactions: [],
+                error_code: 0,
+                high_watermark: 231,
+                last_stable_offset: -1,
+                log_start_offset: 0,
+                partition: 0
+              },
+              record_set: [
+                %Kayrock.RecordBatch{
+                  attributes: 2,
+                  base_sequence: -1,
+                  batch_length: 78,
+                  batch_offset: 228,
+                  crc: 1_778_920_038,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 228,
+                      timestamp: -1,
+                      value: "KQLTCECXDQBRQCYIADTO"
+                    }
+                  ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 0,
+                  base_sequence: -1,
+                  batch_length: 76,
+                  batch_offset: 229,
+                  crc: -394_777_242,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 229,
+                      timestamp: -1,
+                      value: "TWIISGIIEHHHOXFOJIVO"
+                    }
+                  ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 2,
+                  base_sequence: -1,
+                  batch_length: 98,
+                  batch_offset: 230,
+                  crc: 597_135_987,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: <<0>>,
+                      key: "",
+                      offset: 230,
+                      timestamp: -1,
+                      value: "HCUPHIUNKTCVRPBVFMIR"
                     }
                   ]
                 }
