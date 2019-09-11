@@ -181,6 +181,9 @@ defmodule Kayrock.RecordBatch do
 
     # NOTE we sometimes get record batches with all offset_delta = 0
     # we use the order in the record batch to determine offset in that case
+    #
+    # NOTE we sometimes get first_timestamp = -1 and max_timestamp = <actual
+    # timestamp>, so we also normalize for that
     msgs =
       msgs
       |> Enum.zip(0..(num_msgs - 1))
@@ -188,7 +191,7 @@ defmodule Kayrock.RecordBatch do
         %{
           msg
           | offset: determine_offset(batch_offset, msg.offset, ix),
-            timestamp: msg.timestamp + first_timestamp
+            timestamp: determine_timestamp(first_timestamp, max_timestamp, msg.timestamp)
         }
       end)
 
@@ -372,6 +375,15 @@ defmodule Kayrock.RecordBatch do
 
   defp determine_offset(batch_offset, 0, ix), do: batch_offset + ix
   defp determine_offset(batch_offset, offset_delta, _ix), do: batch_offset + offset_delta
+
+  defp determine_timestamp(-1, max_timestamp, timestamp_offset)
+       when is_integer(max_timestamp) and max_timestamp > 0 do
+    max_timestamp + timestamp_offset
+  end
+
+  defp determine_timestamp(first_timestamp, _, timestamp_offset) do
+    first_timestamp + timestamp_offset
+  end
 
   # the 2 lsb specifies compression
   defp compression_from_attributes(a), do: a &&& 7
