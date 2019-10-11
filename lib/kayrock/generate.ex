@@ -405,7 +405,12 @@ defmodule Kayrock.Generate do
     quote do
       defimpl Elixir.Kayrock.Request, for: unquote(modname) do
         def serialize(%unquote(modname){} = struct) do
-          unquote(modname).serialize(struct)
+          try do
+            unquote(modname).serialize(struct)
+          rescue
+            e ->
+              reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
+          end
         end
 
         def api_vsn(%unquote(modname){}) do
