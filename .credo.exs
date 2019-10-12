@@ -86,7 +86,8 @@
         {Credo.Check.Readability.ParenthesesInCondition, []},
         {Credo.Check.Readability.ParenthesesOnZeroArityDefs, []},
         {Credo.Check.Readability.PredicateFunctionNames, []},
-        {Credo.Check.Readability.PreferImplicitTry, []},
+        # I disagree with this - https://github.com/rrrene/credo/issues/224#issuecomment-304527756
+        {Credo.Check.Readability.PreferImplicitTry, false},
         {Credo.Check.Readability.RedundantBlankLines, []},
         {Credo.Check.Readability.Semicolons, []},
         {Credo.Check.Readability.SpaceAfterCommas, []},
