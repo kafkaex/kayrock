@@ -34,7 +34,12 @@ defmodule(Kayrock.ApiVersions) do
 
   defimpl(Elixir.Kayrock.Request, for: V0.Request) do
     def(serialize(%V0.Request{} = struct)) do
-      V0.Request.serialize(struct)
+      try do
+        V0.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V0.Request{})) do
@@ -78,7 +83,12 @@ defmodule(Kayrock.ApiVersions) do
 
   defimpl(Elixir.Kayrock.Request, for: V1.Request) do
     def(serialize(%V1.Request{} = struct)) do
-      V1.Request.serialize(struct)
+      try do
+        V1.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V1.Request{})) do

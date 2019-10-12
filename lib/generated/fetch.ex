@@ -94,7 +94,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V0.Request) do
     def(serialize(%V0.Request{} = struct)) do
-      V0.Request.serialize(struct)
+      try do
+        V0.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V0.Request{})) do
@@ -198,7 +203,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V1.Request) do
     def(serialize(%V1.Request{} = struct)) do
-      V1.Request.serialize(struct)
+      try do
+        V1.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V1.Request{})) do
@@ -302,7 +312,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V2.Request) do
     def(serialize(%V2.Request{} = struct)) do
-      V2.Request.serialize(struct)
+      try do
+        V2.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V2.Request{})) do
@@ -409,7 +424,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V3.Request) do
     def(serialize(%V3.Request{} = struct)) do
-      V3.Request.serialize(struct)
+      try do
+        V3.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V3.Request{})) do
@@ -519,7 +539,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V4.Request) do
     def(serialize(%V4.Request{} = struct)) do
-      V4.Request.serialize(struct)
+      try do
+        V4.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V4.Request{})) do
@@ -637,7 +662,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V5.Request) do
     def(serialize(%V5.Request{} = struct)) do
-      V5.Request.serialize(struct)
+      try do
+        V5.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V5.Request{})) do
@@ -755,7 +785,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V6.Request) do
     def(serialize(%V6.Request{} = struct)) do
-      V6.Request.serialize(struct)
+      try do
+        V6.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V6.Request{})) do
@@ -930,7 +965,12 @@ defmodule(Kayrock.Fetch) do
 
   defimpl(Elixir.Kayrock.Request, for: V7.Request) do
     def(serialize(%V7.Request{} = struct)) do
-      V7.Request.serialize(struct)
+      try do
+        V7.Request.serialize(struct)
+      rescue
+        e ->
+          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+      end
     end
 
     def(api_vsn(%V7.Request{})) do
