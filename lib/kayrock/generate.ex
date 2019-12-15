@@ -234,8 +234,7 @@ defmodule Kayrock.Generate do
 
     struct_types =
       Enum.reduce(schema, [], fn {k, v}, acc ->
-        acc ++
-          [{k, describe_type(api, k, v)}]
+        acc ++ [{k, describe_type(api, k, v)}]
       end) ++
         [
           correlation_id:
@@ -392,8 +391,7 @@ defmodule Kayrock.Generate do
 
     struct_types =
       Enum.reduce(schema, [], fn {k, v}, acc ->
-        acc ++
-          [{k, describe_type(api, k, v)}]
+        acc ++ [{k, describe_type(api, k, v)}]
       end) ++
         [
           correlation_id:
