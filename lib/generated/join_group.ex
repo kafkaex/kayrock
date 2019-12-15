@@ -33,7 +33,17 @@ defmodule(Kayrock.JoinGroup) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            group_id: nil | binary(),
+            session_timeout: nil | integer(),
+            member_id: nil | binary(),
+            protocol_type: nil | binary(),
+            group_protocols: [
+              %{protocol_name: nil | binary(), protocol_metadata: nil | bitstring()}
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -153,7 +163,18 @@ defmodule(Kayrock.JoinGroup) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            group_id: nil | binary(),
+            session_timeout: nil | integer(),
+            rebalance_timeout: nil | integer(),
+            member_id: nil | binary(),
+            protocol_type: nil | binary(),
+            group_protocols: [
+              %{protocol_name: nil | binary(), protocol_metadata: nil | bitstring()}
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -275,7 +296,18 @@ defmodule(Kayrock.JoinGroup) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            group_id: nil | binary(),
+            session_timeout: nil | integer(),
+            rebalance_timeout: nil | integer(),
+            member_id: nil | binary(),
+            protocol_type: nil | binary(),
+            group_protocols: [
+              %{protocol_name: nil | binary(), protocol_metadata: nil | bitstring()}
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -412,7 +444,15 @@ defmodule(Kayrock.JoinGroup) do
     )
 
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            error_code: nil | integer(),
+            generation_id: nil | integer(),
+            group_protocol: nil | binary(),
+            leader_id: nil | binary(),
+            member_id: nil | binary(),
+            members: [%{member_id: nil | binary(), member_metadata: nil | bitstring()}],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -527,7 +567,15 @@ defmodule(Kayrock.JoinGroup) do
     )
 
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            error_code: nil | integer(),
+            generation_id: nil | integer(),
+            group_protocol: nil | binary(),
+            leader_id: nil | binary(),
+            member_id: nil | binary(),
+            members: [%{member_id: nil | binary(), member_metadata: nil | bitstring()}],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -644,7 +692,16 @@ defmodule(Kayrock.JoinGroup) do
     )
 
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            error_code: nil | integer(),
+            generation_id: nil | integer(),
+            group_protocol: nil | binary(),
+            leader_id: nil | binary(),
+            member_id: nil | binary(),
+            members: [%{member_id: nil | binary(), member_metadata: nil | bitstring()}],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer

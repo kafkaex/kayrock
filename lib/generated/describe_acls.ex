@@ -35,7 +35,16 @@ defmodule(Kayrock.DescribeAcls) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            resource_type: nil | integer(),
+            resource_name: nil | binary(),
+            principal: nil | binary(),
+            host: nil | binary(),
+            operation: nil | integer(),
+            permission_type: nil | integer(),
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -142,7 +151,26 @@ defmodule(Kayrock.DescribeAcls) do
     )
 
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            error_code: nil | integer(),
+            error_message: nil | binary(),
+            resources: [
+              %{
+                resource_type: nil | integer(),
+                resource_name: nil | binary(),
+                acls: [
+                  %{
+                    principal: nil | binary(),
+                    host: nil | binary(),
+                    operation: nil | integer(),
+                    permission_type: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer

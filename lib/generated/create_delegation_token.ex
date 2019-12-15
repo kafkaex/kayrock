@@ -19,7 +19,12 @@ defmodule(Kayrock.CreateDelegationToken) do
     defstruct(renewers: [], max_life_time: nil, correlation_id: nil, client_id: nil)
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            renewers: [%{principal_type: nil | binary(), name: nil | binary()}],
+            max_life_time: nil | integer(),
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -132,7 +137,17 @@ defmodule(Kayrock.CreateDelegationToken) do
     )
 
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            error_code: nil | integer(),
+            owner: %{principal_type: nil | binary(), name: nil | binary()},
+            issue_timestamp: nil | integer(),
+            expiry_timestamp: nil | integer(),
+            max_timestamp: nil | integer(),
+            token_id: nil | binary(),
+            hmac: nil | bitstring(),
+            throttle_time_ms: nil | integer(),
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer

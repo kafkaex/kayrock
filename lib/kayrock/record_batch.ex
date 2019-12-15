@@ -23,6 +23,8 @@ defmodule Kayrock.RecordBatch do
       value: nil,
       headers: <<0>>
     )
+
+    @type t :: %__MODULE__{}
   end
 
   defstruct(
@@ -40,11 +42,14 @@ defmodule Kayrock.RecordBatch do
     records: []
   )
 
+  @type t :: %__MODULE__{}
+
   use Bitwise
 
   alias Kayrock.Compression
   alias Kayrock.MessageSet
 
+  @spec from_binary_list([binary], atom) :: t
   def from_binary_list(messages, compression \\ :none) when is_list(messages) do
     %__MODULE__{
       attributes: set_compression_bits(0, compression),
@@ -76,6 +81,7 @@ defmodule Kayrock.RecordBatch do
   # baseSequence: int32
   # records: [Record]
 
+  @spec serialize(t) :: iodata
   def serialize(%__MODULE__{} = record_batch) do
     [first_record | _] = record_batch.records
 
@@ -131,10 +137,12 @@ defmodule Kayrock.RecordBatch do
 
   Supplied for compatibility with the Request protocol
   """
+  @spec deserialize(binary) :: nil | MessageSet.t() | t
   def deserialize(record_batch_data) do
     deserialize(byte_size(record_batch_data), record_batch_data)
   end
 
+  @spec deserialize(integer, binary) :: nil | MessageSet.t() | t
   def deserialize(0, "") do
     nil
   end

@@ -26,7 +26,12 @@ defmodule(Kayrock.InitProducerId) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            transactional_id: nil | binary(),
+            transaction_timeout_ms: nil | integer(),
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -114,7 +119,13 @@ defmodule(Kayrock.InitProducerId) do
     )
 
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            error_code: nil | integer(),
+            producer_id: nil | integer(),
+            producer_epoch: nil | integer(),
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer

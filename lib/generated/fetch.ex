@@ -37,7 +37,25 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -171,7 +189,25 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -305,7 +341,25 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -441,7 +495,26 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            max_bytes: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -581,7 +654,27 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            max_bytes: nil | integer(),
+            isolation_level: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -729,7 +822,28 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            max_bytes: nil | integer(),
+            isolation_level: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    log_start_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -885,7 +999,28 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            max_bytes: nil | integer(),
+            isolation_level: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    log_start_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -1059,7 +1194,43 @@ defmodule(Kayrock.Fetch) do
 
     import(Elixir.Kayrock.Serialize)
     @typedoc "Request struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            replica_id: nil | integer(),
+            max_wait_time: nil | integer(),
+            min_bytes: nil | integer(),
+            max_bytes: nil | integer(),
+            isolation_level: nil | integer(),
+            session_id: nil | integer(),
+            epoch: nil | integer(),
+            topics: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    log_start_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            forgetten_topics_data: [
+              %{
+                topic: nil | binary(),
+                partitions: [
+                  %{
+                    partition: nil | integer(),
+                    fetch_offset: nil | integer(),
+                    log_start_offset: nil | integer(),
+                    max_bytes: nil | integer()
+                  }
+                ]
+              }
+            ],
+            correlation_id: nil | integer(),
+            client_id: nil | binary()
+          }
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
     def(api_key) do
@@ -1291,7 +1462,24 @@ defmodule(Kayrock.Fetch) do
     _ = " THIS CODE IS GENERATED BY KAYROCK"
     defstruct(responses: [], correlation_id: nil)
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer()
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -1438,7 +1626,25 @@ defmodule(Kayrock.Fetch) do
     _ = " THIS CODE IS GENERATED BY KAYROCK"
     defstruct(throttle_time_ms: nil, responses: [], correlation_id: nil)
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer()
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -1597,7 +1803,25 @@ defmodule(Kayrock.Fetch) do
     _ = " THIS CODE IS GENERATED BY KAYROCK"
     defstruct(throttle_time_ms: nil, responses: [], correlation_id: nil)
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer()
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -1756,7 +1980,25 @@ defmodule(Kayrock.Fetch) do
     _ = " THIS CODE IS GENERATED BY KAYROCK"
     defstruct(throttle_time_ms: nil, responses: [], correlation_id: nil)
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer()
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -1918,7 +2160,29 @@ defmodule(Kayrock.Fetch) do
     _ = " THIS CODE IS GENERATED BY KAYROCK"
     defstruct(throttle_time_ms: nil, responses: [], correlation_id: nil)
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer(),
+                      last_stable_offset: nil | integer(),
+                      aborted_transactions: [
+                        %{producer_id: nil | integer(), first_offset: nil | integer()}
+                      ]
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -2137,7 +2401,30 @@ defmodule(Kayrock.Fetch) do
     _ = " THIS CODE IS GENERATED BY KAYROCK"
     defstruct(throttle_time_ms: nil, responses: [], correlation_id: nil)
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer(),
+                      last_stable_offset: nil | integer(),
+                      log_start_offset: nil | integer(),
+                      aborted_transactions: [
+                        %{producer_id: nil | integer(), first_offset: nil | integer()}
+                      ]
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -2368,7 +2655,30 @@ defmodule(Kayrock.Fetch) do
     _ = " THIS CODE IS GENERATED BY KAYROCK"
     defstruct(throttle_time_ms: nil, responses: [], correlation_id: nil)
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer(),
+                      last_stable_offset: nil | integer(),
+                      log_start_offset: nil | integer(),
+                      aborted_transactions: [
+                        %{producer_id: nil | integer(), first_offset: nil | integer()}
+                      ]
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer
@@ -2609,7 +2919,32 @@ defmodule(Kayrock.Fetch) do
     )
 
     @typedoc "Response struct for the Kafka `#{@api}` API v#{@vsn}\n"
-    @type t :: %__MODULE__{}
+    @type t :: %__MODULE__{
+            throttle_time_ms: nil | integer(),
+            error_code: nil | integer(),
+            session_id: nil | integer(),
+            responses: [
+              %{
+                topic: nil | binary(),
+                partition_responses: [
+                  %{
+                    partition_header: %{
+                      partition: nil | integer(),
+                      error_code: nil | integer(),
+                      high_watermark: nil | integer(),
+                      last_stable_offset: nil | integer(),
+                      log_start_offset: nil | integer(),
+                      aborted_transactions: [
+                        %{producer_id: nil | integer(), first_offset: nil | integer()}
+                      ]
+                    },
+                    record_set: nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+                  }
+                ]
+              }
+            ],
+            correlation_id: integer()
+          }
     import(Elixir.Kayrock.Deserialize)
     @doc "Returns the Kafka API key for this API"
     @spec api_key :: integer

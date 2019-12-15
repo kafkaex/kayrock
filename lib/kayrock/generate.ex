@@ -232,6 +232,22 @@ defmodule Kayrock.Generate do
 
     field_serializers = Enum.map(schema, &field_serializer(&1, :struct))
 
+    struct_types =
+      Enum.reduce(schema, [], fn {k, v}, acc ->
+        acc ++
+          [{k, describe_type(api, k, v)}]
+      end) ++
+        [
+          correlation_id:
+            quote do
+              nil | integer()
+            end,
+          client_id:
+            quote do
+              nil | binary()
+            end
+        ]
+
     # some of the apis don't really have any fields to serialize.  if we don't
     # do this then we end up with an "unused import" warning
     imports =
@@ -267,7 +283,7 @@ defmodule Kayrock.Generate do
         @typedoc """
         Request struct for the Kafka `#{@api}` API v#{@vsn}
         """
-        @type t :: %__MODULE__{}
+        @type t :: %__MODULE__{unquote_splicing(struct_types)}
 
         @doc "Returns the Kafka API key for this API"
         @spec api_key :: integer
@@ -305,11 +321,86 @@ defmodule Kayrock.Generate do
     end
   end
 
+  def describe_type(:sync_group, :member_assignment, :bytes) do
+    quote do
+      nil | Kayrock.MemberAssignment.t()
+    end
+  end
+
+  def describe_type(_, _, :bytes) do
+    quote do
+      nil | bitstring()
+    end
+  end
+
+  def describe_type(_, _, :nullable_string) do
+    quote do
+      nil | binary()
+    end
+  end
+
+  def describe_type(_, _, :string) do
+    quote do
+      nil | binary()
+    end
+  end
+
+  def describe_type(_, _, :records) do
+    quote do
+      nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+    end
+  end
+
+  def describe_type(api, field, mapspec) when is_list(mapspec) do
+    field_types =
+      Enum.map(mapspec, fn {k, v} ->
+        {k, describe_type(api, {field, k}, v)}
+      end)
+
+    quote do
+      %{unquote_splicing(field_types)}
+    end
+  end
+
+  def describe_type(api, field, {:array, arrayspec}) do
+    inner_type = describe_type(api, field, arrayspec)
+
+    quote do
+      [unquote(inner_type)]
+    end
+  end
+
+  def describe_type(_, _, t) when t in [:boolean, :int8, :int16, :int32, :int64] do
+    quote do
+      nil | integer()
+    end
+  end
+
+  def describe_type(_, _, t) do
+    IO.puts("Unhandled type: #{inspect(t)} will be spec'ed as term()")
+
+    quote do
+      term()
+    end
+  end
+
   def generate_response_struct(api, vsn, modname, schema) do
     fields =
       Enum.reduce(schema, [], fn {k, v}, acc ->
         acc ++ [{k, default_val(v)}]
       end) ++ [correlation_id: nil]
+
+    struct_types =
+      Enum.reduce(schema, [], fn {k, v}, acc ->
+        acc ++
+          [{k, describe_type(api, k, v)}]
+      end) ++
+        [
+          correlation_id:
+            quote do
+              integer()
+            end
+        ]
 
     {first_field_name, fields_with_next_field} = build_field_zip(schema)
 
@@ -338,7 +429,7 @@ defmodule Kayrock.Generate do
         @typedoc """
         Response struct for the Kafka `#{@api}` API v#{@vsn}
         """
-        @type t :: %__MODULE__{}
+        @type t :: %__MODULE__{unquote_splicing(struct_types)}
 
         import Elixir.Kayrock.Deserialize
 
