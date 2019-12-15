@@ -37,9 +37,11 @@ defmodule Kayrock.ErrorCode do
   alias Kayrock.KafkaSchemaMetadata
 
   @known_codes -1..71
-  @atom_to_code Enum.into(@known_codes, %{}, fn c ->
-                  {KafkaSchemaMetadata.error_code_to_error(c), c}
-                end)
+  if Code.ensure_compiled?(KafkaSchemaMetadata) do
+    @atom_to_code Enum.into(@known_codes, %{}, fn c ->
+                    {KafkaSchemaMetadata.error_code_to_error(c), c}
+                  end)
+  end
 
   @typedoc """
   A numeric Kafka error code

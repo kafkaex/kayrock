@@ -23,12 +23,17 @@ defmodule Kayrock.MessageSet do
               crc: nil,
               timestamp: nil,
               timestamp_type: nil
+
+    @type t :: %__MODULE__{}
   end
 
   use Bitwise
 
   defstruct messages: [], magic: 0
 
+  @type t :: %__MODULE__{}
+
+  @spec serialize(t) :: iodata
   def serialize(%__MODULE__{messages: messages}) when is_list(messages) do
     [%Message{compression: compression} | _] = messages
     # note when we serialize we never have an offset
@@ -36,6 +41,7 @@ defmodule Kayrock.MessageSet do
     [<<msize::32-signed>>, message]
   end
 
+  @spec deserialize(binary) :: t
   def deserialize(data), do: deserialize(data, 0)
 
   def deserialize(data, magic) do

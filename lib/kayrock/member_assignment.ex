@@ -8,10 +8,22 @@ defmodule Kayrock.MemberAssignment do
   defstruct version: 0, partition_assignments: [], user_data: ""
 
   defmodule PartitionAssignment do
-    @moduledoc false
+    @moduledoc "Represents partition assignments for a specific topic"
     defstruct topic: nil, partitions: []
+
+    @type t :: %__MODULE__{
+            topic: binary,
+            partitions: [integer]
+          }
   end
 
+  @type t :: %__MODULE__{
+          version: integer,
+          partition_assignments: [PartitionAssignment.t()],
+          user_data: binary
+        }
+
+  @spec serialize(t) :: iodata
   def serialize(%__MODULE__{
         version: version,
         partition_assignments: partition_assignments,
@@ -24,6 +36,7 @@ defmodule Kayrock.MemberAssignment do
     ]
   end
 
+  @spec deserialize(binary) :: {t, binary}
   def deserialize(<<>>), do: {%__MODULE__{}, <<>>}
 
   def deserialize(<<0::32-signed, rest>>), do: {%__MODULE__{}, rest}
