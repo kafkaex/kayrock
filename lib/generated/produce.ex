@@ -1340,6 +1340,20 @@ defmodule(Kayrock.Produce) do
     V5.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.Produce.V5.Request.t()
+          | Kayrock.Produce.V4.Request.t()
+          | Kayrock.Produce.V3.Request.t()
+          | Kayrock.Produce.V2.Request.t()
+          | Kayrock.Produce.V1.Request.t()
+          | Kayrock.Produce.V0.Request.t()
+  @type response_t ::
+          Kayrock.Produce.V5.Response.t()
+          | Kayrock.Produce.V4.Response.t()
+          | Kayrock.Produce.V3.Response.t()
+          | Kayrock.Produce.V2.Response.t()
+          | Kayrock.Produce.V1.Response.t()
+          | Kayrock.Produce.V0.Response.t()
   def(min_vsn) do
     0
   end

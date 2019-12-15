@@ -258,6 +258,10 @@ defmodule(Kayrock.FindCoordinator) do
     V1.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.FindCoordinator.V1.Request.t() | Kayrock.FindCoordinator.V0.Request.t()
+  @type response_t ::
+          Kayrock.FindCoordinator.V1.Response.t() | Kayrock.FindCoordinator.V0.Response.t()
   def(min_vsn) do
     0
   end

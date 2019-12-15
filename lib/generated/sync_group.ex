@@ -297,6 +297,8 @@ defmodule(Kayrock.SyncGroup) do
     V1.Response.deserialize(data)
   end
 
+  @type request_t :: Kayrock.SyncGroup.V1.Request.t() | Kayrock.SyncGroup.V0.Request.t()
+  @type response_t :: Kayrock.SyncGroup.V1.Response.t() | Kayrock.SyncGroup.V0.Response.t()
   def(min_vsn) do
     0
   end

@@ -196,6 +196,9 @@ defmodule(Kayrock.SaslHandshake) do
     V1.Response.deserialize(data)
   end
 
+  @type request_t :: Kayrock.SaslHandshake.V1.Request.t() | Kayrock.SaslHandshake.V0.Request.t()
+  @type response_t ::
+          Kayrock.SaslHandshake.V1.Response.t() | Kayrock.SaslHandshake.V0.Response.t()
   def(min_vsn) do
     0
   end

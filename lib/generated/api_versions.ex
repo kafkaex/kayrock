@@ -263,6 +263,8 @@ defmodule(Kayrock.ApiVersions) do
     V1.Response.deserialize(data)
   end
 
+  @type request_t :: Kayrock.ApiVersions.V1.Request.t() | Kayrock.ApiVersions.V0.Request.t()
+  @type response_t :: Kayrock.ApiVersions.V1.Response.t() | Kayrock.ApiVersions.V0.Response.t()
   def(min_vsn) do
     0
   end

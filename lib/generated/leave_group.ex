@@ -203,6 +203,8 @@ defmodule(Kayrock.LeaveGroup) do
     V1.Response.deserialize(data)
   end
 
+  @type request_t :: Kayrock.LeaveGroup.V1.Request.t() | Kayrock.LeaveGroup.V0.Request.t()
+  @type response_t :: Kayrock.LeaveGroup.V1.Response.t() | Kayrock.LeaveGroup.V0.Response.t()
   def(min_vsn) do
     0
   end

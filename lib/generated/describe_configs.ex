@@ -479,6 +479,10 @@ defmodule(Kayrock.DescribeConfigs) do
     V1.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.DescribeConfigs.V1.Request.t() | Kayrock.DescribeConfigs.V0.Request.t()
+  @type response_t ::
+          Kayrock.DescribeConfigs.V1.Response.t() | Kayrock.DescribeConfigs.V0.Response.t()
   def(min_vsn) do
     0
   end

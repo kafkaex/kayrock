@@ -626,6 +626,14 @@ defmodule(Kayrock.ListOffsets) do
     V2.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.ListOffsets.V2.Request.t()
+          | Kayrock.ListOffsets.V1.Request.t()
+          | Kayrock.ListOffsets.V0.Request.t()
+  @type response_t ::
+          Kayrock.ListOffsets.V2.Response.t()
+          | Kayrock.ListOffsets.V1.Response.t()
+          | Kayrock.ListOffsets.V0.Response.t()
   def(min_vsn) do
     0
   end

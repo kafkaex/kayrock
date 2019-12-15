@@ -1514,6 +1514,20 @@ defmodule(Kayrock.Metadata) do
     V5.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.Metadata.V5.Request.t()
+          | Kayrock.Metadata.V4.Request.t()
+          | Kayrock.Metadata.V3.Request.t()
+          | Kayrock.Metadata.V2.Request.t()
+          | Kayrock.Metadata.V1.Request.t()
+          | Kayrock.Metadata.V0.Request.t()
+  @type response_t ::
+          Kayrock.Metadata.V5.Response.t()
+          | Kayrock.Metadata.V4.Response.t()
+          | Kayrock.Metadata.V3.Response.t()
+          | Kayrock.Metadata.V2.Response.t()
+          | Kayrock.Metadata.V1.Response.t()
+          | Kayrock.Metadata.V0.Response.t()
   def(min_vsn) do
     0
   end

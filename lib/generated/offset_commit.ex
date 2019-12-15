@@ -830,6 +830,16 @@ defmodule(Kayrock.OffsetCommit) do
     V3.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.OffsetCommit.V3.Request.t()
+          | Kayrock.OffsetCommit.V2.Request.t()
+          | Kayrock.OffsetCommit.V1.Request.t()
+          | Kayrock.OffsetCommit.V0.Request.t()
+  @type response_t ::
+          Kayrock.OffsetCommit.V3.Response.t()
+          | Kayrock.OffsetCommit.V2.Response.t()
+          | Kayrock.OffsetCommit.V1.Response.t()
+          | Kayrock.OffsetCommit.V0.Response.t()
   def(min_vsn) do
     0
   end

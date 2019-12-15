@@ -99,7 +99,7 @@ defmodule Kayrock.Generate do
 
   def build_all(api, schema_module) do
     modname = Module.concat([Kayrock, Macro.camelize("#{api}")])
-    contents = build_modules(api, schema_module)
+    contents = build_modules(api, schema_module, modname)
 
     quote do
       defmodule unquote(modname) do
@@ -110,7 +110,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def build_modules(api, schema_module) do
+  def build_modules(api, schema_module, modname) do
     {vmin, vmax} = schema_module.vsn_range(api)
 
     List.flatten(
@@ -118,6 +118,7 @@ defmodule Kayrock.Generate do
         Enum.map(vmin..vmax, &make_request_getter(&1)) ++
         Enum.map(vmin..vmax, &make_response_module(api, &1, schema_module)) ++
         Enum.map(vmin..vmax, &make_response_deserializer(&1)) ++
+        make_types(modname, vmin, vmax) ++
         [
           quote do
             def min_vsn, do: unquote(vmin)
@@ -127,6 +128,31 @@ defmodule Kayrock.Generate do
           end
         ]
     )
+  end
+
+  def make_types(root_module, vmin, vmax) do
+    request_ts =
+      for v <- vmin..vmax do
+        quote do
+          unquote(Module.concat([root_module, "V#{v}", Request])).t()
+        end
+      end
+
+    response_ts =
+      for v <- vmin..vmax do
+        quote do
+          unquote(Module.concat([root_module, "V#{v}", Response])).t()
+        end
+      end
+
+    [
+      quote do
+        @type request_t :: unquote(Enum.reduce(request_ts, &{:|, [], [&1, &2]}))
+      end,
+      quote do
+        @type response_t :: unquote(Enum.reduce(response_ts, &{:|, [], [&1, &2]}))
+      end
+    ]
   end
 
   def make_request_getter(vsn) do

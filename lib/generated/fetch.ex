@@ -2362,6 +2362,24 @@ defmodule(Kayrock.Fetch) do
     V7.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.Fetch.V7.Request.t()
+          | Kayrock.Fetch.V6.Request.t()
+          | Kayrock.Fetch.V5.Request.t()
+          | Kayrock.Fetch.V4.Request.t()
+          | Kayrock.Fetch.V3.Request.t()
+          | Kayrock.Fetch.V2.Request.t()
+          | Kayrock.Fetch.V1.Request.t()
+          | Kayrock.Fetch.V0.Request.t()
+  @type response_t ::
+          Kayrock.Fetch.V7.Response.t()
+          | Kayrock.Fetch.V6.Response.t()
+          | Kayrock.Fetch.V5.Response.t()
+          | Kayrock.Fetch.V4.Response.t()
+          | Kayrock.Fetch.V3.Response.t()
+          | Kayrock.Fetch.V2.Response.t()
+          | Kayrock.Fetch.V1.Response.t()
+          | Kayrock.Fetch.V0.Response.t()
   def(min_vsn) do
     0
   end

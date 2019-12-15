@@ -593,6 +593,14 @@ defmodule(Kayrock.CreateTopics) do
     V2.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.CreateTopics.V2.Request.t()
+          | Kayrock.CreateTopics.V1.Request.t()
+          | Kayrock.CreateTopics.V0.Request.t()
+  @type response_t ::
+          Kayrock.CreateTopics.V2.Response.t()
+          | Kayrock.CreateTopics.V1.Response.t()
+          | Kayrock.CreateTopics.V0.Response.t()
   def(min_vsn) do
     0
   end

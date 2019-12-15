@@ -826,6 +826,16 @@ defmodule(Kayrock.OffsetFetch) do
     V3.Response.deserialize(data)
   end
 
+  @type request_t ::
+          Kayrock.OffsetFetch.V3.Request.t()
+          | Kayrock.OffsetFetch.V2.Request.t()
+          | Kayrock.OffsetFetch.V1.Request.t()
+          | Kayrock.OffsetFetch.V0.Request.t()
+  @type response_t ::
+          Kayrock.OffsetFetch.V3.Response.t()
+          | Kayrock.OffsetFetch.V2.Response.t()
+          | Kayrock.OffsetFetch.V1.Response.t()
+          | Kayrock.OffsetFetch.V0.Response.t()
   def(min_vsn) do
     0
   end

@@ -254,6 +254,8 @@ defmodule(Kayrock.DeleteTopics) do
     V1.Response.deserialize(data)
   end
 
+  @type request_t :: Kayrock.DeleteTopics.V1.Request.t() | Kayrock.DeleteTopics.V0.Request.t()
+  @type response_t :: Kayrock.DeleteTopics.V1.Response.t() | Kayrock.DeleteTopics.V0.Response.t()
   def(min_vsn) do
     0
   end

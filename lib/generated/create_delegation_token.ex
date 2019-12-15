@@ -180,6 +180,8 @@ defmodule(Kayrock.CreateDelegationToken) do
     V0.Response.deserialize(data)
   end
 
+  @type request_t :: Kayrock.CreateDelegationToken.V0.Request.t()
+  @type response_t :: Kayrock.CreateDelegationToken.V0.Response.t()
   def(min_vsn) do
     0
   end

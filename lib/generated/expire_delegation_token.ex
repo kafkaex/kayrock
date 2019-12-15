@@ -107,6 +107,8 @@ defmodule(Kayrock.ExpireDelegationToken) do
     V0.Response.deserialize(data)
   end
 
+  @type request_t :: Kayrock.ExpireDelegationToken.V0.Request.t()
+  @type response_t :: Kayrock.ExpireDelegationToken.V0.Response.t()
   def(min_vsn) do
     0
   end
