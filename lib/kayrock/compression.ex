@@ -53,7 +53,7 @@ defmodule Kayrock.Compression do
   return the compressed data as well as the corresponding attribute
   value.
   """
-  @spec compress(compression_type_t, binary) :: {binary, attribute_t}
+  @spec compress(compression_type_t, iodata) :: {binary, attribute_t}
   def compress(:snappy, data) do
     {:ok, compressed_data} = :snappy.compress(data)
     {compressed_data, @snappy_attribute}
