@@ -35,7 +35,8 @@ defmodule Kayrock.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:crc32cer, "~>0.1.3"},
+      ## overriding this because it has a compile issue on OTP 23
+      {:crc32cer, "~>0.1.7", [override: true]},
       {:varint, "~>1.2.0"},
       {:connection, "~>1.0.4"},
       {:kafka_protocol, "~> 2.2.7", only: [:dev, :test]},
