@@ -9,13 +9,14 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
 
   @shortdoc "Generates code for the protocol"
   def run(_) do
-    if not Code.ensure_compiled?(:kpro_schema) do
-      IO.puts(
-        ":kpro_schema is not loaded.  " <>
-          "Note, this task should only be run when developing Kayrock."
-      )
-
+    case Code.ensure_compiled(:kpro_schema) do
+      {:error, _} ->
+        IO.puts(
+          ":kpro_schema is not loaded.  " <>
+            "Note, this task should only be run when developing Kayrock."
+        )
       exit({:shutdown, 1})
+      _ -> :ok
     end
 
     output_dir = "lib/generated"
