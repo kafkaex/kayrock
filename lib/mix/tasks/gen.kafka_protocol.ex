@@ -15,8 +15,11 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
           ":kpro_schema is not loaded.  " <>
             "Note, this task should only be run when developing Kayrock."
         )
-      exit({:shutdown, 1})
-      _ -> :ok
+
+        exit({:shutdown, 1})
+
+      _ ->
+        :ok
     end
 
     output_dir = "lib/generated"

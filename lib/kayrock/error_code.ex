@@ -42,7 +42,9 @@ defmodule Kayrock.ErrorCode do
       @atom_to_code Enum.into(@known_codes, %{}, fn c ->
                       {KafkaSchemaMetadata.error_code_to_error(c), c}
                     end)
-    _ -> :ok
+
+    _ ->
+      :ok
   end
 
   @typedoc """
