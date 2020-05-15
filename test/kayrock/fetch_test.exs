@@ -793,7 +793,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 0,
                       timestamp: -1,
@@ -859,7 +859,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 0,
                       timestamp: -1,
@@ -882,7 +882,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 1,
                       timestamp: -1,
@@ -1051,7 +1051,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 83,
                       timestamp: -1,
@@ -1074,7 +1074,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 84,
                       timestamp: -1,
@@ -1097,7 +1097,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 85,
                       timestamp: -1,
@@ -1168,7 +1168,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 203,
                       timestamp: -1,
@@ -1191,7 +1191,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 204,
                       timestamp: -1,
@@ -1214,7 +1214,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 205,
                       timestamp: -1,
@@ -1284,7 +1284,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 228,
                       timestamp: -1,
@@ -1307,7 +1307,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 229,
                       timestamp: -1,
@@ -1330,7 +1330,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 230,
                       timestamp: -1,
@@ -1404,7 +1404,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 34,
                       timestamp: 1_568_164_739_263,
@@ -1427,7 +1427,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 35,
                       timestamp: 1_568_164_739_267,
@@ -1450,7 +1450,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 36,
                       timestamp: 1_568_164_739_269,
@@ -1473,7 +1473,7 @@ defmodule Kayrock.FetchTest do
                   records: [
                     %Kayrock.RecordBatch.Record{
                       attributes: 0,
-                      headers: <<0>>,
+                      headers: [],
                       key: "",
                       offset: 37,
                       timestamp: 1_568_164_739_271,

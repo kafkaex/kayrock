@@ -154,7 +154,7 @@ defmodule Kayrock.MessageSerdeTest do
       records: [
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -162,7 +162,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -170,7 +170,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -214,7 +214,7 @@ defmodule Kayrock.MessageSerdeTest do
         records: [
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 126,
             timestamp: -1,
@@ -222,7 +222,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 127,
             timestamp: -1,
@@ -230,7 +230,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 128,
             timestamp: -1,
@@ -260,7 +260,7 @@ defmodule Kayrock.MessageSerdeTest do
       records: [
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -268,7 +268,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 1,
           timestamp: -1,
@@ -276,7 +276,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 2,
           timestamp: -1,
@@ -329,7 +329,7 @@ defmodule Kayrock.MessageSerdeTest do
         records: [
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 132,
             timestamp: -1,
@@ -337,7 +337,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 133,
             timestamp: -1,
@@ -345,7 +345,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 134,
             timestamp: -1,
