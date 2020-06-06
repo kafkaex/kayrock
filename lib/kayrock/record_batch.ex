@@ -7,17 +7,6 @@ defmodule Kayrock.RecordBatch do
   See https://kafka.apache.org/documentation/#recordbatch
   """
 
-  defmodule RecordHeader do
-    @moduledoc """
-    Represents a record header
-
-    Headers were added on Kafka 0.11+
-
-    See https://kafka.apache.org/documentation/#recordheader
-    """
-    defstruct( key: nil, value: nil)
-  end
-
   defmodule Record do
     @moduledoc """
     Represents a single record (message)
