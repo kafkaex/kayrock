@@ -392,7 +392,11 @@ defmodule Kayrock.RecordBatch do
     }
   end
 
-  defp serialize_record_headers(headers) when length(headers) == 0 do
+  defp serialize_record_headers(headers) when is_nil(headers) do
+    <<0>>
+  end
+
+  defp serialize_record_headers([] = _headers) do
     <<0>>
   end
 
