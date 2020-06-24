@@ -265,8 +265,7 @@ defmodule Kayrock.Client.ProduceTest do
       %RecordHeader{key: "type", value: "HeaderCreatedEvent"}
     ]
 
-    record_value = "record-value-here"
-    records = [%Record{headers: headers, key: "rd-k", value: record_value}]
+    records = [%Record{headers: headers, key: "rd-k", value: "record-value-here"}]
 
     record_batch = %RecordBatch{
       attributes: 0,
