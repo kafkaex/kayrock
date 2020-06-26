@@ -304,10 +304,20 @@ defmodule Kayrock.RecordBatch do
 
   defp deserialize_msg_headers(data, headers_left, acc) do
     {key_len, rest} = decode_varint(data)
+
     <<key::size(key_len)-binary, rest::bits>> = rest
 
     {value_len, rest} = decode_varint(rest)
-    <<value::size(value_len)-binary, rest::bits>> = rest
+
+    {value, rest} =
+      case value_len do
+        -1 ->
+          {nil, rest}
+
+        len ->
+          <<val::size(value_len)-binary, rest::bits>> = rest
+          {val, rest}
+      end
 
     header = %Kayrock.RecordBatch.RecordHeader{key: key, value: value}
 
@@ -408,8 +418,12 @@ defmodule Kayrock.RecordBatch do
       acc <>
         encode_varint(byte_size(h.key)) <>
         <<h.key::binary>> <>
-        encode_varint(byte_size(h.value)) <>
-        <<h.value::binary>>
+        if is_nil(h.value) do
+          encode_varint(-1)
+        else
+          encode_varint(byte_size(h.value)) <>
+            <<h.value::binary>>
+        end
     end)
   end
 
