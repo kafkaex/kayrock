@@ -315,7 +315,7 @@ defmodule Kayrock.RecordBatch do
           {nil, rest}
 
         len ->
-          <<val::size(value_len)-binary, rest::bits>> = rest
+          <<val::size(len)-binary, rest::bits>> = rest
           {val, rest}
       end
 
