@@ -401,9 +401,10 @@ defmodule Kayrock.RecordBatch do
   end
 
   defp serialize_record_headers(headers) do
-    headers_len = encode_varint(length(headers))
+    valid_headers = Enum.filter(headers, fn h -> !is_nil(h.key) end)
+    headers_len = encode_varint(length(valid_headers))
 
-    Enum.reduce(headers, headers_len, fn h, acc ->
+    Enum.reduce(valid_headers, headers_len, fn h, acc ->
       acc <>
         encode_varint(byte_size(h.key)) <>
         <<h.key::binary>> <>
