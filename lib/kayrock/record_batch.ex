@@ -411,23 +411,26 @@ defmodule Kayrock.RecordBatch do
   end
 
   defp serialize_record_headers(headers) do
-    if Enum.any?(headers, fn header -> is_nil(header.key) end) do
-      raise RuntimeError, "Invalid null header key found in headers"
-    end
-
     headers_len = encode_varint(length(headers))
 
     Enum.reduce(headers, headers_len, fn header, acc ->
-      acc <>
-        encode_varint(byte_size(header.key)) <>
-        <<header.key::binary>> <>
-        if is_nil(header.value) do
-          encode_varint(-1)
-        else
-          encode_varint(byte_size(header.value)) <>
-            <<header.value::binary>>
-        end
+      acc <> serialize_record_header(header)
     end)
+  end
+
+  defp serialize_record_header(%RecordHeader{key: nil, value: _val} = _header) do
+    raise RuntimeError, "Invalid null header key found in headers"
+  end
+
+  defp serialize_record_header(%RecordHeader{} = header) do
+    encoded_value =
+      if is_nil(header.value) do
+        encode_varint(-1)
+      else
+        encode_varint(byte_size(header.value)) <> <<header.value::binary>>
+      end
+
+    encode_varint(byte_size(header.key)) <> <<header.key::binary>> <> encoded_value
   end
 
   defp maybe_delta(nil, _), do: nil
