@@ -418,19 +418,16 @@ defmodule Kayrock.RecordBatch do
     end)
   end
 
-  defp serialize_record_header(%RecordHeader{key: nil, value: _val} = _header) do
-    raise RuntimeError, "Invalid null header key found in headers"
-  end
-
-  defp serialize_record_header(%RecordHeader{} = header) do
+  defp serialize_record_header(%RecordHeader{key: key, value: value})
+       when not is_nil(key) do
     encoded_value =
-      if is_nil(header.value) do
+      if is_nil(value) do
         encode_varint(-1)
       else
-        encode_varint(byte_size(header.value)) <> <<header.value::binary>>
+        encode_varint(byte_size(value)) <> <<value::binary>>
       end
 
-    encode_varint(byte_size(header.key)) <> <<header.key::binary>> <> encoded_value
+    encode_varint(byte_size(key)) <> <<key::binary>> <> encoded_value
   end
 
   defp maybe_delta(nil, _), do: nil

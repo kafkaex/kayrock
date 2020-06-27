@@ -555,7 +555,7 @@ defmodule Kayrock.MessageSerdeTest do
       ]
     }
 
-    assert_raise RuntimeError, "Invalid null header key found in headers", fn ->
+    assert_raise FunctionClauseError, fn ->
       RecordBatch.serialize(record_batch)
     end
   end
