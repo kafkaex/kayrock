@@ -21,7 +21,23 @@ defmodule Kayrock.RecordBatch do
       offset: 0,
       key: nil,
       value: nil,
-      headers: <<0>>
+      headers: []
+    )
+
+    @type t :: %__MODULE__{}
+  end
+
+  defmodule RecordHeader do
+    @moduledoc """
+    Represents a record header
+
+    Headers were added on Kafka 0.11+
+
+    See https://kafka.apache.org/documentation/#recordheader
+    """
+    defstruct(
+      key: nil,
+      value: nil
     )
 
     @type t :: %__MODULE__{}
@@ -267,16 +283,45 @@ defmodule Kayrock.RecordBatch do
           {value, rest}
       end
 
+    {headers_length, rest} = decode_varint(rest)
+    headers = deserialize_msg_headers(rest, headers_length, [])
+
     msg = %Record{
       attributes: attributes,
       key: key,
       value: value,
       offset: offset_delta,
       timestamp: timestamp_delta,
-      headers: rest
+      headers: headers
     }
 
     deserialize_message(orest, num_left - 1, [msg | acc])
+  end
+
+  defp deserialize_msg_headers(_data, 0, acc) do
+    Enum.reverse(acc)
+  end
+
+  defp deserialize_msg_headers(data, headers_left, acc) do
+    {key_len, rest} = decode_varint(data)
+
+    <<key::size(key_len)-binary, rest::bits>> = rest
+
+    {value_len, rest} = decode_varint(rest)
+
+    {value, rest} =
+      case value_len do
+        -1 ->
+          {nil, rest}
+
+        len ->
+          <<val::size(len)-binary, rest::bits>> = rest
+          {val, rest}
+      end
+
+    header = %Kayrock.RecordBatch.RecordHeader{key: key, value: value}
+
+    deserialize_msg_headers(rest, headers_left - 1, [header | acc])
   end
 
   defp decode_varint(data) do
@@ -341,7 +386,7 @@ defmodule Kayrock.RecordBatch do
           record.key,
           encode_varint(value_size),
           record.value,
-          record.headers
+          serialize_record_headers(record.headers)
         ],
         fn x -> !is_nil(x) end
       )
@@ -355,6 +400,34 @@ defmodule Kayrock.RecordBatch do
       | timestamp: maybe_delta(record.timestamp, base_timestamp),
         offset: maybe_delta(record.offset, base_offset)
     }
+  end
+
+  defp serialize_record_headers(headers) when is_nil(headers) do
+    <<0>>
+  end
+
+  defp serialize_record_headers([] = _headers) do
+    <<0>>
+  end
+
+  defp serialize_record_headers(headers) do
+    headers_len = encode_varint(length(headers))
+
+    Enum.reduce(headers, headers_len, fn header, acc ->
+      acc <> serialize_record_header(header)
+    end)
+  end
+
+  defp serialize_record_header(%RecordHeader{key: key, value: value})
+       when not is_nil(key) do
+    encoded_value =
+      if is_nil(value) do
+        encode_varint(-1)
+      else
+        encode_varint(byte_size(value)) <> <<value::binary>>
+      end
+
+    encode_varint(byte_size(key)) <> <<key::binary>> <> encoded_value
   end
 
   defp maybe_delta(nil, _), do: nil

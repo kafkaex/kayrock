@@ -154,7 +154,7 @@ defmodule Kayrock.MessageSerdeTest do
       records: [
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -162,7 +162,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -170,7 +170,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -214,7 +214,7 @@ defmodule Kayrock.MessageSerdeTest do
         records: [
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 126,
             timestamp: -1,
@@ -222,7 +222,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 127,
             timestamp: -1,
@@ -230,7 +230,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 128,
             timestamp: -1,
@@ -260,7 +260,7 @@ defmodule Kayrock.MessageSerdeTest do
       records: [
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 0,
           timestamp: -1,
@@ -268,7 +268,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 1,
           timestamp: -1,
@@ -276,7 +276,7 @@ defmodule Kayrock.MessageSerdeTest do
         },
         %Kayrock.RecordBatch.Record{
           attributes: 0,
-          headers: <<0>>,
+          headers: [],
           key: nil,
           offset: 2,
           timestamp: -1,
@@ -329,7 +329,7 @@ defmodule Kayrock.MessageSerdeTest do
         records: [
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 132,
             timestamp: -1,
@@ -337,7 +337,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 133,
             timestamp: -1,
@@ -345,7 +345,7 @@ defmodule Kayrock.MessageSerdeTest do
           },
           %Kayrock.RecordBatch.Record{
             attributes: 0,
-            headers: <<0>>,
+            headers: [],
             key: nil,
             offset: 134,
             timestamp: -1,
@@ -357,5 +357,290 @@ defmodule Kayrock.MessageSerdeTest do
 
     got = RecordBatch.deserialize(data)
     assert got == expect
+  end
+
+  test "serialize v2 message with headers" do
+    expected =
+      <<0, 0, 0, 208, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 196, 0, 0, 0, 0, 2, 59, 139, 206, 9, 0, 0,
+        0, 0, 0, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 3, 96,
+        0, 0, 0, 6, 98, 97, 122, 6, 102, 111, 111, 4, 4, 104, 97, 28, 104, 101, 97, 100, 101, 114,
+        95, 97, 95, 118, 97, 108, 117, 101, 4, 104, 98, 28, 104, 101, 97, 100, 101, 114, 95, 98,
+        95, 118, 97, 108, 117, 101, 96, 0, 0, 2, 6, 102, 111, 111, 6, 98, 97, 114, 4, 4, 104, 97,
+        28, 104, 101, 97, 100, 101, 114, 95, 97, 95, 118, 97, 108, 117, 101, 4, 104, 98, 28, 104,
+        101, 97, 100, 101, 114, 95, 98, 95, 118, 97, 108, 117, 101, 96, 0, 0, 4, 6, 98, 97, 114,
+        6, 98, 97, 122, 4, 4, 104, 97, 28, 104, 101, 97, 100, 101, 114, 95, 97, 95, 118, 97, 108,
+        117, 101, 4, 104, 98, 28, 104, 101, 97, 100, 101, 114, 95, 98, 95, 118, 97, 108, 117,
+        101>>
+
+    record_batch = %Kayrock.RecordBatch{
+      attributes: 0,
+      base_sequence: -1,
+      batch_length: 196,
+      batch_offset: 0,
+      crc: 999_017_993,
+      first_timestamp: -1,
+      last_offset_delta: 2,
+      max_timestamp: -1,
+      partition_leader_epoch: 0,
+      producer_epoch: -1,
+      producer_id: -1,
+      records: [
+        %Kayrock.RecordBatch.Record{
+          attributes: 0,
+          headers: [
+            %Kayrock.RecordBatch.RecordHeader{
+              key: "ha",
+              value: "header_a_value"
+            },
+            %Kayrock.RecordBatch.RecordHeader{
+              key: "hb",
+              value: "header_b_value"
+            }
+          ],
+          key: "baz",
+          offset: 0,
+          value: "foo"
+        },
+        %Kayrock.RecordBatch.Record{
+          attributes: 0,
+          headers: [
+            %Kayrock.RecordBatch.RecordHeader{
+              key: "ha",
+              value: "header_a_value"
+            },
+            %Kayrock.RecordBatch.RecordHeader{
+              key: "hb",
+              value: "header_b_value"
+            }
+          ],
+          key: "foo",
+          offset: 1,
+          value: "bar"
+        },
+        %Kayrock.RecordBatch.Record{
+          attributes: 0,
+          headers: [
+            %Kayrock.RecordBatch.RecordHeader{
+              key: "ha",
+              value: "header_a_value"
+            },
+            %Kayrock.RecordBatch.RecordHeader{
+              key: "hb",
+              value: "header_b_value"
+            }
+          ],
+          key: "bar",
+          offset: 2,
+          value: "baz"
+        }
+      ]
+    }
+
+    got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
+
+    assert got == expected, compare_binaries(got, expected)
+  end
+
+  test "deserialize v2 message with headers" do
+    data =
+      <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 196, 0, 0, 0, 0, 2, 59, 139, 206, 9, 0, 0, 0, 0, 0, 2,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 3, 96, 0, 0, 0, 6,
+        98, 97, 122, 6, 102, 111, 111, 4, 4, 104, 97, 28, 104, 101, 97, 100, 101, 114, 95, 97, 95,
+        118, 97, 108, 117, 101, 4, 104, 98, 28, 104, 101, 97, 100, 101, 114, 95, 98, 95, 118, 97,
+        108, 117, 101, 96, 0, 0, 2, 6, 102, 111, 111, 6, 98, 97, 114, 4, 4, 104, 97, 28, 104, 101,
+        97, 100, 101, 114, 95, 97, 95, 118, 97, 108, 117, 101, 4, 104, 98, 28, 104, 101, 97, 100,
+        101, 114, 95, 98, 95, 118, 97, 108, 117, 101, 96, 0, 0, 4, 6, 98, 97, 114, 6, 98, 97, 122,
+        4, 4, 104, 97, 28, 104, 101, 97, 100, 101, 114, 95, 97, 95, 118, 97, 108, 117, 101, 4,
+        104, 98, 28, 104, 101, 97, 100, 101, 114, 95, 98, 95, 118, 97, 108, 117, 101>>
+
+    expected = [
+      %Kayrock.RecordBatch{
+        attributes: 0,
+        base_sequence: -1,
+        batch_length: 196,
+        batch_offset: 0,
+        crc: 999_017_993,
+        first_timestamp: -1,
+        last_offset_delta: 2,
+        max_timestamp: -1,
+        partition_leader_epoch: 0,
+        producer_epoch: -1,
+        producer_id: -1,
+        records: [
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: [
+              %Kayrock.RecordBatch.RecordHeader{
+                key: "ha",
+                value: "header_a_value"
+              },
+              %Kayrock.RecordBatch.RecordHeader{
+                key: "hb",
+                value: "header_b_value"
+              }
+            ],
+            key: "baz",
+            offset: 0,
+            value: "foo"
+          },
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: [
+              %Kayrock.RecordBatch.RecordHeader{
+                key: "ha",
+                value: "header_a_value"
+              },
+              %Kayrock.RecordBatch.RecordHeader{
+                key: "hb",
+                value: "header_b_value"
+              }
+            ],
+            key: "foo",
+            offset: 1,
+            value: "bar"
+          },
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: [
+              %Kayrock.RecordBatch.RecordHeader{
+                key: "ha",
+                value: "header_a_value"
+              },
+              %Kayrock.RecordBatch.RecordHeader{
+                key: "hb",
+                value: "header_b_value"
+              }
+            ],
+            key: "bar",
+            offset: 2,
+            value: "baz"
+          }
+        ]
+      }
+    ]
+
+    got = RecordBatch.deserialize(data)
+
+    assert got == expected
+  end
+
+  test "serialize v2 message with headers' key nil" do
+    record_batch = %Kayrock.RecordBatch{
+      attributes: 0,
+      base_sequence: -1,
+      batch_length: 62,
+      batch_offset: 0,
+      first_timestamp: -1,
+      last_offset_delta: 0,
+      max_timestamp: -1,
+      partition_leader_epoch: 0,
+      producer_epoch: -1,
+      producer_id: -1,
+      records: [
+        %Kayrock.RecordBatch.Record{
+          attributes: 0,
+          headers: [
+            %Kayrock.RecordBatch.RecordHeader{
+              key: nil,
+              value: "623107c3-4acd-4d19-a029-9cc552ae20e7"
+            }
+          ],
+          key: "foo",
+          offset: 0,
+          value: "bar",
+          timestamp: -1
+        }
+      ]
+    }
+
+    assert_raise FunctionClauseError, fn ->
+      RecordBatch.serialize(record_batch)
+    end
+  end
+
+  test "serialize v2 message with headers' value nil" do
+    expected =
+      <<0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78, 0, 0, 0, 0, 2, 2, 191, 115, 230, 0, 0,
+        0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 1, 56,
+        0, 0, 0, 6, 102, 111, 111, 6, 98, 97, 114, 2, 28, 99, 111, 114, 114, 101, 108, 97, 116,
+        105, 111, 110, 45, 105, 100, 1>>
+
+    record_batch = %Kayrock.RecordBatch{
+      attributes: 0,
+      base_sequence: -1,
+      batch_length: 62,
+      batch_offset: 0,
+      first_timestamp: -1,
+      last_offset_delta: 0,
+      max_timestamp: -1,
+      partition_leader_epoch: 0,
+      producer_epoch: -1,
+      producer_id: -1,
+      records: [
+        %Kayrock.RecordBatch.Record{
+          attributes: 0,
+          headers: [
+            %Kayrock.RecordBatch.RecordHeader{
+              key: "correlation-id",
+              value: nil
+            }
+          ],
+          key: "foo",
+          offset: 0,
+          value: "bar",
+          timestamp: -1
+        }
+      ]
+    }
+
+    got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
+
+    assert got == expected, compare_binaries(got, expected)
+  end
+
+  test "deserialize v2 message with headers' value nil" do
+    data =
+      <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78, 0, 0, 0, 0, 2, 2, 191, 115, 230, 0, 0, 0, 0, 0, 0,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 1, 56, 0, 0, 0, 6,
+        102, 111, 111, 6, 98, 97, 114, 2, 28, 99, 111, 114, 114, 101, 108, 97, 116, 105, 111, 110,
+        45, 105, 100, 1>>
+
+    expected = [
+      %Kayrock.RecordBatch{
+        attributes: 0,
+        base_sequence: -1,
+        batch_length: 78,
+        batch_offset: 0,
+        crc: 46_101_478,
+        first_timestamp: -1,
+        last_offset_delta: 0,
+        max_timestamp: -1,
+        partition_leader_epoch: 0,
+        producer_epoch: -1,
+        producer_id: -1,
+        records: [
+          %Kayrock.RecordBatch.Record{
+            attributes: 0,
+            headers: [
+              %Kayrock.RecordBatch.RecordHeader{
+                key: "correlation-id",
+                value: nil
+              }
+            ],
+            key: "foo",
+            offset: 0,
+            value: "bar"
+          }
+        ]
+      }
+    ]
+
+    got = RecordBatch.deserialize(data)
+
+    assert got == expected
   end
 end
