@@ -7,6 +7,13 @@ defmodule Kayrock.MemberAssignmentTest do
     assert MemberAssignment.deserialize(<<>>) == {%MemberAssignment{}, <<>>}
   end
 
+  # This matches the response from an error response to SyncGroup, for example
+  test "deserialize no assignements" do
+    member_assignment = <<0, 0, 0, 0>>
+    {got, ""} = MemberAssignment.deserialize(member_assignment)
+    assert got == %MemberAssignment{version: 0}
+  end
+
   test "deserialize member assignments" do
     member_assignment = <<0::16, 1::32, 6::16, "topic1", 3::32, 1::32, 3::32, 5::32>>
     member_assignment = <<byte_size(member_assignment)::32-signed, member_assignment::bytes>>
