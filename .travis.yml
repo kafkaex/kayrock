@@ -8,15 +8,15 @@ cache:
     - _build
 matrix:
   include:
-    - elixir: 1.9.1
-      otp_release: 22.0
+    - elixir: 1.10.4
+      otp_release: 22.3.3
       env: COVERALLS=true
+    - elixir: 1.9.1
+      otp_release: 22.3.3
     - elixir: 1.8.1
       otp_release: 21.1
     - elixir: 1.7.4
       otp_release: 21.1
-    - elixir: 1.6.6
-      otp_release: 20.2
 dist: trusty
 sudo: required
 env:
