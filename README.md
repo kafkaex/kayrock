@@ -2,6 +2,11 @@
 
 [![Build Status](https://travis-ci.org/dantswain/kayrock.svg?branch=master)](https://travis-ci.org/dantswain/kayrock)
 [![Coverage Status](https://coveralls.io/repos/github/dantswain/kayrock/badge.svg?branch=master)](https://coveralls.io/github/dantswain/kayrock?branch=master)
+[![Module Version](https://img.shields.io/hexpm/v/kayrock.svg)](https://hex.pm/packages/kayrock)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/kayrock/)
+[![Total Download](https://img.shields.io/hexpm/dt/kayrock.svg)](https://hex.pm/packages/kayrock)
+[![License](https://img.shields.io/hexpm/l/kayrock.svg)](https://hex.pm/packages/kayrock)
+[![Last Updated](https://img.shields.io/github/last-commit/dantswain/kayrock.svg)](https://github.com/dantswain/kayrock/commits/master)
 
 
 Aims to provide an idiomatic Elixir interface to the Kafka protocol.
