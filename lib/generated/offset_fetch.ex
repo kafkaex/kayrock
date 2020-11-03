@@ -104,7 +104,7 @@ defmodule(Kayrock.OffsetFetch) do
         V0.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -213,7 +213,7 @@ defmodule(Kayrock.OffsetFetch) do
         V1.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -322,7 +322,7 @@ defmodule(Kayrock.OffsetFetch) do
         V2.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -431,7 +431,7 @@ defmodule(Kayrock.OffsetFetch) do
         V3.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 

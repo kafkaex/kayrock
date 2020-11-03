@@ -123,7 +123,7 @@ defmodule(Kayrock.JoinGroup) do
         V0.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -256,7 +256,7 @@ defmodule(Kayrock.JoinGroup) do
         V1.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -389,7 +389,7 @@ defmodule(Kayrock.JoinGroup) do
         V2.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 

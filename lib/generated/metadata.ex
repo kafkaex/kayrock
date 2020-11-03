@@ -65,7 +65,7 @@ defmodule(Kayrock.Metadata) do
         V0.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -135,7 +135,7 @@ defmodule(Kayrock.Metadata) do
         V1.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -205,7 +205,7 @@ defmodule(Kayrock.Metadata) do
         V2.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -275,7 +275,7 @@ defmodule(Kayrock.Metadata) do
         V3.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -349,7 +349,7 @@ defmodule(Kayrock.Metadata) do
         V4.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -423,7 +423,7 @@ defmodule(Kayrock.Metadata) do
         V5.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
