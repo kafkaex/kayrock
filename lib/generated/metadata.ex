@@ -52,8 +52,8 @@ defmodule(Kayrock.Metadata) do
     @spec serialize(t()) :: iodata
     def(serialize(%V0.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [serialize_array(:string, Map.fetch!(struct, :topics))]
       ]
     end
@@ -122,8 +122,8 @@ defmodule(Kayrock.Metadata) do
     @spec serialize(t()) :: iodata
     def(serialize(%V1.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [serialize_array(:string, Map.fetch!(struct, :topics))]
       ]
     end
@@ -192,8 +192,8 @@ defmodule(Kayrock.Metadata) do
     @spec serialize(t()) :: iodata
     def(serialize(%V2.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [serialize_array(:string, Map.fetch!(struct, :topics))]
       ]
     end
@@ -262,8 +262,8 @@ defmodule(Kayrock.Metadata) do
     @spec serialize(t()) :: iodata
     def(serialize(%V3.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [serialize_array(:string, Map.fetch!(struct, :topics))]
       ]
     end
@@ -333,8 +333,8 @@ defmodule(Kayrock.Metadata) do
     @spec serialize(t()) :: iodata
     def(serialize(%V4.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize_array(:string, Map.fetch!(struct, :topics)),
           serialize(:boolean, Map.fetch!(struct, :allow_auto_topic_creation))
@@ -407,8 +407,8 @@ defmodule(Kayrock.Metadata) do
     @spec serialize(t()) :: iodata
     def(serialize(%V5.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize_array(:string, Map.fetch!(struct, :topics)),
           serialize(:boolean, Map.fetch!(struct, :allow_auto_topic_creation))

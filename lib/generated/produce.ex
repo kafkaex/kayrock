@@ -73,8 +73,8 @@ defmodule(Kayrock.Produce) do
     @spec serialize(t()) :: iodata
     def(serialize(%V0.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize(:int16, Map.fetch!(struct, :acks)),
           serialize(:int32, Map.fetch!(struct, :timeout)),
@@ -202,8 +202,8 @@ defmodule(Kayrock.Produce) do
     @spec serialize(t()) :: iodata
     def(serialize(%V1.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize(:int16, Map.fetch!(struct, :acks)),
           serialize(:int32, Map.fetch!(struct, :timeout)),
@@ -331,8 +331,8 @@ defmodule(Kayrock.Produce) do
     @spec serialize(t()) :: iodata
     def(serialize(%V2.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize(:int16, Map.fetch!(struct, :acks)),
           serialize(:int32, Map.fetch!(struct, :timeout)),
@@ -472,8 +472,8 @@ defmodule(Kayrock.Produce) do
     @spec serialize(t()) :: iodata
     def(serialize(%V3.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize(:nullable_string, Map.fetch!(struct, :transactional_id)),
           serialize(:int16, Map.fetch!(struct, :acks)),
@@ -614,8 +614,8 @@ defmodule(Kayrock.Produce) do
     @spec serialize(t()) :: iodata
     def(serialize(%V4.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize(:nullable_string, Map.fetch!(struct, :transactional_id)),
           serialize(:int16, Map.fetch!(struct, :acks)),
@@ -756,8 +756,8 @@ defmodule(Kayrock.Produce) do
     @spec serialize(t()) :: iodata
     def(serialize(%V5.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize(:nullable_string, Map.fetch!(struct, :transactional_id)),
           serialize(:int16, Map.fetch!(struct, :acks)),
