@@ -35,10 +35,10 @@ defmodule Kayrock.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:crc32cer, "~>0.1.3"},
+      {:crc32cer, "~>0.1.8"},
       {:varint, "~>1.2.0"},
       {:connection, "~>1.0.4"},
-      {:kafka_protocol, "~> 2.2.7", only: [:dev, :test]},
+      {:kafka_protocol, "~> 2.4.1", only: [:dev, :test]},
       {:credo, "~>1.5.0", only: [:dev, :test], runtime: false},
       {:excoveralls, "~>0.13.3", only: :test},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
