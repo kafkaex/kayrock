@@ -25,6 +25,8 @@ env:
   global:
     - COVERALLS=false
     - CREDO=false
+before_script:
+  - kerl list installations
 script:
   - MIX_ENV=test mix deps.compile
   - MIX_ENV=test mix compile --warnings-as-errors
