@@ -1,6 +1,8 @@
 defmodule Kayrock.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/dantswain/kayrock"
+
   def project do
     [
       app: :kayrock,
@@ -20,30 +22,36 @@ defmodule Kayrock.MixProject do
       docs: [
         main: "readme",
         extras: ["README.md"],
-        source_url: "https://github.com/kafkaex/kafka_ex"
+        source_url: @source_url,
+        skip_undefined_reference_warnings_on: [
+          "README.md",
+          "lib/kayrock/error_code.ex",
+          "lib/kayrock/socket.ex"
+        ]
       ]
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
   def application do
     [
       extra_applications: [:logger]
     ]
   end
 
-  # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      # Core
       {:crc32cer, "~>0.1.3"},
       {:varint, "~>1.2.0"},
       {:connection, "~>1.0.4"},
-      {:kafka_protocol, "~> 2.2.7", only: [:dev, :test]},
+
+      # Dev/Test
       {:credo, "~>1.5.0", only: [:dev, :test], runtime: false},
-      {:excoveralls, "~>0.13.3", only: :test},
-      {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
-      {:ex_doc, "~>0.23.0", only: [:dev], runtime: false}
+      {:ex_doc, "~>0.23.0", only: [:dev], runtime: false},
+      {:excoveralls, "~>0.13.3", only: :test},
+      {:kafka_protocol, "~> 2.2.7", only: [:dev, :test]},
+      {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]}
     ]
   end
 
@@ -56,7 +64,7 @@ defmodule Kayrock.MixProject do
       maintainers: ["Dan Swain"],
       files: ["lib", "config/config.exs", "mix.exs", "README.md"],
       licenses: ["MIT"],
-      links: %{"Github" => "https://github.com/dantswain/kayrock"}
+      links: %{"Github" => @source_url}
     ]
   end
 end
