@@ -52,8 +52,8 @@ defmodule(Kayrock.FindCoordinator) do
     @spec serialize(t()) :: iodata
     def(serialize(%V0.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [serialize(:string, Map.fetch!(struct, :group_id))]
       ]
     end
@@ -65,7 +65,7 @@ defmodule(Kayrock.FindCoordinator) do
         V0.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 
@@ -123,8 +123,8 @@ defmodule(Kayrock.FindCoordinator) do
     @spec serialize(t()) :: iodata
     def(serialize(%V1.Request{} = struct)) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id()::32,
-          byte_size(struct.client_id())::16, struct.client_id()::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+          byte_size(struct.client_id)::16, struct.client_id::binary>>,
         [
           serialize(:string, Map.fetch!(struct, :coordinator_key)),
           serialize(:int8, Map.fetch!(struct, :coordinator_type))
@@ -139,7 +139,7 @@ defmodule(Kayrock.FindCoordinator) do
         V1.Request.serialize(struct)
       rescue
         e ->
-          reraise(Kayrock.InvalidRequestError, {e, struct}, System.stacktrace())
+          reraise(Kayrock.InvalidRequestError, {e, struct}, __STACKTRACE__)
       end
     end
 

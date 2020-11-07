@@ -6,7 +6,7 @@ defmodule Kayrock.MixProject do
   def project do
     [
       app: :kayrock,
-      version: "0.1.12",
+      version: "0.1.13",
       elixir: "~> 1.1",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
@@ -41,7 +41,7 @@ defmodule Kayrock.MixProject do
   defp deps do
     [
       # Core
-      {:crc32cer, "~>0.1.3"},
+      {:crc32cer, "~>0.1.8"},
       {:varint, "~>1.2.0"},
       {:connection, "~>1.0.4"},
 
@@ -50,7 +50,7 @@ defmodule Kayrock.MixProject do
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:ex_doc, "~>0.23.0", only: [:dev], runtime: false},
       {:excoveralls, "~>0.13.3", only: :test},
-      {:kafka_protocol, "~> 2.2.7", only: [:dev, :test]},
+      {:kafka_protocol, "~> 2.4.1", only: [:dev, :test]},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]}
     ]
   end
