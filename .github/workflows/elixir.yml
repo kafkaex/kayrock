@@ -14,13 +14,22 @@ jobs:
 
     runs-on: ubuntu-18.04
 
+    strategy:
+      matrix:
+        elixir: [1.10.2, 1.11.2]
+        include:
+          - elixir: 1.11.2
+            erlang: 23.1
+          - elixir: 1.10.2
+            erlang: 22.3
+
     steps:
     - uses: actions/checkout@v2
     - name: Setup elixir
       uses: actions/setup-elixir@v1
       with:
-        elixir-version: 1.10.2 # Define the elixir version [required]
-        otp-version: 22.3 # Define the OTP version [required]
+        elixir-version: ${{matrix.elixir}} # Define the elixir version [required]
+        otp-version: ${{matrix.erlang}} # Define the OTP version [required]
     - name: Install Dependencies
       run: mix deps.get
     - name: Build Dependencies
