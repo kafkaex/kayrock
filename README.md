@@ -8,7 +8,6 @@
 [![License](https://img.shields.io/hexpm/l/kayrock.svg)](https://hex.pm/packages/kayrock)
 [![Last Updated](https://img.shields.io/github/last-commit/dantswain/kayrock.svg)](https://github.com/dantswain/kayrock/commits/master)
 
-
 Aims to provide an idiomatic Elixir interface to the Kafka protocol.
 
 This work is based on [https://github.com/klarna/kafka_protocol](kafka_protocl)

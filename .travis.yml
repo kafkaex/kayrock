@@ -8,9 +8,11 @@ cache:
     - _build
 matrix:
   include:
+    - elixir: 1.11.1
+      otp_release: 23.1
+      env: COVERALLS=true
     - elixir: 1.10.4
       otp_release: 22.3.3
-      env: COVERALLS=true
     - elixir: 1.9.1
       otp_release: 22.3.3
     - elixir: 1.8.1
@@ -23,6 +25,8 @@ env:
   global:
     - COVERALLS=false
     - CREDO=false
+before_script:
+  - kerl list releases
 script:
   - MIX_ENV=test mix deps.compile
   - MIX_ENV=test mix compile --warnings-as-errors
