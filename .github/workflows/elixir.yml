@@ -16,7 +16,6 @@ jobs:
 
     strategy:
       matrix:
-        elixir: [1.10.2, 1.11.2]
         include:
           - elixir: 1.11.2
             erlang: 23.1
