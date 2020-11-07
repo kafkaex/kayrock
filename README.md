@@ -1,7 +1,6 @@
 # Kayrock
 
 [![Actions Status](https://github.com/dantswain/kayrock/workflows/elixir/badge.svg)](https://github.com/dantswain/kayrock/actions)
-[![Coverage Status](https://coveralls.io/repos/github/dantswain/kayrock/badge.svg?branch=master)](https://coveralls.io/github/dantswain/kayrock?branch=master)
 [![Module Version](https://img.shields.io/hexpm/v/kayrock.svg)](https://hex.pm/packages/kayrock)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/kayrock/)
 [![Total Download](https://img.shields.io/hexpm/dt/kayrock.svg)](https://hex.pm/packages/kayrock)
