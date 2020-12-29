@@ -6,7 +6,7 @@ defmodule Kayrock.MixProject do
   def project do
     [
       app: :kayrock,
-      version: "0.1.13",
+      version: "0.1.14",
       elixir: "~> 1.1",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
