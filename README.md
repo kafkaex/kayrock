@@ -9,9 +9,9 @@
 
 Aims to provide an idiomatic Elixir interface to the Kafka protocol.
 
-This work is based on [https://github.com/klarna/kafka_protocol](kafka_protocl)
-for Erlang, which is used in [https://github.com/klarna/brod](brod).  It is
-built to work with [https://github.com/kafkaex/kafka_ex](KafkaEx) though there
+This work is based on [kafka_protocol](https://github.com/klarna/kafka_protocol)
+for Erlang, which is used in [brod](https://github.com/klarna/brod).  It is
+built to work with [KafkaEx](https://github.com/kafkaex/kafka_ex) though there
 is no reason why it couldn't be used elsewhere.
 
 ## Basic architecture and usage
