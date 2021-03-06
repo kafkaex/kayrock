@@ -51,7 +51,8 @@ defmodule Kayrock.MixProject do
       {:ex_doc, "~>0.23.0", only: [:dev], runtime: false},
       {:excoveralls, "~>0.13.3", only: :test},
       {:kafka_protocol, "~> 2.4.1", only: [:dev, :test]},
-      {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]}
+      {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
+      {:snappyer, "~> 1.2", only: [:dev, :test]}
     ]
   end
 
