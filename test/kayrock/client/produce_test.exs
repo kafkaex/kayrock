@@ -175,9 +175,9 @@ defmodule Kayrock.Client.ProduceTest do
 
   describe "with snappy compression" do
     setup do
-      on_exit fn ->
+      on_exit(fn ->
         Application.put_env(:kayrock, :snappy_module, :snappy)
-      end
+      end)
 
       :ok
     end
