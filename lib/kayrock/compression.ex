@@ -48,7 +48,7 @@ defmodule Kayrock.Compression do
     end
   end
 
-  defp snappy_module() do
+  defp snappy_module do
     Application.get_env(:kayrock, :snappy_module)
   end
 
