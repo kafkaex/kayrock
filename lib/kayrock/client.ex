@@ -195,7 +195,7 @@ defmodule Kayrock.Client do
     # fetch metadata from one of the bootstrap servers
     # NOTE we use V1 of the metadata request because it allows us to specify an
     # empty list of topics and signify that we don't want any topic metadata.
-    # On larger clusters, requesting all fo the topic metadata can lead to timeouts.
+    # On larger clusters, requesting all for the topic metadata can lead to timeouts.
     {updated_state, metadata_request} =
       State.request(state, %Kayrock.Metadata.V1.Request{topics: topics})
 

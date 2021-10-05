@@ -8,7 +8,7 @@ defmodule Kayrock.MemberAssignmentTest do
   end
 
   # This matches the response from an error response to SyncGroup, for example
-  test "deserialize no assignements" do
+  test "deserialize no assignments" do
     member_assignment = <<0, 0, 0, 0>>
     {got, ""} = MemberAssignment.deserialize(member_assignment)
     assert got == %MemberAssignment{version: 0}

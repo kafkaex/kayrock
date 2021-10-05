@@ -183,7 +183,7 @@ defmodule Kayrock.RecordBatch do
   end
 
   defp deserialize(rest, acc, batch_offset, batch_length, partition_leader_epoch) do
-    # we alraedy parsed off 5 bytes in get_magic_byte
+    # we already parsed off 5 bytes in get_magic_byte
     real_size = batch_length - 5
     <<batch_data::size(real_size)-binary, body_rest::binary>> = rest
 
