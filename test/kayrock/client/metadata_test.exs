@@ -14,7 +14,7 @@ defmodule Kayrock.Client.MetadataTest do
     assert length(topic.partition_metadata) == 4
   end
 
-  test "get metdata for a specific topic that exists", %{client: client} do
+  test "get metadata for a specific topic that exists", %{client: client} do
     {:ok, [topic]} = Kayrock.topics_metadata(client, ["test0p8p0"])
     assert topic[:topic] == "test0p8p0"
     assert length(topic.partition_metadata) == 4

@@ -64,7 +64,7 @@ defmodule Kayrock.MixProject do
       maintainers: ["Dan Swain"],
       files: ["lib", "config/config.exs", "mix.exs", "README.md"],
       licenses: ["MIT"],
-      links: %{"Github" => @source_url}
+      links: %{"GitHub" => @source_url}
     ]
   end
 end
