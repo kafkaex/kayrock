@@ -59,6 +59,25 @@ response_deserializer = Request.response_deserializer(request)
 # the api versions supported by the broker
 ```
 
+## Messages Compression
+
+Currently Kayrock is supporting two types of compression: snappy or gzip
+
+For snappy compression by default will be used [snappy-erlang-nif](https://github.com/skunkwerks/snappy-erlang-nif) but this is 
+deprecated in favor for [snappyer](https://github.com/zmstone/snappyer) which is way more popular.
+
+To change compression library change config from
+
+```elixir
+  config :kayrock, snappy_module: :snappy
+```
+
+to
+
+```elixir
+  config :kayrock, snappy_module: :snappyer
+```
+
 ## Relationship to other libraries
 
 Kayrock uses only the `kpro_schema` module from `kafka_protocol`.
