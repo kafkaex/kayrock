@@ -41,7 +41,7 @@ defmodule Kayrock.MemberAssignment do
 
   def deserialize(<<0::32-signed>>), do: {%__MODULE__{}, <<>>}
 
-  def deserialize(<<0::32-signed, rest>>), do: {%__MODULE__{}, rest}
+  def deserialize(<<0::32-signed, rest::bits>>), do: {%__MODULE__{}, rest}
 
   def deserialize(<<data_size::32-signed, data::size(data_size)-binary, rest::bits>>) do
     {deserialize_member_assignments(data), rest}
