@@ -185,6 +185,17 @@ defmodule Kayrock.RecordBatch do
   defp deserialize(rest, acc, batch_offset, batch_length, partition_leader_epoch) do
     # we already parsed off 5 bytes in get_magic_byte
     real_size = batch_length - 5
+
+    deserialize(real_size, rest, acc, batch_offset, batch_length, partition_leader_epoch)
+  end
+
+  # If the expected size to fetch is less than the rest of the body, we have
+  # fetched an incomplete record. Cowardly refuse to parse this record.
+  defp deserialize(real_size, rest, acc, _, _, _) when real_size > byte_size(rest) do
+    Enum.reverse(acc)
+  end
+
+  defp deserialize(real_size, rest, acc, batch_offset, batch_length, partition_leader_epoch) do
     <<batch_data::size(real_size)-binary, body_rest::binary>> = rest
 
     <<crc::32-signed, attributes::16-signed, last_offset_delta::32-signed,
@@ -236,15 +247,12 @@ defmodule Kayrock.RecordBatch do
 
     acc = [record_batch | acc]
 
-    case body_rest do
-      "" ->
-        Enum.reverse(acc)
+    case get_magic_byte(body_rest) do
+      {2, batch_offset, batch_length, partition_leader_epoch, new_rest} ->
+        deserialize(new_rest, acc, batch_offset, batch_length, partition_leader_epoch)
 
       _ ->
-        {2, batch_offset, batch_length, partition_leader_epoch, new_rest} =
-          get_magic_byte(body_rest)
-
-        deserialize(new_rest, acc, batch_offset, batch_length, partition_leader_epoch)
+        Enum.reverse(acc)
     end
   end
 
@@ -346,6 +354,9 @@ defmodule Kayrock.RecordBatch do
   # message_size: int32
   # first_message crc: int32
   # first_message magic: int8
+  # Return early if we do not have a complete 17 bytes to parse from the record
+  defp get_magic_byte(msg_set_data) when byte_size(msg_set_data) < 17, do: nil
+
   defp get_magic_byte(msg_set_data) do
     <<first_offset::64-signed, batch_length_or_message_size::32-signed,
       partition_leader_epoch_or_first_crc::32-signed, magic::8-signed, rest::bits>> = msg_set_data
