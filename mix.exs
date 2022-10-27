@@ -42,7 +42,7 @@ defmodule Kayrock.MixProject do
     [
       # Core
       {:crc32cer, "~>0.1.8"},
-      {:varint, "~>1.2.0"},
+      {:varint, "~>1.2"},
       {:connection, "~>1.1.0"},
 
       # Dev/Test
