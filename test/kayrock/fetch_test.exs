@@ -1351,6 +1351,122 @@ defmodule Kayrock.FetchTest do
     assert got == expect
   end
 
+  test "test deserializing a record batch with an incomplete record" do
+    data =
+      <<0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 1, 0, 4, 102, 111, 111, 100, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 231, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 0,
+        0, 255, 255, 255, 255, 0, 0, 1, 34, 0, 0, 0, 0, 0, 0, 0, 228, 0, 0, 0, 78, 0, 0, 0, 33, 2,
+        106, 8, 42, 102, 0, 2, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 0, 0, 0, 1, 27, 104, 52, 0, 0, 0, 0, 40, 75, 81, 76, 84, 67, 69, 67, 88, 68, 81, 66,
+        82, 81, 67, 89, 73, 65, 68, 84, 79, 0, 0, 0, 0, 0, 0, 0, 0, 229, 0, 0, 0, 76, 0, 0, 0, 33,
+        2, 232, 120, 45, 102, 0, 0, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 0, 0, 0, 1, 52, 0, 0, 0, 0, 40, 84, 87, 73, 73, 83, 71, 73, 73, 69, 72, 72, 72,
+        79, 88, 70, 79, 74, 73, 86, 79, 0, 0, 0, 0, 0, 0, 0, 0, 230, 0, 0, 0, 98, 0, 0, 0, 33, 2,
+        35, 151, 146, 115, 0, 2, 0, 0, 0, 0, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        255, 255, 0, 0, 0, 1, 130, 83, 78, 65, 80, 80, 89, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 29,
+        27, 104, 52, 0, 0, 0, 0, 40, 72, 67, 85, 80, 72, 73, 85, 78, 75, 84, 67, 86, 82, 80, 66,
+        86, 70, 77, 73, 82, 0, 0, 0>>
+
+    expect = %Kayrock.Fetch.V5.Response{
+      correlation_id: 4,
+      responses: [
+        %{
+          partition_responses: [
+            %{
+              partition_header: %{
+                aborted_transactions: [],
+                error_code: 0,
+                high_watermark: 231,
+                last_stable_offset: -1,
+                log_start_offset: 0,
+                partition: 0
+              },
+              record_set: [
+                %Kayrock.RecordBatch{
+                  attributes: 2,
+                  base_sequence: -1,
+                  batch_length: 78,
+                  batch_offset: 228,
+                  crc: 1_778_920_038,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: [],
+                      key: "",
+                      offset: 228,
+                      timestamp: -1,
+                      value: "KQLTCECXDQBRQCYIADTO"
+                    }
+                  ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 0,
+                  base_sequence: -1,
+                  batch_length: 76,
+                  batch_offset: 229,
+                  crc: -394_777_242,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: [],
+                      key: "",
+                      offset: 229,
+                      timestamp: -1,
+                      value: "TWIISGIIEHHHOXFOJIVO"
+                    }
+                  ]
+                },
+                %Kayrock.RecordBatch{
+                  attributes: 2,
+                  base_sequence: -1,
+                  batch_length: 98,
+                  batch_offset: 230,
+                  crc: 597_135_987,
+                  first_timestamp: -1,
+                  last_offset_delta: 0,
+                  max_timestamp: -1,
+                  partition_leader_epoch: 33,
+                  producer_epoch: -1,
+                  producer_id: -1,
+                  records: [
+                    %Kayrock.RecordBatch.Record{
+                      attributes: 0,
+                      headers: [],
+                      key: "",
+                      offset: 230,
+                      timestamp: -1,
+                      value: "HCUPHIUNKTCVRPBVFMIR"
+                    }
+                  ]
+                }
+              ]
+            }
+          ],
+          topic: "food"
+        }
+      ],
+      throttle_time_ms: 0
+    }
+
+    {got, ""} = Kayrock.Fetch.V5.Response.deserialize(data)
+    assert got == expect
+  end
+
   test "correctly handle timestamps for LogAppend" do
     data =
       <<0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 1, 0, 25, 116, 101, 115, 116, 95, 108, 111, 103, 95, 97,
