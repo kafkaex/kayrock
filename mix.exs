@@ -1,7 +1,7 @@
 defmodule Kayrock.MixProject do
   use Mix.Project
 
-  @source_url "https://github.com/dantswain/kayrock"
+  @source_url "https://github.com/kafkaex/kayrock"
 
   def project do
     [
