@@ -41,9 +41,9 @@ defmodule Kayrock.MixProject do
   defp deps do
     [
       # Core
-      {:crc32cer, "~>0.1.8"},
-      {:varint, "~>1.2"},
-      {:connection, "~>1.1.0"},
+      {:crc32cer, "~> 0.1"},
+      {:varint, "~> 1.2"},
+      {:connection, "~> 1.1"},
 
       # Dev/Test
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
