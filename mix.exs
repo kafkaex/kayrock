@@ -46,10 +46,10 @@ defmodule Kayrock.MixProject do
       {:connection, "~>1.1.0"},
 
       # Dev/Test
-      {:credo, "~>1.5.0", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
-      {:ex_doc, "~>0.23.0", only: [:dev], runtime: false},
-      {:excoveralls, "~>0.13.3", only: :test},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.30", only: [:dev], runtime: false},
+      {:excoveralls, "~> 0.18", only: :test},
       {:kafka_protocol, "~> 2.4.1", only: [:dev, :test]},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
       {:snappyer, "~> 1.2", only: [:dev, :test]}
