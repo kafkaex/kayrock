@@ -15,7 +15,7 @@ defmodule Kayrock.MixProject do
       deps: deps(),
       dialyzer: [
         plt_add_apps: [:mix],
-        flags: [:error_handling, :race_conditions]
+        flags: [:error_handling]
       ],
       description: "Elixir interface to the Kafka protocol",
       package: package(),
@@ -44,6 +44,8 @@ defmodule Kayrock.MixProject do
       {:crc32cer, "~> 0.1"},
       {:varint, "~> 1.2"},
       {:connection, "~> 1.1"},
+      # Integration Tests
+      {:testcontainers, "~> 1.5", only: [:test]},
 
       # Dev/Test
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
