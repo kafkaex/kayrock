@@ -6,8 +6,8 @@ defmodule Kayrock.MixProject do
   def project do
     [
       app: :kayrock,
-      version: "0.1.15",
-      elixir: "~> 1.1",
+      version: "0.2.0",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test],
@@ -64,7 +64,7 @@ defmodule Kayrock.MixProject do
 
   defp package do
     [
-      maintainers: ["Dan Swain"],
+      maintainers: ["Dan Swain", "Argonus"],
       files: ["lib", "config/config.exs", "mix.exs", "README.md"],
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url}
