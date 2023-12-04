@@ -27,7 +27,7 @@ defmodule Kayrock.MessageSet do
     @type t :: %__MODULE__{}
   end
 
-  use Bitwise
+  import Bitwise
 
   defstruct messages: [], magic: 0
 
