@@ -1,6 +1,7 @@
 # Kayrock
 
 [![CI Checks](https://github.com/kafkaex/kayrock/actions/workflows/checks.yml/badge.svg?branch=master)](https://github.com/kafkaex/kayrock/actions/workflows/checks.yml)
+[![CI Tests](https://github.com/kafkaex/kayrock/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kafkaex/kayrock/actions/workflows/test.yml)
 [![Module Version](https://img.shields.io/hexpm/v/kayrock.svg)](https://hex.pm/packages/kayrock)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/kayrock/)
 [![Total Download](https://img.shields.io/hexpm/dt/kayrock.svg)](https://hex.pm/packages/kayrock)
