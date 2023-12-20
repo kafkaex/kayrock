@@ -6,16 +6,17 @@ defmodule Kayrock.MixProject do
   def project do
     [
       app: :kayrock,
-      version: "0.1.15",
-      elixir: "~> 1.1",
+      version: "0.2.0",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test],
+      preferred_cli_env: [coveralls: :test, "test.integration": :test],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
+      aliases: aliases(),
       dialyzer: [
         plt_add_apps: [:mix],
-        flags: [:error_handling, :race_conditions]
+        flags: [:error_handling]
       ],
       description: "Elixir interface to the Kafka protocol",
       package: package(),
@@ -54,6 +55,15 @@ defmodule Kayrock.MixProject do
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
       {:snappyer, "~> 1.2", only: [:dev, :test]}
     ]
+    |> integration_test_deps()
+  end
+
+  defp integration_test_deps(deps_list) do
+    if Version.match?(System.version(), ">= 1.15.0") do
+      [{:testcontainers, "~> 1.5"} | deps_list]
+    else
+      deps_list
+    end
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
@@ -62,10 +72,16 @@ defmodule Kayrock.MixProject do
 
   defp package do
     [
-      maintainers: ["Dan Swain"],
+      maintainers: ["Dan Swain", "Argonus"],
       files: ["lib", "config/config.exs", "mix.exs", "README.md"],
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url}
+    ]
+  end
+
+  defp aliases do
+    [
+      "test.integration": "test --only integration_v2"
     ]
   end
 end

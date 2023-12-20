@@ -1,0 +1,1 @@
+config :testcontainers, enabled: true
