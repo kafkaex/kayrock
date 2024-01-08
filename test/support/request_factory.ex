@@ -33,12 +33,13 @@ defmodule Kayrock.RequestFactory do
     topic_data = [
       %{
         topic: topic_name,
-        data: [
-          %{
-            partition: Keyword.get(data, :partition, 0),
-            record_set: Keyword.get(data, :record_set, [])
-          }
-        ]
+        data:
+          Enum.map(data, fn datum ->
+            %{
+              partition: Keyword.get(datum, :partition, 0),
+              record_set: Keyword.get(datum, :record_set, [])
+            }
+          end)
       }
     ]
 
