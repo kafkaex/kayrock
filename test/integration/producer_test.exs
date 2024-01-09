@@ -3,7 +3,6 @@ defmodule Kayrock.Integration.ProducerTest do
   use ExUnit.Case, async: true
 
   import Kayrock.TestSupport
-  import Kayrock.Convenience
   import Kayrock.RequestFactory
 
   container(:kafka, KafkaContainer.new(), shared: true)

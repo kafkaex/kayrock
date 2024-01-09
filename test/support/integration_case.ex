@@ -16,8 +16,13 @@ defmodule Kayrock.IntegrationCase do
     end
 
     setup_all do
-      {:ok, _pid} = Testcontainers.start_link()
-      :ok
+      case Testcontainers.start_link() do
+        {:ok, _} ->
+          :ok
+
+        {:error, {:already_started, _}} ->
+          :ok
+      end
     end
   else
     defmodule TestcontainersStub do
