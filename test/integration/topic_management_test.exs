@@ -4,6 +4,7 @@ defmodule Kayrock.Integration.TopicManagementTest do
 
   import Kayrock.TestSupport
   import Kayrock.Convenience
+  import Kayrock.RequestFactory
 
   container(:kafka, KafkaContainer.new(), shared: true)
 
@@ -58,22 +59,6 @@ defmodule Kayrock.Integration.TopicManagementTest do
         refute topic_exists?(client_pid, topic_name)
       end
     end
-  end
-
-  # Helpers
-  defp create_topic_request(topic_name, api_version) do
-    api_version = min(Kayrock.CreateTopics.max_vsn(), api_version)
-    request = Kayrock.CreateTopics.get_request_struct(api_version)
-
-    topic_config = %{
-      topic: topic_name,
-      num_partitions: 3,
-      replication_factor: 1,
-      replica_assignment: [],
-      config_entries: []
-    }
-
-    %{request | create_topic_requests: [topic_config], timeout: 1000}
   end
 
   defp create_topic_partition(topic_name, api_version) do
