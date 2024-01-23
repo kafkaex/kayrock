@@ -81,16 +81,11 @@ defmodule Kayrock.MessageSet do
           }
 
         c ->
-          decompressed = Kayrock.Compression.decompress(c, value)
-
-          if magic == 1 do
-            decompressed
-            |> do_deserialize([], 0)
-            |> correct_offsets(offset)
-            |> Enum.reverse()
-          else
-            Enum.reverse(do_deserialize(decompressed, [], 0))
-          end
+          c
+          |> Kayrock.Compression.decompress(value)
+          |> do_deserialize([], 0)
+          |> correct_offsets(offset)
+          |> Enum.reverse()
       end
 
     do_deserialize(orig_rest, [msg | acc], add_offset)
