@@ -100,7 +100,6 @@ defmodule Kayrock.RecordBatch do
   @spec serialize(t) :: iodata
   def serialize(%__MODULE__{} = record_batch) do
     [first_record | _] = record_batch.records
-
     num_records = length(record_batch.records)
 
     max_timestamp =
@@ -108,15 +107,16 @@ defmodule Kayrock.RecordBatch do
       |> Enum.map(fn r -> r.timestamp end)
       |> Enum.max()
 
-    base_offset = first_record.offset
     base_timestamp = first_record.timestamp
 
     records =
-      for record <- record_batch.records do
+      record_batch.records
+      |> Enum.with_index()
+      |> Enum.map(fn {record, offset_delta} ->
         record
-        |> normalize_record(base_offset, base_timestamp)
-        |> serialize_record
-      end
+        |> normalize_record(offset_delta, base_timestamp)
+        |> serialize_record()
+      end)
 
     records =
       case compression_type(record_batch.attributes) do
@@ -163,11 +163,9 @@ defmodule Kayrock.RecordBatch do
     nil
   end
 
-  def deserialize(msg_set_size, msg_set_data)
-      when byte_size(msg_set_data) == msg_set_size do
+  def deserialize(msg_set_size, msg_set_data) when byte_size(msg_set_data) == msg_set_size do
     case get_magic_byte(msg_set_data) do
       {2, batch_offset, batch_length, partition_leader_epoch, rest} ->
-        <<>>
         deserialize(rest, [], batch_offset, batch_length, partition_leader_epoch)
 
       {magic, _, _, _, _} ->
@@ -405,11 +403,11 @@ defmodule Kayrock.RecordBatch do
     [encode_varint(IO.iodata_length(without_length)), without_length]
   end
 
-  defp normalize_record(record, base_offset, base_timestamp) do
+  defp normalize_record(record, offset_delta, base_timestamp) do
     %{
       record
       | timestamp: maybe_delta(record.timestamp, base_timestamp),
-        offset: maybe_delta(record.offset, base_offset)
+        offset: offset_delta
     }
   end
 
