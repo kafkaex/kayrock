@@ -69,7 +69,7 @@ defmodule Kayrock.RequestFactory do
             topic: Keyword.fetch!(partition, :topic),
             partitions: [
               %{
-                partition: Keyword.fetch!(partition, :partition),
+                partition: Keyword.get(partition, :partition, 0),
                 fetch_offset: Keyword.get(partition, :fetch_offset, 0),
                 max_bytes: Keyword.get(partition, :max_bytes, max_bytes),
                 log_start_offset: Keyword.get(partition, :log_start_offset, 0)
