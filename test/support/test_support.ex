@@ -1,5 +1,13 @@
 defmodule Kayrock.TestSupport do
   @moduledoc "Support code for tests"
+
+  @doc """
+  Returns a unique string for use in tests.
+  """
+  def unique_string do
+    "test-topic-#{:erlang.unique_integer([:positive])}"
+  end
+
   def compare_binaries(lhs, rhs) do
     bytes_per_chunk = 16
     chunks_lhs = chunk_binary(lhs, bytes_per_chunk)

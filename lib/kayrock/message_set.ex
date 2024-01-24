@@ -81,13 +81,11 @@ defmodule Kayrock.MessageSet do
           }
 
         c ->
-          decompressed = Kayrock.Compression.decompress(c, value)
-
-          if magic == 1 do
-            Enum.reverse(do_deserialize(decompressed, [], offset))
-          else
-            Enum.reverse(do_deserialize(decompressed, [], 0))
-          end
+          c
+          |> Kayrock.Compression.decompress(value)
+          |> do_deserialize([], 0)
+          |> correct_offsets(offset)
+          |> Enum.reverse()
       end
 
     do_deserialize(orig_rest, [msg | acc], add_offset)
@@ -95,6 +93,21 @@ defmodule Kayrock.MessageSet do
 
   defp do_deserialize(_, acc, _add_offset) do
     Enum.reverse(List.flatten(acc))
+  end
+
+  # All other cases, compressed inner messages should have relative offset, with below attributes:
+  #   - The container message should have the 'real' offset
+  #   - The container message's offset should be the 'real' offset of the last message in the compressed batch
+  defp correct_offsets(messages, real_offset) do
+    max_relative_offset = messages |> List.last() |> Map.fetch!(:offset)
+
+    if max_relative_offset == real_offset do
+      messages
+    else
+      Enum.map(messages, fn msg ->
+        Map.update!(msg, :offset, &(&1 + real_offset))
+      end)
+    end
   end
 
   defp create_message_set([], _compression_type), do: {"", 0}

@@ -1,6 +1,7 @@
 # Kayrock
 
-![Elixir CI](https://github.com/dantswain/kayrock/workflows/Elixir%20CI/badge.svg)
+[![CI Checks](https://github.com/kafkaex/kayrock/actions/workflows/checks.yml/badge.svg?branch=master)](https://github.com/kafkaex/kayrock/actions/workflows/checks.yml)
+[![CI Tests](https://github.com/kafkaex/kayrock/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/kafkaex/kayrock/actions/workflows/test.yml)
 [![Module Version](https://img.shields.io/hexpm/v/kayrock.svg)](https://hex.pm/packages/kayrock)
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/kayrock/)
 [![Total Download](https://img.shields.io/hexpm/dt/kayrock.svg)](https://hex.pm/packages/kayrock)
@@ -107,3 +108,30 @@ a Kafka client.  This serves a few purposes:
 
 Regardless, it is not a production-ready implementation. I would refer you to
 KafkaEx or brod for that.
+
+## Testing
+
+Kayrock includes a test suite that checks that the generated code is correct.
+We have both unit tests and integration tests.  
+
+The unit tests are run as part of the normal mix test process. To run unit tests
+
+```shell
+mix test
+```
+
+The integration tests require a running docker, currently we are using docker-compose to run a kafka cluster.
+But we are in a process of migrating to use [testcontainers](https://github.com/testcontainers/testcontainers-elixir) 
+to run kafka cluster.
+
+To run original integration tests
+
+```shell
+mix test --include integration
+```
+
+To run integration tests with testcontainers
+
+```shell
+mix test.integration
+```

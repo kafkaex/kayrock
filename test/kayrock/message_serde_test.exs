@@ -173,7 +173,7 @@ defmodule Kayrock.MessageSerdeTest do
             attributes: 0,
             headers: [],
             key: nil,
-            offset: 0,
+            offset: 1,
             timestamp: -1,
             value: "bar"
           },
@@ -181,7 +181,7 @@ defmodule Kayrock.MessageSerdeTest do
             attributes: 0,
             headers: [],
             key: nil,
-            offset: 0,
+            offset: 2,
             timestamp: -1,
             value: "baz"
           }
@@ -189,14 +189,29 @@ defmodule Kayrock.MessageSerdeTest do
       }
 
       expect =
-        <<0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78, 255, 255, 255, 255, 2, 240, 195, 168,
-          31, 0, 2, 0, 0, 0, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        <<0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 255, 255, 255, 255, 2, 240, 3, 91,
+          168, 0, 2, 0, 0, 0, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
           255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0,
-          0, 0, 3, 30, 36, 18, 0, 0, 0, 1, 6, 102, 111, 111, 0, 9, 10, 52, 98, 97, 114, 0, 18, 0,
-          0, 0, 1, 6, 98, 97, 122, 0>>
+          0, 0, 3, 30, 116, 18, 0, 0, 0, 1, 6, 102, 111, 111, 0, 18, 0, 0, 2, 1, 6, 98, 97, 114,
+          0, 18, 0, 0, 4, 1, 6, 98, 97, 122, 0>>
 
       got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
       assert got == expect, compare_binaries(got, expect)
+
+      <<size::32-signed, rest::bits>> = got
+      assert byte_size(rest) == size
+
+      [got_batch] = RecordBatch.deserialize(rest)
+
+      record_batch =
+        %{
+          record_batch
+          | batch_length: got_batch.batch_length,
+            crc: got_batch.crc,
+            last_offset_delta: 2
+        }
+
+      assert got_batch == record_batch
     end
 
     test "using snappyer dependency" do
@@ -227,7 +242,7 @@ defmodule Kayrock.MessageSerdeTest do
             attributes: 0,
             headers: [],
             key: nil,
-            offset: 0,
+            offset: 1,
             timestamp: -1,
             value: "bar"
           },
@@ -235,7 +250,7 @@ defmodule Kayrock.MessageSerdeTest do
             attributes: 0,
             headers: [],
             key: nil,
-            offset: 0,
+            offset: 2,
             timestamp: -1,
             value: "baz"
           }
@@ -243,14 +258,29 @@ defmodule Kayrock.MessageSerdeTest do
       }
 
       expect =
-        <<0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 78, 255, 255, 255, 255, 2, 240, 195, 168,
-          31, 0, 2, 0, 0, 0, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+        <<0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 255, 255, 255, 255, 2, 240, 3, 91,
+          168, 0, 2, 0, 0, 0, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
           255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0,
-          0, 0, 3, 30, 36, 18, 0, 0, 0, 1, 6, 102, 111, 111, 0, 9, 10, 52, 98, 97, 114, 0, 18, 0,
-          0, 0, 1, 6, 98, 97, 122, 0>>
+          0, 0, 3, 30, 116, 18, 0, 0, 0, 1, 6, 102, 111, 111, 0, 18, 0, 0, 2, 1, 6, 98, 97, 114,
+          0, 18, 0, 0, 4, 1, 6, 98, 97, 122, 0>>
 
       got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
       assert got == expect, compare_binaries(got, expect)
+
+      <<size::32-signed, rest::bits>> = got
+      assert byte_size(rest) == size
+
+      [got_batch] = RecordBatch.deserialize(rest)
+
+      record_batch =
+        %{
+          record_batch
+          | batch_length: got_batch.batch_length,
+            crc: got_batch.crc,
+            last_offset_delta: 2
+        }
+
+      assert got_batch == record_batch
     end
   end
 
