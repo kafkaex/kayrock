@@ -60,7 +60,7 @@ defmodule Kayrock.RecordBatch do
 
   @type t :: %__MODULE__{}
 
-  use Bitwise
+  import Bitwise
 
   alias Kayrock.Compression
   alias Kayrock.MessageSet

@@ -67,7 +67,7 @@ defmodule Kayrock.ErrorCode do
   end
 
   def code_to_atom(code) do
-    Logger.warn("Unknown error code #{inspect(code)}")
+    Logger.warning("Unknown error code #{inspect(code)}")
     :unknown
   end
 
