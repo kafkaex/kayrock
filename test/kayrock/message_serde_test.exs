@@ -197,6 +197,21 @@ defmodule Kayrock.MessageSerdeTest do
 
       got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
       assert got == expect, compare_binaries(got, expect)
+
+      <<size::32-signed, rest::bits>> = got
+      assert byte_size(rest) == size
+
+      [got_batch] = RecordBatch.deserialize(rest)
+
+      record_batch =
+        %{
+          record_batch
+          | batch_length: got_batch.batch_length,
+            crc: got_batch.crc,
+            last_offset_delta: 2
+        }
+
+      assert got_batch == record_batch
     end
 
     test "using snappyer dependency" do
@@ -251,6 +266,21 @@ defmodule Kayrock.MessageSerdeTest do
 
       got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
       assert got == expect, compare_binaries(got, expect)
+
+      <<size::32-signed, rest::bits>> = got
+      assert byte_size(rest) == size
+
+      [got_batch] = RecordBatch.deserialize(rest)
+
+      record_batch =
+        %{
+          record_batch
+          | batch_length: got_batch.batch_length,
+            crc: got_batch.crc,
+            last_offset_delta: 2
+        }
+
+      assert got_batch == record_batch
     end
   end
 
