@@ -15,11 +15,11 @@ jobs:
     strategy:
       matrix:
         pair:
-          - elixir: 1.15
+          - elixir: 1.16
             otp: 26.1
-          - elixir: 1.13
+          - elixir: 1.14
             otp: 24.3
-          - elixir: '1.10'
+          - elixir: 1.12
             otp: 22.3
 
     steps:
@@ -72,11 +72,11 @@ jobs:
       fail-fast: false
       matrix:
         pair:
-          - elixir: 1.15
+          - elixir: 1.16
             otp: 26.1
-          - elixir: 1.13
+          - elixir: 1.14
             otp: 24.3
-          - elixir: '1.10'
+          - elixir: 1.12
             otp: 22.3
 
     steps:
