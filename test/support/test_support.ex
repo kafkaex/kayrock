@@ -65,4 +65,22 @@ defmodule Kayrock.TestSupport do
   defp pad_list(l, n, pad_with) do
     l ++ List.duplicate(pad_with, n - length(l))
   end
+
+  @doc """
+  Calls the given function up to 3 times, sleeping 1 second between each call.
+  """
+  def with_retry(fun), do: do_with_retry(3, fun, nil)
+
+  defp do_with_retry(0, _fun, result), do: result
+
+  defp do_with_retry(n, fun, _result) do
+    case fun.() do
+      {:ok, response = %{error_code: 0}} ->
+        {:ok, response}
+
+      result ->
+        :timer.sleep(1000)
+        do_with_retry(n - 1, fun, result)
+    end
+  end
 end

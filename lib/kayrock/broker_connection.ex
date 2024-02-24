@@ -31,7 +31,7 @@ defmodule Kayrock.BrokerConnection do
 
   def send(conn, data), do: Connection.call(conn, {:send, data})
 
-  def recv(conn, timeout \\ 3000) do
+  def recv(conn, timeout \\ 5000) do
     Connection.call(conn, {:recv, timeout})
   end
 
