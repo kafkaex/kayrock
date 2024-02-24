@@ -119,7 +119,7 @@ defmodule Kayrock.RequestFactory do
     %{
       request
       | group_id: Map.fetch!(member_data, :group_id),
-        session_timeout: Map.get(member_data, :session_timeout, 10000),
+        session_timeout: Map.get(member_data, :session_timeout, 10_000),
         member_id: Map.get(member_data, :member_id, ""),
         protocol_type: "consumer",
         group_protocols: [
@@ -137,7 +137,7 @@ defmodule Kayrock.RequestFactory do
   defp add_rebalance_timeout(request, _, member_data) do
     %{
       request
-      | rebalance_timeout: Map.get(member_data, :rebalance_timeout, 30000)
+      | rebalance_timeout: Map.get(member_data, :rebalance_timeout, 30_000)
     }
   end
 
