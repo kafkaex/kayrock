@@ -60,7 +60,7 @@ defmodule Kayrock.MixProject do
 
   defp integration_test_deps(deps_list) do
     if Version.match?(System.version(), ">= 1.15.0") do
-      [{:testcontainers, "~> 1.5"} | deps_list]
+      [{:testcontainers, "~> 1.6", only: :test} | deps_list]
     else
       deps_list
     end
