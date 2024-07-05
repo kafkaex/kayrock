@@ -33,8 +33,8 @@ defmodule Kayrock.Compression do
   def decompress(@gzip_attribute, <<window_size::8-signed, _::bits>> = data) do
     z = :zlib.open()
     :zlib.inflateInit(z, window_size)
-    [v | _] = :zlib.inflate(z, data)
-    v
+    v = :zlib.inflate(z, data)
+    Enum.into(List.flatten(v), <<>>)
   end
 
   def decompress(@snappy_attribute, data) do
