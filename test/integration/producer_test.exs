@@ -331,8 +331,8 @@ defmodule Kayrock.Integration.ProducerTest do
       } do
         api_version = unquote(version)
         {:ok, client_pid} = build_client(kafka)
-        long_header = Enum.to_list(?a..?z) |> Enum.take_random(12) |> to_string()
-        message_content = Enum.to_list(?a..?z) |> Enum.take_random(50) |> to_string()
+        long_header = ?a..?z |> Enum.to_list() |> Enum.take_random(12) |> to_string()
+        message_content = ?a..?z |> Enum.to_list() |> Enum.take_random(50) |> to_string()
 
         # Create Topic
         topic_name = create_topic(client_pid, api_version)

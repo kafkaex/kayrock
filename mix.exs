@@ -53,17 +53,9 @@ defmodule Kayrock.MixProject do
       {:excoveralls, "~> 0.18", only: :test},
       {:kafka_protocol, "~> 2.4.1", only: [:dev, :test]},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
-      {:snappyer, "~> 1.2", only: [:dev, :test]}
+      {:snappyer, "~> 1.2", only: [:dev, :test]},
+      {:testcontainers, "~> 1.6.0", only: [:dev, :test]}
     ]
-    |> integration_test_deps()
-  end
-
-  defp integration_test_deps(deps_list) do
-    if Version.match?(System.version(), ">= 1.15.0") do
-      [{:testcontainers, "~> 1.6", only: :test} | deps_list]
-    else
-      deps_list
-    end
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/support"]
