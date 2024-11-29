@@ -16,7 +16,7 @@ jobs:
     strategy:
       matrix:
         elixir: ['1.16']
-        otp: ['26.2']
+        otp: ['25.3.2.9']
 
     steps:
       - name: Cancel previous runs
@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         elixir: ['1.16']
-        otp: ['26.2']
+        otp: ['25.3.2.9']
 
     steps:
       - name: Cancel Previous Runs

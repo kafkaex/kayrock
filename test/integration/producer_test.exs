@@ -331,6 +331,8 @@ defmodule Kayrock.Integration.ProducerTest do
       } do
         api_version = unquote(version)
         {:ok, client_pid} = build_client(kafka)
+        long_header = ?a..?z |> Enum.to_list() |> Enum.take_random(12) |> to_string()
+        message_content = ?a..?z |> Enum.to_list() |> Enum.take_random(50) |> to_string()
 
         # Create Topic
         topic_name = create_topic(client_pid, api_version)
@@ -341,23 +343,23 @@ defmodule Kayrock.Integration.ProducerTest do
           records: [
             %Kayrock.RecordBatch.Record{
               key: "1",
-              value: "foo",
+              value: "#{message_content} 1",
               timestamp: timestamp,
-              headers: [%Kayrock.RecordBatch.RecordHeader{key: "1", value: "1"}],
+              headers: [%Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}],
               attributes: 0
             },
             %Kayrock.RecordBatch.Record{
               key: "1",
-              value: "bar",
+              value: "#{message_content} 2",
               timestamp: timestamp,
-              headers: [%Kayrock.RecordBatch.RecordHeader{key: "1", value: "1"}],
+              headers: [%Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}],
               attributes: 0
             },
             %Kayrock.RecordBatch.Record{
               key: "1",
-              value: "baz",
+              value: "#{message_content} 3",
               timestamp: timestamp,
-              headers: [%Kayrock.RecordBatch.RecordHeader{key: "1", value: "1"}],
+              headers: [%Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}],
               attributes: 0
             }
           ]
@@ -387,20 +389,29 @@ defmodule Kayrock.Integration.ProducerTest do
         [message_one, message_two, message_three] =
           List.first(response.partition_responses).record_set |> List.first() |> Map.get(:records)
 
-        assert message_one.value == "foo"
+        assert message_one.value == "#{message_content} 1"
         assert message_one.offset == 0
         assert message_one.timestamp == timestamp
-        assert message_one.headers == [%Kayrock.RecordBatch.RecordHeader{key: "1", value: "1"}]
 
-        assert message_two.value == "bar"
+        assert message_one.headers == [
+                 %Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}
+               ]
+
+        assert message_two.value == "#{message_content} 2"
         assert message_two.offset == 1
         assert message_two.timestamp == timestamp
-        assert message_two.headers == [%Kayrock.RecordBatch.RecordHeader{key: "1", value: "1"}]
 
-        assert message_three.value == "baz"
+        assert message_two.headers == [
+                 %Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}
+               ]
+
+        assert message_three.value == "#{message_content} 3"
         assert message_three.offset == 2
         assert message_three.timestamp == timestamp
-        assert message_three.headers == [%Kayrock.RecordBatch.RecordHeader{key: "1", value: "1"}]
+
+        assert message_three.headers == [
+                 %Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}
+               ]
 
         # [THEN] Produce another message
         record = %Kayrock.RecordBatch.Record{
@@ -439,6 +450,58 @@ defmodule Kayrock.Integration.ProducerTest do
         assert message.value == "zab"
         assert message.offset == 3
         assert message.timestamp == timestamp
+
+        # [THEN] Fetch incomplete messages from topic
+        partition_data = [[topic: topic_name, partition: 0, fetch_offset: 0]]
+        fetch_request = fetch_messages_request(partition_data, [max_bytes: 100], api_version)
+
+        {:ok, resp} = Kayrock.client_call(client_pid, fetch_request, :controller)
+
+        [response] = resp.responses
+        assert response.topic == topic_name
+
+        # [THEN] Verify message data
+        [%{records: records}] = List.first(response.partition_responses).record_set
+        assert length(records) == 3
+
+        assert List.first(records).value == "#{message_content} 1"
+        assert List.first(records).offset == 0
+
+        assert List.first(records).headers == [
+                 %Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}
+               ]
+
+        assert List.last(records).value == "#{message_content} 3"
+        assert List.last(records).offset == 2
+
+        assert List.last(records).headers == [
+                 %Kayrock.RecordBatch.RecordHeader{key: "1", value: long_header}
+               ]
+
+        # [THEN] Fetch complete messages from topic
+        partition_data = [[topic: topic_name, partition: 0, fetch_offset: 0]]
+        fetch_request = fetch_messages_request(partition_data, [], api_version)
+
+        {:ok, resp} = Kayrock.client_call(client_pid, fetch_request, :controller)
+
+        [response] = resp.responses
+        assert response.topic == topic_name
+
+        # [THEN] Verify message data
+        [%{records: records}, %{records: records_two}] =
+          List.first(response.partition_responses).record_set
+
+        assert length(records) == 3
+
+        assert List.first(records).value == "#{message_content} 1"
+        assert List.first(records).offset == 0
+
+        assert List.last(records).value == "#{message_content} 3"
+        assert List.last(records).offset == 2
+
+        assert length(records_two) == 1
+        assert List.first(records_two).value == "zab"
+        assert List.first(records_two).offset == 3
       end
     end
   end

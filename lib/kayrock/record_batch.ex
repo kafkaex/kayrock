@@ -150,7 +150,6 @@ defmodule Kayrock.RecordBatch do
 
   @doc """
   Direct deserializer
-
   Supplied for compatibility with the Request protocol
   """
   @spec deserialize(binary) :: nil | MessageSet.t() | t
