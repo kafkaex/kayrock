@@ -33,5 +33,5 @@
   "testcontainers": {:hex, :testcontainers, "1.6.0", "14b3251f01ce0b1ada716130d371ba0b6cb1ce2904aa38bd58e5ff4194f4d88f", [:mix], [{:ecto, "~> 3.3", [hex: :ecto, repo: "hexpm", optional: true]}, {:ecto_sql, "~> 3.3", [hex: :ecto_sql, repo: "hexpm", optional: true]}, {:ex_docker_engine_api, "~> 1.43.1", [hex: :ex_docker_engine_api, repo: "hexpm", optional: false]}, {:uuid, "~> 1.1", [hex: :uuid, repo: "hexpm", optional: false]}], "hexpm", "3f812407f232954999a3a2e05b2802e1d8d1afba120533c42b32c7cc91d35daf"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.7.0", "bc84380c9ab48177092f43ac89e4dfa2c6d62b40b8bd132b1059ecc7232f9a78", [:rebar3], [], "hexpm", "25eee6d67df61960cf6a794239566599b09e17e668d3700247bc498638152521"},
   "uuid": {:hex, :uuid, "1.1.8", "e22fc04499de0de3ed1116b770c7737779f226ceefa0badb3592e64d5cfb4eb9", [:mix], [], "hexpm", "c790593b4c3b601f5dc2378baae7efaf5b3d73c4c6456ba85759905be792f2ac"},
-  "varint": {:hex, :varint, "1.4.0", "b7405c8a99db7b95d4341fa9cb15e7c3af6c8dda43e21bbe1c4a9cdff50b6502", [:mix], [], "hexpm", "0fd461901b7120c03467530dff3c58fa3475328fd75ba72c7d3cbf13bce6b0d2"},
+  "varint": {:hex, :varint, "1.5.1", "17160c70d0428c3f8a7585e182468cac10bbf165c2360cf2328aaa39d3fb1795", [:mix], [], "hexpm", "24f3deb61e91cb988056de79d06f01161dd01be5e0acae61d8d936a552f1be73"},
 }
