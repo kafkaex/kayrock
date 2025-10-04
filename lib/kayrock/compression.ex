@@ -2,11 +2,6 @@ defmodule Kayrock.Compression do
   @moduledoc """
   Handles compression/decompression of messages.
 
-  NOTE this is a copy of KafkaEx.Compression:
-  https://github.com/kafkaex/kafka_ex/blob/master/lib/kafka_ex/compression.ex
-
-  It is duplicated here to avoid creating a circular dependency.
-
   See https://cwiki.apache.org/confluence/display/KAFKA/A+Guide+To+The+Kafka+Protocol#AGuideToTheKafkaProtocol-Compression
 
   To add new compression types:
@@ -14,73 +9,68 @@ defmodule Kayrock.Compression do
   1. Add the appropriate dependency to mix.exs (don't forget to add it
   to the application list).
   2. Add the appropriate attribute value and compression_type atom.
-  3. Add a decompress function clause.
-  4. Add a compress function clause.
+  3. Add new Compression module.
+  4. Add a decompress function in the new module.
+  5. Add a compress function in the new module.
+
+  ## Compression Levels
+  
+  - **Gzip**: 1 (fastest) to 9 (best compression), default: 6
+  - **Zstandard**: 1 to 22, default: 3 (Kafka default)
+  - **Snappy/LZ4**: No levels supported
+  
+  ## Dependencies
+  
+  - **Snappy**: `{:snappy, "~> 1.1"}` or `{:snappyer, "~> 1.2"}`
+  - **LZ4**: `{:lz4b, "~> 0.2.0"}`
+  - **Zstandard**: OTP 27+ built-in or `{:ezstd, "~> 1.0"}`
 
   """
 
-  @gzip_attribute 1
-  @snappy_attribute 2
+  alias Kayrock.Compression.{Gzip, Snappy, Lz4, Zstd}
 
-  @type attribute_t :: integer
-  @type compression_type_t :: :snappy | :gzip
+  @type codec_t :: :gzip | :snappy | :lz4 | :zstd
 
-  @doc """
-  This function should pattern match on the attribute value and return
-  the decompressed data.
-  """
-  @spec decompress(attribute_t, binary) :: binary
-  def decompress(@gzip_attribute, <<window_size::8-signed, _::bits>> = data) do
-    z = :zlib.open()
-    :zlib.inflateInit(z, window_size)
-    [v | _] = :zlib.inflate(z, data)
-    v
+  @codecs [
+    gzip:   Gzip,
+    snappy: Snappy,
+    lz4:    Lz4,
+    zstd:   Zstd
+  ]
+
+  @gzip_attr   Gzip.attr()
+  @snappy_attr Snappy.attr()
+  @lz4_attr    Lz4.attr()
+  @zstd_attr   Zstd.attr()
+
+  # ---------- Decompress ----------
+  def decompress(@gzip_attr, data),   do: Gzip.decompress(data)
+  def decompress(@snappy_attr, data), do: Snappy.decompress(data)
+  def decompress(@lz4_attr, data),    do: Lz4.decompress(data)
+  def decompress(@zstd_attr, data),   do: Zstd.decompress(data)
+
+  # ---------- Compress simple ----------
+  def compress(:gzip, data),   do: {Gzip.compress(data), Gzip.attr()}
+  def compress(:snappy, data), do: {Snappy.compress(data), Snappy.attr()}
+  def compress(:lz4, data),    do: {Lz4.compress(data), Lz4.attr()}
+  def compress(:zstd, data),   do: {Zstd.compress(data), Zstd.attr()}
+
+  # ---------- Compress with opts ----------
+  def compress(:gzip, data, opts) do
+    level = Keyword.get(opts, :level)
+    {Gzip.compress(data, level), Gzip.attr()}
   end
 
-  def decompress(@snappy_attribute, data) do
-    case data do
-      <<130, "SNAPPY", 0, _snappy_version_info::64, rest::binary>> ->
-        snappy_decompress_chunk(rest, <<>>)
-
-      _ ->
-        {:ok, decompressed_value} = snappy_module().decompress(data)
-        decompressed_value
-    end
+  def compress(:zstd, data, opts) do
+    level = Keyword.get(opts, :level)
+    {Zstd.compress(data, level), Zstd.attr()}
   end
 
-  defp snappy_module do
-    Application.get_env(:kayrock, :snappy_module)
-  end
+  def compress(:snappy, data, _opts), do: compress(:snappy, data)
+  def compress(:lz4, data, _opts),    do: compress(:lz4, data)
 
-  @doc """
-  This function should pattern match on the compression_type atom and
-  return the compressed data as well as the corresponding attribute
-  value.
-  """
-  @spec compress(compression_type_t, iodata) :: {binary, attribute_t}
-  def compress(:snappy, data) do
-    {:ok, compressed_data} = snappy_module().compress(data)
-    {compressed_data, @snappy_attribute}
-  end
-
-  def compress(:gzip, data) do
-    compressed_data = :zlib.gzip(data)
-    {compressed_data, @gzip_attribute}
-  end
-
-  def snappy_decompress_chunk(<<>>, so_far) do
-    so_far
-  end
-
-  def snappy_decompress_chunk(<<0::32-signed, _rest::bits>>, so_far) do
-    so_far
-  end
-
-  def snappy_decompress_chunk(
-        <<valsize::32-unsigned, value::size(valsize)-binary, rest::bits>>,
-        so_far
-      ) do
-    {:ok, decompressed_value} = snappy_module().decompress(value)
-    snappy_decompress_chunk(rest, so_far <> decompressed_value)
+  @spec available_codecs() :: [codec_t]
+  def available_codecs do
+    for {name, mod} <- @codecs, mod.available?(), do: name
   end
 end
