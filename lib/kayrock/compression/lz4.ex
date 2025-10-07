@@ -15,32 +15,28 @@ defmodule Kayrock.Compression.Lz4 do
   @impl true
   @spec compress(binary) :: binary
   def compress(data) do
-    try do
-      case :lz4b_frame.compress(data) do
-        {:ok, compressed} -> compressed
-        {:error, reason} ->
-          raise "LZ4 compression failed: #{inspect(reason)}"
-      end
-    rescue
-      UndefinedFunctionError ->
-        reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}", 
-                __STACKTRACE__
+    case :lz4b_frame.compress(data) do
+      {:ok, compressed} -> compressed
+      {:error, reason} ->
+        raise "LZ4 compression failed: #{inspect(reason)}"
     end
+  rescue
+    UndefinedFunctionError ->
+      reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}", 
+              __STACKTRACE__
   end
   
   @impl true
   @spec decompress(binary) :: binary
   def decompress(data) do
-    try do
-      case :lz4b_frame.decompress(data) do
-        {:ok, decompressed} -> decompressed
-        {:error, reason} ->
-          raise "LZ4 decompression failed: #{inspect(reason)}"
-      end
-    rescue
-      UndefinedFunctionError ->
-        reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}", 
-                __STACKTRACE__
+    case :lz4b_frame.decompress(data) do
+      {:ok, decompressed} -> decompressed
+      {:error, reason} ->
+        raise "LZ4 decompression failed: #{inspect(reason)}"
     end
+  rescue
+    UndefinedFunctionError ->
+      reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}", 
+              __STACKTRACE__
   end
 end
