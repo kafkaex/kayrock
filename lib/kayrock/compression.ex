@@ -25,7 +25,7 @@ defmodule Kayrock.Compression do
 
   """
 
-  alias Kayrock.Compression.{Gzip, Snappy, Lz4}
+  alias Kayrock.Compression.{Gzip, Lz4, Snappy}
 
   @type codec_t :: :gzip | :snappy | :lz4
 

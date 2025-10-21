@@ -1,17 +1,13 @@
 defmodule Kayrock.Compression.Lz4 do
   @moduledoc false
   @behaviour Kayrock.Compression.Codec
-  
   # Kafka expects LZ4 Frame (KIP-57). :lz4b_frame handles this framing.
   @attr 3
-  
   @impl true
   def attr, do: @attr
-  
   @impl true
   @spec available?() :: boolean
   def available?, do: Code.ensure_loaded?(:lz4b_frame)
-  
   @impl true
   @spec compress(binary) :: binary
   def compress(data) do
@@ -22,10 +18,9 @@ defmodule Kayrock.Compression.Lz4 do
     end
   rescue
     UndefinedFunctionError ->
-      reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}", 
+      reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}",
               __STACKTRACE__
   end
-  
   @impl true
   @spec decompress(binary) :: binary
   def decompress(data) do
@@ -36,7 +31,7 @@ defmodule Kayrock.Compression.Lz4 do
     end
   rescue
     UndefinedFunctionError ->
-      reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}", 
+      reraise "LZ4 compression unavailable. Requires {:lz4b, \"~> 0.2\"}",
               __STACKTRACE__
   end
 end
