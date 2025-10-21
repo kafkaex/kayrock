@@ -14,12 +14,12 @@ defmodule Kayrock.Compression do
   5. Add a compress function in the new module.
 
   ## Compression Levels
-  
+
   - **Gzip**: 1 (fastest) to 9 (best compression), default: 6
   - **Snappy/LZ4**: No levels supported
-  
+
   ## Dependencies
-  
+
   - **Snappy**: `{:snappy, "~> 1.1"}` or `{:snappyer, "~> 1.2"}`
   - **LZ4**: `{:lz4b, "~> 0.2.0"}`
 
@@ -30,24 +30,24 @@ defmodule Kayrock.Compression do
   @type codec_t :: :gzip | :snappy | :lz4
 
   @codecs [
-    gzip:   Gzip,
+    gzip: Gzip,
     snappy: Snappy,
-    lz4:    Lz4
+    lz4: Lz4
   ]
 
-  @gzip_attr   Gzip.attr()
+  @gzip_attr Gzip.attr()
   @snappy_attr Snappy.attr()
-  @lz4_attr    Lz4.attr()
+  @lz4_attr Lz4.attr()
 
   # ---------- Decompress ----------
-  def decompress(@gzip_attr, data),   do: Gzip.decompress(data)
+  def decompress(@gzip_attr, data), do: Gzip.decompress(data)
   def decompress(@snappy_attr, data), do: Snappy.decompress(data)
-  def decompress(@lz4_attr, data),    do: Lz4.decompress(data)
+  def decompress(@lz4_attr, data), do: Lz4.decompress(data)
 
   # ---------- Compress simple ----------
-  def compress(:gzip, data),   do: {Gzip.compress(data), Gzip.attr()}
+  def compress(:gzip, data), do: {Gzip.compress(data), Gzip.attr()}
   def compress(:snappy, data), do: {Snappy.compress(data), Snappy.attr()}
-  def compress(:lz4, data),    do: {Lz4.compress(data), Lz4.attr()}
+  def compress(:lz4, data), do: {Lz4.compress(data), Lz4.attr()}
 
   # ---------- Compress with opts ----------
   def compress(:gzip, data, opts) do
@@ -56,7 +56,7 @@ defmodule Kayrock.Compression do
   end
 
   def compress(:snappy, data, _opts), do: compress(:snappy, data)
-  def compress(:lz4, data, _opts),    do: compress(:lz4, data)
+  def compress(:lz4, data, _opts), do: compress(:lz4, data)
 
   @spec available_codecs() :: [codec_t]
   def available_codecs do
