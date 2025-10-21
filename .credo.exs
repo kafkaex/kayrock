@@ -9,73 +9,27 @@
   # You can have as many configs as you like in the `configs:` field.
   configs: [
     %{
-      #
-      # Run any exec using `mix credo -C <name>`. If no exec name is given
-      # "default" is used.
-      #
       name: "default",
-      #
-      # These are the files included in the analysis:
       files: %{
-        #
-        # You can give explicit globs or simply directories.
-        # In the latter case `**/*.{ex,exs}` will be used.
-        #
         included: ["lib/", "src/", "test/", "web/", "apps/"],
         excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/", "lib/generated/"]
       },
-      #
-      # If you create your own checks, you must specify the source files for
-      # them here, so they can be loaded by Credo before running the analysis.
-      #
       requires: [],
-      #
-      # If you want to enforce a style guide and need a more traditional linting
-      # experience, you can change `strict` to `true` below:
-      #
-      strict: false,
-      #
-      # If you want to use uncolored output by default, you can change `color`
-      # to `false` below:
-      #
+      strict: true,
       color: true,
-      #
-      # You can customize the parameters of any check by adding a second element
-      # to the tuple.
-      #
-      # To disable a check put `false` as second element:
-      #
-      #     {Credo.Check.Design.DuplicatedCode, false}
-      #
       checks: [
-        #
-        ## Consistency Checks
-        #
+        # Consistency Checks
         {Credo.Check.Consistency.ExceptionNames, []},
         {Credo.Check.Consistency.LineEndings, []},
         {Credo.Check.Consistency.ParameterPatternMatching, []},
         {Credo.Check.Consistency.SpaceAroundOperators, []},
         {Credo.Check.Consistency.SpaceInParentheses, []},
         {Credo.Check.Consistency.TabsOrSpaces, []},
-
-        #
-        ## Design Checks
-        #
-        # You can customize the priority of any check
-        # Priority values are: `low, normal, high, higher`
-        #
-        {Credo.Check.Design.AliasUsage,
-         [priority: :low, if_nested_deeper_than: 2, if_called_more_often_than: 2]},
-        # You can also customize the exit_status of each check.
-        # If you don't want TODO comments to cause `mix credo` to fail, just
-        # set this value to 0 (zero).
-        #
+        # Design Checks
+        {Credo.Check.Design.AliasUsage,[priority: :low, if_nested_deeper_than: 2, if_called_more_often_than: 2]},
         {Credo.Check.Design.TagTODO, [exit_status: 2]},
         {Credo.Check.Design.TagFIXME, []},
-
-        #
         ## Readability Checks
-        #
         {Credo.Check.Readability.AliasOrder, []},
         {Credo.Check.Readability.FunctionNames, []},
         {Credo.Check.Readability.LargeNumbers, []},
@@ -97,20 +51,11 @@
         # TODO: enable by default in Credo 1.1
         {Credo.Check.Readability.UnnecessaryAliasExpansion, false},
         {Credo.Check.Readability.VariableNames, []},
-
-        #
         ## Refactoring Opportunities
-        #
         {Credo.Check.Refactor.CondStatements, []},
-        {
-          Credo.Check.Refactor.CyclomaticComplexity,
-          # increased for Kayrock.Generate.generate_schema_metadata
-          # this function could be split up into smaller chunk
-          [max_complexity: 10]
-        },
+        {Credo.Check.Refactor.CyclomaticComplexity,[max_complexity: 10]},
         {Credo.Check.Refactor.FunctionArity, []},
         {Credo.Check.Refactor.LongQuoteBlocks, []},
-        # {Credo.Check.Refactor.MapInto, []},
         {Credo.Check.Refactor.MatchInCondition, []},
         {Credo.Check.Refactor.NegatedConditionsInUnless, []},
         {Credo.Check.Refactor.NegatedConditionsWithElse, []},
@@ -121,10 +66,7 @@
            excluded_functions: []
          ]},
         {Credo.Check.Refactor.UnlessWithElse, []},
-
-        #
         ## Warnings
-        #
         {Credo.Check.Warning.BoolOperationOnSameValues, []},
         {Credo.Check.Warning.ExpensiveEmptyEnumCheck, []},
         {Credo.Check.Warning.IExPry, []},
@@ -142,10 +84,7 @@
         {Credo.Check.Warning.UnusedRegexOperation, []},
         {Credo.Check.Warning.UnusedStringOperation, []},
         {Credo.Check.Warning.UnusedTupleOperation, []},
-
-        #
         # Controversial and experimental checks (opt-in, just replace `false` with `[]`)
-        #
         {Credo.Check.Consistency.MultiAliasImportRequireUse, false},
         {Credo.Check.Design.DuplicatedCode, false},
         {Credo.Check.Readability.MultiAlias, false},

@@ -156,9 +156,8 @@ defmodule Kayrock.BrokerConnection do
         |> Enum.map(&String.to_integer/1)
         |> List.to_tuple()
 
-      # to_char_list is deprecated from Elixir 1.3 onward
       _ ->
-        apply(String, :to_char_list, [host])
+        String.to_charlist(host)
     end
   end
 
