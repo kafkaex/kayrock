@@ -11,9 +11,12 @@ defmodule Kayrock.ClientTest do
 
     p_new
     |> Enum.map(fn pid ->
-      {:registered_name, name} = Process.info(pid, :registered_name)
-      {pid, name}
+      case Process.info(pid, :registered_name) do
+        {:registered_name, name} -> {pid, name}
+        nil -> nil
+      end
     end)
+    |> Enum.reject(&is_nil/1)
     |> Enum.filter(fn
       {_, []} -> true
       _ -> false

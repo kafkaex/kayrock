@@ -13,14 +13,4 @@ defmodule Kayrock.IntegrationCase do
       alias Testcontainers.KafkaContainer
     end
   end
-
-  setup_all do
-    case Testcontainers.start_link() do
-      {:ok, _} ->
-        :ok
-
-      {:error, {:already_started, _}} ->
-        :ok
-    end
-  end
 end
