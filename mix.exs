@@ -54,7 +54,8 @@ defmodule Kayrock.MixProject do
       {:kafka_protocol, "~> 2.4.1", only: [:dev, :test]},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
       {:snappyer, "~> 1.2", only: [:dev, :test]},
-      {:testcontainers, "~> 1.6.0", only: [:dev, :test]}
+      {:lz4b, "~> 0.0.13", only: [:dev, :test]},
+      {:testcontainers, "1.9.0", only: [:dev, :test]}
     ]
   end
 

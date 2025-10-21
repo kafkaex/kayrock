@@ -124,7 +124,8 @@ defmodule Kayrock.RecordBatch do
           records
 
         other ->
-          {compressed_records, _} = Compression.compress(other, records)
+          records_binary = IO.iodata_to_binary(records)
+          {compressed_records, _} = Compression.compress(other, records_binary)
           compressed_records
       end
 

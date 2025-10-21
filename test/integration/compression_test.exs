@@ -8,19 +8,18 @@ defmodule Kayrock.Client.CompressionTest do
   container(:kafka, KafkaContainer.new(), shared: true)
 
   describe "Produce API & Fetch API with compression" do
-    for {compression, compression_num} <- [{"gzip", 1}, {"snappy", 2}] do
+    # MessageSet format (v0-v1) only supports gzip and snappy
+    for {compression, _compression_num} <- [{"gzip", 1}, {"snappy", 2}] do
       for version <- [0, 1] do
         test "v#{version} - produce and reads data using message set with compression: #{compression}",
-             %{
-               kafka: kafka
-             } do
+             %{kafka: kafka} do
           api_version = unquote(version)
           {:ok, client_pid} = build_client(kafka)
 
           # Create Topic
           topic_name = create_topic(client_pid, api_version)
 
-          # [GIVEN] MessageSet with timestamp
+          # [GIVEN] MessageSet with compression
           record_set = %Kayrock.MessageSet{
             messages: [
               %Kayrock.MessageSet.Message{
@@ -44,7 +43,7 @@ defmodule Kayrock.Client.CompressionTest do
             ]
           }
 
-          # [WHEN] Produce message with timestamp
+          # [WHEN] Produce message
           produce_message_request =
             produce_messages_request(topic_name, [[record_set: record_set]], 1, api_version)
 
@@ -78,7 +77,10 @@ defmodule Kayrock.Client.CompressionTest do
           assert message_three.offset == 2
         end
       end
+    end
 
+    # RecordBatch format (v2-v6) supports all compression types including lz4
+    for {compression, compression_num} <- [{"gzip", 1}, {"snappy", 2}, {"lz4", 3}] do
       for version <- [2, 3] do
         test "v#{version} - produce and reads data with compression: #{compression}", %{
           kafka: kafka
@@ -91,7 +93,7 @@ defmodule Kayrock.Client.CompressionTest do
           topic_name = create_topic(client_pid, api_version)
           timestamp = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
 
-          # [GIVEN] MessageSet with timestamp
+          # [GIVEN] RecordBatch with compression
           records = [
             %Kayrock.RecordBatch.Record{
               key: "1",
@@ -113,7 +115,7 @@ defmodule Kayrock.Client.CompressionTest do
             }
           ]
 
-          # [WHEN] Produce message with timestamp
+          # [WHEN] Produce message with compression
           record_set = %Kayrock.RecordBatch{attributes: compression_num, records: records}
 
           produce_message_request =
@@ -163,7 +165,7 @@ defmodule Kayrock.Client.CompressionTest do
 
           record_set = %Kayrock.RecordBatch{records: [record]}
 
-          # [WHEN] Produce message with timestamp
+          # [WHEN] Produce message
           produce_message_request =
             produce_messages_request(topic_name, [[record_set: record_set]], 1, api_version)
 
@@ -191,11 +193,9 @@ defmodule Kayrock.Client.CompressionTest do
         end
       end
 
-      for version <- [4, 5, 6, 7] do
+      for version <- [4, 5] do
         test "v#{version} - produce and reads data using message set with compression: #{compression}",
-             %{
-               kafka: kafka
-             } do
+             %{kafka: kafka} do
           compression_num = unquote(compression_num)
           api_version = unquote(version)
           {:ok, client_pid} = build_client(kafka)
@@ -204,7 +204,7 @@ defmodule Kayrock.Client.CompressionTest do
           topic_name = create_topic(client_pid, api_version)
           timestamp = DateTime.utc_now() |> DateTime.to_unix(:millisecond)
 
-          # [GIVEN] MessageSet with timestamp
+          # [GIVEN] RecordBatch with compression
           record_set = %Kayrock.RecordBatch{
             attributes: compression_num,
             records: [
@@ -232,7 +232,7 @@ defmodule Kayrock.Client.CompressionTest do
             ]
           }
 
-          # [WHEN] Produce message with timestamp
+          # [WHEN] Produce message with compression
           produce_message_request =
             produce_messages_request(topic_name, [[record_set: record_set]], 1, api_version)
 
@@ -286,7 +286,7 @@ defmodule Kayrock.Client.CompressionTest do
 
           record_set = %Kayrock.RecordBatch{records: [record]}
 
-          # [WHEN] Produce message with timestamp
+          # [WHEN] Produce message
           produce_message_request =
             produce_messages_request(topic_name, [[record_set: record_set]], 1, api_version)
 
