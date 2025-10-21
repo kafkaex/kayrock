@@ -9,7 +9,7 @@ defmodule Kayrock.Client.ApiVersionsTest do
     assert is_list(versions)
     fetch_versions = Enum.find(versions, fn v -> v[:api_key] == 1 end)
     assert fetch_versions[:min_version] == 0
-    assert fetch_versions[:max_version] == 10
+    assert fetch_versions[:max_version] >= 10
 
     assert Process.alive?(client)
   end
@@ -23,7 +23,7 @@ defmodule Kayrock.Client.ApiVersionsTest do
     assert is_list(versions)
     fetch_versions = Enum.find(versions, fn v -> v[:api_key] == 1 end)
     assert fetch_versions[:min_version] == 0
-    assert fetch_versions[:max_version] == 10
+    assert fetch_versions[:max_version] >= 10
 
     assert Process.alive?(client)
   end

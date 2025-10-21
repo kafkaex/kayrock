@@ -1,45 +1,73 @@
-version: '2'
 services:
   zookeeper:
-    image: wurstmeister/zookeeper:3.4.6
+    image: confluentinc/cp-zookeeper:7.4.0
+    hostname: zookeeper
+    container_name: kayrock-zookeeper
     ports:
       - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
   kafka1:
-    image: wurstmeister/kafka:2.12-2.2.0
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka1
+    container_name: kayrock-kafka1
     ports:
       - "9092:9092"
+      - "19092:19092"
     depends_on:
       - zookeeper
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: ${DOCKER_IP}
-      KAFKA_PORT: 9092
       KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:19092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - ./ssl:/ssl
+
   kafka2:
-    image: wurstmeister/kafka:2.12-2.2.0
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka2
+    container_name: kayrock-kafka2
     ports:
       - "9093:9093"
+      - "19093:19093"
     depends_on:
       - zookeeper
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: ${DOCKER_IP}
-      KAFKA_PORT: 9093
       KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka2:19093,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - ./ssl:/ssl
+
   kafka3:
-    image: wurstmeister/kafka:2.12-2.2.0
+    image: confluentinc/cp-kafka:7.4.0
+    hostname: kafka3
+    container_name: kayrock-kafka3
     ports:
       - "9094:9094"
+      - "19094:19094"
     depends_on:
       - zookeeper
     environment:
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_HOST_NAME: ${DOCKER_IP}
-      KAFKA_PORT: 9094
       KAFKA_BROKER_ID: 3
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka3:19094,PLAINTEXT_HOST://localhost:9094
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - ./ssl:/ssl

@@ -5,7 +5,6 @@ defmodule Kayrock.Compression.Gzip do
   alias Kayrock.Compression.Util
 
   @attr 1
-  
   @min_level 1
   @max_level 9
 

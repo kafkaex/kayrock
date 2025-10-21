@@ -34,7 +34,7 @@ defmodule Kayrock.Compression.Snappy do
       _ ->
         case snappy_module().decompress(data) do
           {:ok, decompressed} -> decompressed
-          {:error, reason} -> 
+          {:error, reason} ->
             raise "Snappy decompression failed: #{inspect(reason)}"
         end
     end
