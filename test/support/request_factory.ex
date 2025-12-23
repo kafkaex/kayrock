@@ -11,15 +11,38 @@ defmodule Kayrock.RequestFactory do
     api_version = min(Kayrock.CreateTopics.max_vsn(), api_version)
     request = Kayrock.CreateTopics.get_request_struct(api_version)
 
-    topic_config = %{
-      topic: topic_name,
-      num_partitions: 3,
-      replication_factor: 1,
-      replica_assignment: [],
-      config_entries: []
-    }
+    topic_config =
+      if api_version >= 5 do
+        %{
+          name: topic_name,
+          num_partitions: 3,
+          replication_factor: 1,
+          assignments: [],
+          configs: [],
+          tagged_fields: []
+        }
+      else
+        %{
+          name: topic_name,
+          num_partitions: 3,
+          replication_factor: 1,
+          assignments: [],
+          configs: []
+        }
+      end
 
-    %{request | create_topic_requests: [topic_config], timeout: 1000}
+    request_with_topics = %{request | topics: [topic_config], timeout_ms: 1000}
+
+    cond do
+      api_version >= 5 ->
+        %{request_with_topics | tagged_fields: [], validate_only: false}
+
+      api_version >= 1 ->
+        %{request_with_topics | validate_only: false}
+
+      true ->
+        request_with_topics
+    end
   end
 
   @doc """
@@ -62,6 +85,7 @@ defmodule Kayrock.RequestFactory do
       max_bytes: Keyword.get(opts, :max_bytes, max_bytes),
       isolation_level: Keyword.get(opts, :isolation_level, 1),
       session_id: Keyword.get(opts, :session_id, 0),
+      session_epoch: Keyword.get(opts, :session_epoch, -1),
       epoch: Keyword.get(opts, :epoch, 0),
       topics:
         Enum.map(partition_data, fn partition ->
@@ -71,7 +95,7 @@ defmodule Kayrock.RequestFactory do
               %{
                 partition: Keyword.get(partition, :partition, 0),
                 fetch_offset: Keyword.get(partition, :fetch_offset, 0),
-                max_bytes: Keyword.get(partition, :max_bytes, max_bytes),
+                partition_max_bytes: Keyword.get(partition, :max_bytes, max_bytes),
                 log_start_offset: Keyword.get(partition, :log_start_offset, 0)
               }
             ]
@@ -101,10 +125,10 @@ defmodule Kayrock.RequestFactory do
     coordinator_key(request, api_version, group_id)
   end
 
-  defp coordinator_key(request, 0, group_id), do: %{request | group_id: group_id}
+  defp coordinator_key(request, 0, group_id), do: %{request | key: group_id}
 
   defp coordinator_key(request, _, group_id) do
-    %{request | coordinator_key: group_id, coordinator_type: 0}
+    %{request | key: group_id, key_type: 0}
   end
 
   @doc """
@@ -116,16 +140,18 @@ defmodule Kayrock.RequestFactory do
     request = Kayrock.JoinGroup.get_request_struct(api_version)
     topics = Map.fetch!(member_data, :topics)
 
+    metadata = %Kayrock.GroupProtocolMetadata{topics: topics}
+
     %{
       request
       | group_id: Map.fetch!(member_data, :group_id),
-        session_timeout: Map.get(member_data, :session_timeout, 10_000),
+        session_timeout_ms: Map.get(member_data, :session_timeout, 10_000),
         member_id: Map.get(member_data, :member_id, ""),
         protocol_type: "consumer",
-        group_protocols: [
+        protocols: [
           %{
-            protocol_metadata: %Kayrock.GroupProtocolMetadata{topics: topics},
-            protocol_name: Map.get(member_data, :protocol_name, "assign")
+            metadata: metadata,
+            name: Map.get(member_data, :protocol_name, "assign")
           }
         ]
     }
@@ -137,7 +163,7 @@ defmodule Kayrock.RequestFactory do
   defp add_rebalance_timeout(request, _, member_data) do
     %{
       request
-      | rebalance_timeout: Map.get(member_data, :rebalance_timeout, 30_000)
+      | rebalance_timeout_ms: Map.get(member_data, :rebalance_timeout, 30_000)
     }
   end
 
@@ -154,22 +180,26 @@ defmodule Kayrock.RequestFactory do
       | group_id: group_id,
         member_id: member_id,
         generation_id: 1,
-        group_assignment: build_assignments(assignments)
+        assignments: build_assignments(assignments)
     }
   end
 
   defp build_assignments(assignments) do
     Enum.map(assignments, fn assignment ->
+      member_assignment = %Kayrock.MemberAssignment{
+        partition_assignments: [
+          %Kayrock.MemberAssignment.PartitionAssignment{
+            topic: Map.fetch!(assignment, :topic),
+            partitions: Map.fetch!(assignment, :partitions)
+          }
+        ],
+        version: 0,
+        user_data: ""
+      }
+
       %{
         member_id: Map.fetch!(assignment, :member_id),
-        member_assignment: %Kayrock.MemberAssignment{
-          partition_assignments: [
-            %Kayrock.MemberAssignment.PartitionAssignment{
-              topic: Map.fetch!(assignment, :topic),
-              partitions: Map.fetch!(assignment, :partitions)
-            }
-          ]
-        }
+        assignment: member_assignment
       }
     end)
   end
@@ -181,7 +211,7 @@ defmodule Kayrock.RequestFactory do
   def describe_groups_request(group_ids, api_version) do
     api_version = min(Kayrock.DescribeGroups.max_vsn(), api_version)
     request = Kayrock.DescribeGroups.get_request_struct(api_version)
-    %{request | group_ids: group_ids}
+    %{request | groups: group_ids}
   end
 
   @doc """
@@ -201,6 +231,6 @@ defmodule Kayrock.RequestFactory do
   def delete_groups_request(group_ids, api_version) do
     api_version = min(Kayrock.DeleteGroups.max_vsn(), api_version)
     request = Kayrock.DeleteGroups.get_request_struct(api_version)
-    %{request | groups: group_ids}
+    %{request | groups_names: group_ids}
   end
 end

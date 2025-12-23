@@ -42,7 +42,7 @@ defmodule Kayrock.MixProject do
   defp deps do
     [
       # Core
-      {:crc32cer, "~> 0.1"},
+      {:crc32cer, "~> 1.1.0"},
       {:varint, "~> 1.2"},
       {:connection, "~> 1.1"},
 
@@ -51,7 +51,7 @@ defmodule Kayrock.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.30", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
-      {:kafka_protocol, "~> 2.4.1", only: [:dev, :test]},
+      {:kafka_protocol, "~> 4.3.1", only: [:dev, :test]},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
       {:snappyer, "~> 1.2", only: [:dev, :test]},
       {:lz4b, "~> 0.0.13", only: [:dev, :test]},

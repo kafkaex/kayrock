@@ -6,9 +6,9 @@ defmodule Kayrock.Convenience do
   alias Kayrock.ErrorCode
 
   def topic_exists?(pid, topic) when is_pid(pid) do
-    {:ok, [topic]} = Kayrock.topics_metadata(pid, [topic])
+    {:ok, [topic_metadata]} = Kayrock.topics_metadata(pid, [topic])
 
-    topic[:error_code] != ErrorCode.unknown_topic()
+    topic_metadata[:error_code] != ErrorCode.unknown_topic()
   end
 
   def partition_last_offset(client_pid, topic, partition) do
@@ -62,8 +62,8 @@ defmodule Kayrock.Convenience do
   def get_partition_leaders(client_pid, topic) do
     {:ok, [metadata]} = Kayrock.topics_metadata(client_pid, [topic])
 
-    Enum.into(metadata.partition_metadata, %{}, fn partition_metadata ->
-      {partition_metadata.partition, partition_metadata.leader}
+    Enum.into(metadata.partitions, %{}, fn partition ->
+      {partition.partition_index, partition.leader_id}
     end)
   end
 end

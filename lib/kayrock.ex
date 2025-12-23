@@ -89,7 +89,7 @@ defmodule Kayrock do
         %{
           topic: topic,
           partitions: [
-            %{partition: partition, fetch_offset: offset, max_bytes: 1_000_000}
+            %{partition: partition, fetch_offset: offset, partition_max_bytes: 1_000_000}
           ]
         }
       ]
@@ -100,9 +100,10 @@ defmodule Kayrock do
 
   def topics_metadata(client_pid, topics) when is_list(topics) or topics == nil do
     # we use version 4 here so that it will not try to create topics
-    request = %Kayrock.Metadata.V4.Request{topics: topics}
+    topics_param = if topics, do: Enum.map(topics, fn topic -> %{name: topic} end), else: nil
+    request = %Kayrock.Metadata.V4.Request{topics: topics_param}
     {:ok, metadata} = client_call(client_pid, request, :controller)
-    {:ok, metadata.topic_metadata}
+    {:ok, metadata.topics}
   end
 
   @doc """
@@ -122,20 +123,20 @@ defmodule Kayrock do
   Create one or more topics
   """
   def create_topics(client_pid, topics, timeout \\ -1, version \\ 2, node_selector \\ :controller) do
-    create_topic_requests =
+    topic_requests =
       for topic <- topics do
         build_create_topic_request(topic)
       end
 
     request = Kayrock.CreateTopics.get_request_struct(version)
-    request = %{request | create_topic_requests: create_topic_requests, timeout: timeout}
+    request = %{request | topics: topic_requests, timeout_ms: timeout}
 
     client_call(client_pid, request, node_selector)
   end
 
   def delete_topics(client_pid, topics, timeout \\ -1, version \\ 1, node_selector \\ :controller) do
     request = Kayrock.DeleteTopics.get_request_struct(version)
-    request = %{request | topics: topics, timeout: timeout}
+    request = %{request | topic_names: topics, timeout_ms: timeout}
 
     client_call(client_pid, request, node_selector)
   end
@@ -172,9 +173,18 @@ defmodule Kayrock do
   end
 
   defp build_create_topic_request(topic) when is_map(topic) do
-    Map.merge(
-      %{num_partitions: -1, replication_factor: -1, replica_assignment: [], config_entries: []},
-      topic
-    )
+    defaults = %{num_partitions: -1, replication_factor: -1, assignments: [], configs: []}
+
+    topic
+    |> Map.put(:name, Map.get(topic, :topic, Map.get(topic, :name)))
+    |> Map.delete(:topic)
+    |> then(fn t ->
+      t
+      |> Map.put(:assignments, Map.get(t, :replica_assignment, Map.get(t, :assignments, [])))
+      |> Map.delete(:replica_assignment)
+      |> Map.put(:configs, Map.get(t, :config_entries, Map.get(t, :configs, [])))
+      |> Map.delete(:config_entries)
+    end)
+    |> then(fn t -> Map.merge(defaults, t) end)
   end
 end

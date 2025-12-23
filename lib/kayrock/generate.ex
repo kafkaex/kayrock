@@ -113,6 +113,15 @@ defmodule Kayrock.Generate do
     end
   end
 
+  # Helper to check if a version uses flexible format (KIP-482)
+  defp flexible_version?(api, vsn) do
+    min_flexible = :kpro_schema.min_flexible_vsn(api)
+    vsn >= min_flexible
+  catch
+    # If the API doesn't have flexible versions, it will throw
+    :error, _ -> false
+  end
+
   def build_modules(api, schema_module, modname) do
     {vmin, vmax} = schema_module.vsn_range(api)
 
@@ -204,7 +213,18 @@ defmodule Kayrock.Generate do
     request_module_name = modname(vsn, Request)
     response_module_name = modname(vsn, Response)
 
-    struct = generate_request_struct(api, vsn, request_module_name, response_module_name, schema)
+    is_flexible = flexible_version?(api, vsn)
+
+    struct =
+      generate_request_struct(
+        api,
+        vsn,
+        request_module_name,
+        response_module_name,
+        schema,
+        is_flexible
+      )
+
     serializer = generate_serializer(request_module_name)
 
     List.flatten([struct, serializer])
@@ -214,8 +234,9 @@ defmodule Kayrock.Generate do
     schema = schema_module.rsp(api, vsn)
 
     response_module_name = modname(vsn, Response)
+    is_flexible = flexible_version?(api, vsn)
 
-    struct = generate_response_struct(api, vsn, response_module_name, schema)
+    struct = generate_response_struct(api, vsn, response_module_name, schema, is_flexible)
 
     List.flatten([struct])
   end
@@ -224,7 +245,7 @@ defmodule Kayrock.Generate do
     Module.concat(["V#{vsn}", suffix])
   end
 
-  def generate_request_struct(api, vsn, modname, response_modname, schema) do
+  def generate_request_struct(api, vsn, modname, response_modname, schema, is_flexible \\ false) do
     fields =
       Enum.reduce(schema, [], fn {k, v}, acc ->
         acc ++ [{k, default_val(v)}]
@@ -310,17 +331,36 @@ defmodule Kayrock.Generate do
         @doc "Serialize a message to binary data for transfer to a Kafka broker"
         @spec serialize(t()) :: iodata
         def serialize(%unquote(modname){} = struct) do
-          [
-            <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-              byte_size(struct.client_id)::16, struct.client_id::binary>>,
-            unquote(field_serializers)
-          ]
+          unquote(
+            if is_flexible do
+              # Flexible version header (KIP-482)
+              # Note: client_id still uses standard nullable string, not compact!
+              quote do
+                [
+                  <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+                    byte_size(struct.client_id)::16, struct.client_id::binary>>,
+                  # TAG_BUFFER for request header (flexible versions only)
+                  <<0>>,
+                  unquote(field_serializers)
+                ]
+              end
+            else
+              # Standard (non-flexible) header
+              quote do
+                [
+                  <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
+                    byte_size(struct.client_id)::16, struct.client_id::binary>>,
+                  unquote(field_serializers)
+                ]
+              end
+            end
+          )
         end
       end
     end
   end
 
-  def describe_type(:sync_group, :member_assignment, :bytes) do
+  def describe_type(:sync_group, :assignment, :bytes) do
     quote do
       nil | Kayrock.MemberAssignment.t()
     end
@@ -375,6 +415,34 @@ defmodule Kayrock.Generate do
     end
   end
 
+  def describe_type(_, _, t) when t in Kayrock.Serialize.compact_primitive_types() do
+    quote do
+      nil | binary()
+    end
+  end
+
+  def describe_type(_, _, :tagged_fields) do
+    quote do
+      [{non_neg_integer(), binary()}]
+    end
+  end
+
+  def describe_type(api, field, {:compact_array, type}) when is_atom(type) do
+    inner = describe_type(api, field, type)
+
+    quote do
+      nil | [unquote(inner)]
+    end
+  end
+
+  def describe_type(api, field, {:compact_array, schema}) when is_list(schema) do
+    field_types = Enum.map(schema, fn {k, v} -> {k, describe_type(api, {field, k}, v)} end)
+
+    quote do
+      nil | [%{unquote_splicing(field_types)}]
+    end
+  end
+
   def describe_type(_, _, t) do
     IO.puts("Unhandled type: #{inspect(t)} will be spec'ed as term()")
 
@@ -383,7 +451,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_response_struct(api, vsn, modname, schema) do
+  def generate_response_struct(api, vsn, modname, schema, is_flexible \\ false) do
     fields =
       Enum.reduce(schema, [], fn {k, v}, acc ->
         acc ++ [{k, default_val(v)}]
@@ -452,13 +520,34 @@ defmodule Kayrock.Generate do
         """
         @spec deserialize(binary) :: {t(), binary}
         def deserialize(data) do
-          <<correlation_id::32-signed, rest::binary>> = data
+          unquote(
+            if is_flexible do
+              # Flexible version response header (KIP-482): correlation_id + TAG_BUFFER
+              quote do
+                <<correlation_id::32-signed, rest::binary>> = data
+                # Read and discard the tagged fields from the response header
+                {_tagged_fields, rest} = deserialize_tagged_fields(rest)
 
-          deserialize_field(
-            :root,
-            unquote(first_field_name),
-            %__MODULE__{correlation_id: correlation_id},
-            rest
+                deserialize_field(
+                  :root,
+                  unquote(first_field_name),
+                  %__MODULE__{correlation_id: correlation_id},
+                  rest
+                )
+              end
+            else
+              # Standard (non-flexible) response header: just correlation_id
+              quote do
+                <<correlation_id::32-signed, rest::binary>> = data
+
+                deserialize_field(
+                  :root,
+                  unquote(first_field_name),
+                  %__MODULE__{correlation_id: correlation_id},
+                  rest
+                )
+              end
+            end
           )
         end
 
@@ -480,15 +569,110 @@ defmodule Kayrock.Generate do
     {first_field_name, fields_with_next_field}
   end
 
-  def generate_field_deserializer(scope, {:member_assignment, :bytes}, next_field_name) do
+  def generate_field_deserializer(scope, {field_name, type}, next_field_name)
+      when type in Kayrock.Deserialize.compact_primitive_types() do
     quote do
-      defp deserialize_field(unquote(scope), :member_assignment, acc, data) do
+      defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
+        {val, rest} = deserialize(unquote(type), data)
+
+        deserialize_field(
+          unquote(scope),
+          unquote(next_field_name),
+          Map.put(acc, unquote(field_name), val),
+          rest
+        )
+      end
+    end
+  end
+
+  def generate_field_deserializer(scope, {:tagged_fields, :tagged_fields}, next_field_name) do
+    quote do
+      defp deserialize_field(unquote(scope), :tagged_fields, acc, data) do
+        {val, rest} = Kayrock.Deserialize.deserialize_tagged_fields(data)
+
+        deserialize_field(
+          unquote(scope),
+          unquote(next_field_name),
+          Map.put(acc, :tagged_fields, val),
+          rest
+        )
+      end
+    end
+  end
+
+  def generate_field_deserializer(scope, {field_name, {:compact_array, type}}, next_field_name)
+      when type in Kayrock.Deserialize.compact_primitive_types() or
+             type in [:boolean, :int8, :int16, :int32, :int64] do
+    quote do
+      defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
+        {val, rest} = Kayrock.Deserialize.deserialize_compact_array(unquote(type), data)
+        vals = if is_nil(val), do: nil, else: Enum.reverse(val)
+
+        deserialize_field(
+          unquote(scope),
+          unquote(next_field_name),
+          Map.put(acc, unquote(field_name), vals),
+          rest
+        )
+      end
+    end
+  end
+
+  def generate_field_deserializer(
+        scope,
+        {field_name, {:compact_array, elements_schema}},
+        next_field_name
+      )
+      when is_list(elements_schema) do
+    {first_field_name, fields_with_next_field} = build_field_zip(elements_schema)
+
+    [
+      Enum.map(fields_with_next_field, fn {f, n} ->
+        generate_field_deserializer(field_name, f, n)
+      end),
+      quote do
+        defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
+          {len_plus_one, rest} = Kayrock.Deserialize.decode_unsigned_varint(data)
+
+          {vals, rest} =
+            case len_plus_one do
+              0 ->
+                {nil, rest}
+
+              1 ->
+                {[], rest}
+
+              _ ->
+                Enum.reduce(1..(len_plus_one - 1), {[], rest}, fn _ix, {acc_inner, d} ->
+                  {val, r} =
+                    deserialize_field(unquote(field_name), unquote(first_field_name), %{}, d)
+
+                  {[val | acc_inner], r}
+                end)
+            end
+
+          final_vals = if is_nil(vals), do: nil, else: Enum.reverse(vals)
+
+          deserialize_field(
+            unquote(scope),
+            unquote(next_field_name),
+            Map.put(acc, unquote(field_name), final_vals),
+            rest
+          )
+        end
+      end
+    ]
+  end
+
+  def generate_field_deserializer(scope, {:assignment, :bytes}, next_field_name) do
+    quote do
+      defp deserialize_field(unquote(scope), :assignment, acc, data) do
         {val, rest} = Kayrock.MemberAssignment.deserialize(data)
 
         deserialize_field(
           unquote(scope),
           unquote(next_field_name),
-          Map.put(acc, :member_assignment, val),
+          Map.put(acc, :assignment, val),
           rest
         )
       end
@@ -629,13 +813,13 @@ defmodule Kayrock.Generate do
   # SPECIAL CASES
   #
 
-  # protocol metadata for JoinGroup request
+  # protocol metadata for JoinGroup request (kafka_protocol 4.x: protocol_metadata → metadata)
   # this is 'bytes' in the spec but it is expected to be the serialization of a
-  # ProtocolMetadata message defined in the consumer group API, so we handle
+  # GroupProtocolMetadata message defined in the consumer group API, so we handle
   # both cases here
-  defp field_serializer({:protocol_metadata, :bytes}, varname) do
+  defp field_serializer({:metadata, :bytes}, varname) do
     quote do
-      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :protocol_metadata) do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :metadata) do
         %Kayrock.GroupProtocolMetadata{} = m ->
           Kayrock.Serialize.serialize(
             :iodata_bytes,
@@ -648,13 +832,13 @@ defmodule Kayrock.Generate do
     end
   end
 
-  # member assignment for SyncGroup request
+  # member assignment for SyncGroup request (kafka_protocol 4.x: member_assignment → assignment)
   # this is 'bytes' in the spec but it is expected to be the serialization of a
   # MemberAssignment message defined in the consumer group API, so we handle
   # both cases here
-  defp field_serializer({:member_assignment, :bytes}, varname) do
+  defp field_serializer({:assignment, :bytes}, varname) do
     quote do
-      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :member_assignment) do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :assignment) do
         %Kayrock.MemberAssignment{} = m ->
           Kayrock.Serialize.serialize(
             :iodata_bytes,
@@ -746,6 +930,56 @@ defmodule Kayrock.Generate do
     end
   end
 
+  defp field_serializer({name, type}, varname)
+       when type in Kayrock.Serialize.compact_primitive_types() do
+    quote do
+      serialize(unquote(type), Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)))
+    end
+  end
+
+  defp field_serializer({_name, :tagged_fields}, varname) do
+    quote do
+      serialize_tagged_fields(
+        Map.get(unquote(Macro.var(varname, __MODULE__)), :tagged_fields, [])
+      )
+    end
+  end
+
+  defp field_serializer({name, {:compact_array, type}}, varname)
+       when type in Kayrock.Serialize.compact_primitive_types() or
+              type in [:boolean, :int8, :int16, :int32, :int64] do
+    quote do
+      Kayrock.Serialize.serialize_compact_array(
+        unquote(type),
+        Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name))
+      )
+    end
+  end
+
+  defp field_serializer({name, {:compact_array, el}}, varname) when is_list(el) do
+    subfield_serializers = Enum.map(el, &field_serializer(&1, :v))
+
+    quote do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
+        nil ->
+          Kayrock.Serialize.encode_unsigned_varint(0)
+
+        [] ->
+          Kayrock.Serialize.encode_unsigned_varint(1)
+
+        vals when is_list(vals) ->
+          [
+            Kayrock.Serialize.encode_unsigned_varint(length(vals) + 1),
+            for v <- vals do
+              unquote(subfield_serializers)
+            end
+          ]
+      end
+    end
+  end
+
   defp default_val({:array, _}), do: []
+  defp default_val({:compact_array, _}), do: []
+  defp default_val(:tagged_fields), do: []
   defp default_val(_), do: nil
 end

@@ -24,12 +24,12 @@ defmodule Kayrock.Client do
 
     defstruct name: nil, partition_leaders: %{}
 
-    def from_topic_metadata(%{topic: name, partition_metadata: partition_metadata}) do
+    def from_topic_metadata(%{name: name, partitions: partitions}) do
       partition_leaders =
         Enum.into(
-          partition_metadata,
+          partitions,
           %{},
-          fn %{error_code: 0, leader: leader, partition: partition_id} ->
+          fn %{error_code: 0, leader_id: leader, partition_index: partition_id} ->
             {partition_id, leader}
           end
         )
@@ -192,12 +192,10 @@ defmodule Kayrock.Client do
   end
 
   defp fetch_metadata(pid, %State{} = state, topics) do
-    # fetch metadata from one of the bootstrap servers
-    # NOTE we use V1 of the metadata request because it allows us to specify an
-    # empty list of topics and signify that we don't want any topic metadata.
-    # On larger clusters, requesting all for the topic metadata can lead to timeouts.
+    topics_param = Enum.map(topics, fn topic -> %{name: topic} end)
+
     {updated_state, metadata_request} =
-      State.request(state, %Kayrock.Metadata.V1.Request{topics: topics})
+      State.request(state, %Kayrock.Metadata.V1.Request{topics: topics_param})
 
     {:ok, metadata} = Kayrock.broker_sync_call(pid, metadata_request)
     {metadata, updated_state}

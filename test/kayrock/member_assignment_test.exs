@@ -65,24 +65,34 @@ defmodule Kayrock.MemberAssignmentTest do
 
       {got, ""} = Kayrock.SyncGroup.V0.Response.deserialize(data)
 
-      assert got == %Kayrock.SyncGroup.V0.Response{
-               correlation_id: 4,
-               error_code: 0,
-               member_assignment: %MemberAssignment{
-                 partition_assignments: [
-                   %MemberAssignment.PartitionAssignment{
-                     topic: "bar",
-                     partitions: [2]
-                   },
-                   %MemberAssignment.PartitionAssignment{
-                     topic: "foo",
-                     partitions: [1]
-                   }
-                 ],
-                 version: 0,
-                 user_data: <<0, 0, 0, 0>>
-               }
+      # The response assignment is now automatically deserialized to a MemberAssignment struct
+      assert %MemberAssignment{} = got.assignment
+      deserialized_assignment = got.assignment
+
+      assert got.correlation_id == 4
+      assert got.error_code == 0
+
+      # Check partitions are in the right order
+      assert length(deserialized_assignment.partition_assignments) == 2
+
+      foo_assignment =
+        Enum.find(deserialized_assignment.partition_assignments, fn pa -> pa.topic == "foo" end)
+
+      bar_assignment =
+        Enum.find(deserialized_assignment.partition_assignments, fn pa -> pa.topic == "bar" end)
+
+      assert foo_assignment == %MemberAssignment.PartitionAssignment{
+               topic: "foo",
+               partitions: [1]
              }
+
+      assert bar_assignment == %MemberAssignment.PartitionAssignment{
+               topic: "bar",
+               partitions: [2]
+             }
+
+      assert deserialized_assignment.version == 0
+      assert deserialized_assignment.user_data == <<0, 0, 0, 0>>
     end
   end
 
@@ -98,18 +108,21 @@ defmodule Kayrock.MemberAssignmentTest do
         client_id: "foo",
         correlation_id: 99,
         generation_id: 0,
-        group_assignment: [
+        assignments: [
           %{
-            member_assignment: %Kayrock.MemberAssignment{
-              partition_assignments: [
-                %Kayrock.MemberAssignment.PartitionAssignment{
-                  partitions: [0, 3],
-                  topic: "chainsmoking"
-                }
-              ],
-              user_data: "",
-              version: 0
-            },
+            assignment:
+              IO.iodata_to_binary(
+                Kayrock.MemberAssignment.serialize(%Kayrock.MemberAssignment{
+                  partition_assignments: [
+                    %Kayrock.MemberAssignment.PartitionAssignment{
+                      partitions: [0, 3],
+                      topic: "chainsmoking"
+                    }
+                  ],
+                  user_data: "",
+                  version: 0
+                })
+              ),
             member_id: "thelma"
           }
         ],
@@ -131,9 +144,9 @@ defmodule Kayrock.MemberAssignmentTest do
         client_id: "foo",
         correlation_id: 99,
         generation_id: 0,
-        group_assignment: [
+        assignments: [
           %{
-            member_assignment:
+            assignment:
               <<0, 0, 0, 0, 0, 1, 0, 12, 99, 104, 97, 105, 110, 115, 109, 111, 107, 105, 110, 103,
                 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0>>,
             member_id: "thelma"

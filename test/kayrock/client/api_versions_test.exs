@@ -4,7 +4,7 @@ defmodule Kayrock.Client.ApiVersionsTest do
   test "v0", %{client: client} do
     {:ok, resp} = Kayrock.api_versions(client, 0)
 
-    %Kayrock.ApiVersions.V0.Response{error_code: 0, api_versions: versions} = resp
+    %Kayrock.ApiVersions.V0.Response{error_code: 0, api_keys: versions} = resp
 
     assert is_list(versions)
     fetch_versions = Enum.find(versions, fn v -> v[:api_key] == 1 end)
@@ -17,7 +17,7 @@ defmodule Kayrock.Client.ApiVersionsTest do
   test "v1", %{client: client} do
     {:ok, resp} = Kayrock.api_versions(client, 1)
 
-    %Kayrock.ApiVersions.V1.Response{error_code: 0, api_versions: versions, throttle_time_ms: 0} =
+    %Kayrock.ApiVersions.V1.Response{error_code: 0, api_keys: versions, throttle_time_ms: 0} =
       resp
 
     assert is_list(versions)

@@ -45,15 +45,20 @@ defmodule Kayrock.JoinGroupTest do
       client_id: "client_id",
       correlation_id: 42,
       group_id: "group",
-      group_protocols: [
+      protocols: [
         %{
-          protocol_metadata: %Kayrock.GroupProtocolMetadata{topics: ["topic_one", "topic_two"]},
-          protocol_name: "assign"
+          metadata:
+            IO.iodata_to_binary(
+              Kayrock.GroupProtocolMetadata.serialize(%Kayrock.GroupProtocolMetadata{
+                topics: ["topic_one", "topic_two"]
+              })
+            ),
+          name: "assign"
         }
       ],
       member_id: "member_id",
       protocol_type: "consumer",
-      session_timeout: 3600
+      session_timeout_ms: 3600
     }
 
     got = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -103,16 +108,16 @@ defmodule Kayrock.JoinGroupTest do
       client_id: "client_id",
       correlation_id: 42,
       group_id: "group",
-      group_protocols: [
+      protocols: [
         %{
-          protocol_metadata:
+          metadata:
             <<0::16, 2::32, 9::16, "topic_one"::binary, 9::16, "topic_two"::binary, 0::32>>,
-          protocol_name: "assign"
+          name: "assign"
         }
       ],
       member_id: "member_id",
       protocol_type: "consumer",
-      session_timeout: 3600
+      session_timeout_ms: 3600
     }
 
     got = IO.iodata_to_binary(Kayrock.Request.serialize(request))

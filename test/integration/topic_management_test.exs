@@ -25,8 +25,8 @@ defmodule Kayrock.Integration.TopicManagementTest do
 
         # Get Topic
         topic = get_topic_metadata(client_pid, topic_name)
-        assert topic.topic == topic_name
-        assert length(topic.partition_metadata) == 3
+        assert topic.name == topic_name
+        assert length(topic.partitions) == 3
 
         # Create Partitions
         create_partition_config = create_topic_partition(topic_name, api_version)
@@ -35,7 +35,7 @@ defmodule Kayrock.Integration.TopicManagementTest do
 
         # Get Updated Topic
         topic = get_topic_metadata(client_pid, topic_name)
-        assert length(topic.partition_metadata) == 5
+        assert length(topic.partitions) == 5
 
         # Update Topic Config
         alter_config = alter_topic_config(topic_name, api_version)
