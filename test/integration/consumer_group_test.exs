@@ -35,8 +35,8 @@ defmodule Kayrock.Integration.ConsumerGroupTest do
 
         # [THEN] We get a valid coordinator node
         assert coordinator_response.error_code == 0
-        assert coordinator_response.coordinator.node_id > 0
-        node_id = coordinator_response.coordinator.node_id
+        assert coordinator_response.node_id > 0
+        node_id = coordinator_response.node_id
 
         # [WHEN] We join a group
         member_data = %{group_id: group_name, topics: [topic_name]}
@@ -109,7 +109,9 @@ defmodule Kayrock.Integration.ConsumerGroupTest do
         delete_request = delete_groups_request([group_name], api_version)
         {:ok, delete_response} = Kayrock.client_call(client_pid, delete_request, node_id)
 
-        assert delete_response.group_error_codes == [%{group_id: group_name, error_code: 0}]
+        assert [result] = delete_response.results
+        assert result.group_id == group_name
+        assert result.error_code == 0
 
         # [THEN] We can't find the group
         list_request = list_consumer_groups_request(api_version)

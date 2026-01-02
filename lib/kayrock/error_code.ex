@@ -42,6 +42,12 @@ defmodule Kayrock.ErrorCode do
       @atom_to_code Enum.into(@known_codes, %{}, fn c ->
                       {KafkaSchemaMetadata.error_code_to_error(c), c}
                     end)
+
+    _ ->
+      # KafkaSchemaMetadata isn't available at compile time (e.g. before generation).
+      # Define an empty map; functions will still work once the module exists,
+      # but atom_to_code/1 will return nil until regenerated and recompiled.
+      @atom_to_code %{}
   end
 
   @typedoc """

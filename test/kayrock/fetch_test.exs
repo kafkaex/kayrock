@@ -23,7 +23,7 @@ defmodule Kayrock.FetchTest do
         %{
           topic: "bar",
           partitions: [
-            %{partition: 0, fetch_offset: 1, max_bytes: 10_000}
+            %{partition: 0, fetch_offset: 1, partition_max_bytes: 10_000}
           ]
         }
       ]

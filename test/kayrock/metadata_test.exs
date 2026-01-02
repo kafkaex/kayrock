@@ -26,7 +26,7 @@ defmodule Kayrock.MetadataTest do
       request = %Request{
         correlation_id: 1,
         client_id: "foo",
-        topics: ["bar"]
+        topics: [%{name: "bar"}]
       }
 
       request = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -41,7 +41,7 @@ defmodule Kayrock.MetadataTest do
       request = %Request{
         correlation_id: 1,
         client_id: "foo",
-        topics: ["bar", "baz", "food"]
+        topics: [%{name: "bar"}, %{name: "baz"}, %{name: "food"}]
       }
 
       request = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -58,17 +58,17 @@ defmodule Kayrock.MetadataTest do
         brokers: [
           %{node_id: 0, host: "foo", port: 9092}
         ],
-        topic_metadata: [
+        topics: [
           %{
             error_code: 0,
-            topic: "bar",
-            partition_metadata: [
+            name: "bar",
+            partitions: [
               %{
                 error_code: 0,
-                partition: 0,
-                replicas: [],
-                isr: [0],
-                leader: 0
+                partition_index: 0,
+                replica_nodes: [],
+                isr_nodes: [0],
+                leader_id: 0
               }
             ]
           }
@@ -92,7 +92,7 @@ defmodule Kayrock.MetadataTest do
 
       {rsp, _} = Response.deserialize(data)
 
-      assert rsp.topic_metadata == []
+      assert rsp.topics == []
     end
   end
 end
