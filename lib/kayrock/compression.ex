@@ -16,43 +16,65 @@ defmodule Kayrock.Compression do
   ## Compression Levels
 
   - **Gzip**: 1 (fastest) to 9 (best compression), default: 6
+  - **Zstandard**: 1 (fastest) to 22 (best compression), default: 3
   - **Snappy/LZ4**: No levels supported
 
   ## Dependencies
 
   - **Snappy**: `{:snappy, "~> 1.1"}` or `{:snappyer, "~> 1.2"}`
   - **LZ4**: `{:lz4b, "~> 0.2.0"}`
+  - **Zstandard**: `{:ezstd, "~> 1.0"}`
+
+  ## Zstandard (zstd) Requirements
+
+  Zstandard compression (codec 4) requires:
+  - Produce API version 7 or later (corresponds to KAFKA_2_1_IV0+)
+  - Kafka broker version 2.1.0 or later
+  - RecordBatch format (message format v2)
+
+  If you use an older Produce API version (v0-v6), you'll receive error code 76
+  (UNSUPPORTED_COMPRESSION_TYPE). The Confluent Kafka container includes zstd-jni
+  support by default.
 
   """
 
-  alias Kayrock.Compression.{Gzip, Lz4, Snappy}
+  alias Kayrock.Compression.{Gzip, Lz4, Snappy, Zstd}
 
-  @type codec_t :: :gzip | :snappy | :lz4
+  @type codec_t :: :gzip | :snappy | :lz4 | :zstd
 
   @codecs [
     gzip: Gzip,
     snappy: Snappy,
-    lz4: Lz4
+    lz4: Lz4,
+    zstd: Zstd
   ]
 
   @gzip_attr Gzip.attr()
   @snappy_attr Snappy.attr()
   @lz4_attr Lz4.attr()
+  @zstd_attr Zstd.attr()
 
   # ---------- Decompress ----------
   def decompress(@gzip_attr, data), do: Gzip.decompress(data)
   def decompress(@snappy_attr, data), do: Snappy.decompress(data)
   def decompress(@lz4_attr, data), do: Lz4.decompress(data)
+  def decompress(@zstd_attr, data), do: Zstd.decompress(data)
 
   # ---------- Compress simple ----------
   def compress(:gzip, data), do: {Gzip.compress(data), Gzip.attr()}
   def compress(:snappy, data), do: {Snappy.compress(data), Snappy.attr()}
   def compress(:lz4, data), do: {Lz4.compress(data), Lz4.attr()}
+  def compress(:zstd, data), do: {Zstd.compress(data), Zstd.attr()}
 
   # ---------- Compress with opts ----------
   def compress(:gzip, data, opts) do
     level = Keyword.get(opts, :level)
     {Gzip.compress(data, level), Gzip.attr()}
+  end
+
+  def compress(:zstd, data, opts) do
+    level = Keyword.get(opts, :level)
+    {Zstd.compress(data, level), Zstd.attr()}
   end
 
   def compress(:snappy, data, _opts), do: compress(:snappy, data)

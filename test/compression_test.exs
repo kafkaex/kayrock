@@ -14,6 +14,7 @@ defmodule Kayrock.CompressionTest do
           :gzip -> Kayrock.Compression.Gzip
           :snappy -> Kayrock.Compression.Snappy
           :lz4 -> Kayrock.Compression.Lz4
+          :zstd -> Kayrock.Compression.Zstd
         end
 
       if mod.available?() do
@@ -57,6 +58,23 @@ defmodule Kayrock.CompressionTest do
         # Just verify it doesn't crash on edge cases
         {compressed, _} = Compression.compress(:lz4, "")
         assert Compression.decompress(3, compressed) == ""
+      end
+    end
+  end
+
+  describe "zstd" do
+    test "compress/decompress" do
+      if_available :zstd do
+        {compressed, 4} = Compression.compress(:zstd, @test_data)
+        assert Compression.decompress(4, compressed) == @test_data
+      end
+    end
+
+    test "compression levels" do
+      if_available :zstd do
+        {compressed_1, _} = Compression.compress(:zstd, @large_data, level: 1)
+        {compressed_22, _} = Compression.compress(:zstd, @large_data, level: 22)
+        assert byte_size(compressed_22) <= byte_size(compressed_1)
       end
     end
   end
