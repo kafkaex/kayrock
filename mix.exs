@@ -55,6 +55,7 @@ defmodule Kayrock.MixProject do
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
       {:snappyer, "~> 1.2", only: [:dev, :test]},
       {:lz4b, "~> 0.0.13", only: [:dev, :test]},
+      {:ezstd, "~> 1.0", only: [:dev, :test]},
       {:testcontainers, "~> 1.13", only: [:dev, :test]}
     ]
   end
