@@ -2,6 +2,31 @@ defmodule Kayrock.TestSupport do
   @moduledoc "Support code for tests"
 
   @doc """
+  Returns the expected version range (min..max) for a given Kafka API.
+
+  These ranges are based on the generated modules from kafka_protocol.
+  Tests should use these ranges instead of blindly iterating over versions.
+  """
+  @spec api_version_range(atom()) :: Range.t()
+  def api_version_range(:metadata), do: 0..9
+  def api_version_range(:produce), do: 0..8
+  def api_version_range(:fetch), do: 0..11
+  def api_version_range(:list_offsets), do: 0..5
+  def api_version_range(:offset_commit), do: 0..8
+  def api_version_range(:offset_fetch), do: 0..6
+  def api_version_range(:heartbeat), do: 0..4
+  def api_version_range(:join_group), do: 0..6
+  def api_version_range(:sync_group), do: 0..4
+  def api_version_range(:leave_group), do: 0..4
+  def api_version_range(:find_coordinator), do: 0..3
+  def api_version_range(:describe_groups), do: 0..5
+  def api_version_range(:list_groups), do: 0..3
+  def api_version_range(:create_topics), do: 0..5
+  def api_version_range(:delete_topics), do: 0..4
+  def api_version_range(:describe_configs), do: 0..2
+  def api_version_range(:api_versions), do: 0..3
+
+  @doc """
   Returns a unique string for use in tests.
   """
   def unique_string do

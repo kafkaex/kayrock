@@ -1,4 +1,4 @@
-defmodule Kayrock.FetchTest do
+defmodule Kayrock.Apis.FetchTest do
   use ExUnit.Case
 
   alias Kayrock.Fetch.V0.Request
@@ -1677,5 +1677,455 @@ defmodule Kayrock.FetchTest do
 
     {got, ""} = Kayrock.Fetch.V5.Response.deserialize(data)
     assert got == expect
+  end
+
+  # ============================================
+  # Edge Cases
+  # ============================================
+
+  test "empty topics list serializes correctly" do
+    request = %Request{
+      correlation_id: 1,
+      client_id: "test",
+      replica_id: -1,
+      max_wait_time: 100,
+      min_bytes: 1,
+      topics: []
+    }
+
+    serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+    <<api_key::16, api_version::16, _rest::binary>> = serialized
+    assert api_key == 1
+    assert api_version == 0
+  end
+
+  test "multiple topics with multiple partitions serializes correctly" do
+    request = %Request{
+      correlation_id: 1,
+      client_id: "multi-fetch",
+      replica_id: -1,
+      max_wait_time: 500,
+      min_bytes: 1,
+      topics: [
+        %{
+          topic: "topic-a",
+          partitions: [
+            %{partition: 0, fetch_offset: 0, partition_max_bytes: 1_000_000},
+            %{partition: 1, fetch_offset: 100, partition_max_bytes: 1_000_000}
+          ]
+        },
+        %{
+          topic: "topic-b",
+          partitions: [
+            %{partition: 0, fetch_offset: 500, partition_max_bytes: 500_000}
+          ]
+        }
+      ]
+    }
+
+    serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+    assert String.contains?(serialized, "topic-a")
+    assert String.contains?(serialized, "topic-b")
+  end
+
+  test "max int64 fetch_offset serializes correctly" do
+    request = %Request{
+      correlation_id: 1,
+      client_id: "test",
+      replica_id: -1,
+      max_wait_time: 100,
+      min_bytes: 1,
+      topics: [
+        %{
+          topic: "t",
+          partitions: [
+            %{partition: 0, fetch_offset: 9_223_372_036_854_775_807, partition_max_bytes: 1000}
+          ]
+        }
+      ]
+    }
+
+    serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+    assert is_binary(serialized)
+  end
+
+  test "response with empty record_set deserializes correctly" do
+    response =
+      <<0::32, 1::32, 5::16, "topic"::binary, 1::32, 0::32, 0::16, 0::64, 0::32>>
+
+    {got, ""} = Response.deserialize(response)
+
+    assert got.correlation_id == 0
+    [topic_resp] = got.responses
+    assert topic_resp.topic == "topic"
+    [part_resp] = topic_resp.partition_responses
+    assert part_resp.partition_header.error_code == 0
+    assert part_resp.record_set == nil
+  end
+
+  test "response with error code (OFFSET_OUT_OF_RANGE) deserializes correctly" do
+    response =
+      <<0::32, 1::32, 5::16, "topic"::binary, 1::32, 0::32, 1::16, 100::64, 0::32>>
+
+    {got, ""} = Response.deserialize(response)
+
+    [topic_resp] = got.responses
+    [part_resp] = topic_resp.partition_responses
+    assert part_resp.partition_header.error_code == 1
+  end
+
+  test "EARLIEST offset (-2) serializes correctly" do
+    request = %Request{
+      correlation_id: 1,
+      client_id: "test",
+      replica_id: -1,
+      max_wait_time: 100,
+      min_bytes: 1,
+      topics: [
+        %{
+          topic: "topic",
+          partitions: [
+            %{partition: 0, fetch_offset: -2, partition_max_bytes: 1_000_000}
+          ]
+        }
+      ]
+    }
+
+    serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+    assert is_binary(serialized)
+  end
+
+  test "LATEST offset (-1) serializes correctly" do
+    request = %Request{
+      correlation_id: 1,
+      client_id: "test",
+      replica_id: -1,
+      max_wait_time: 100,
+      min_bytes: 1,
+      topics: [
+        %{
+          topic: "topic",
+          partitions: [
+            %{partition: 0, fetch_offset: -1, partition_max_bytes: 1_000_000}
+          ]
+        }
+      ]
+    }
+
+    serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+    assert is_binary(serialized)
+  end
+end
+
+defmodule Kayrock.FetchVersionsTest do
+  @moduledoc """
+  Version-specific tests for Fetch API (V1-V11).
+  V0 covered in detail in Kayrock.FetchTest above.
+  """
+  use ExUnit.Case, async: true
+
+  import Kayrock.TestSupport
+
+  describe "Fetch V1-V11 request serialization" do
+    test "V1 request serializes" do
+      request = %Kayrock.Fetch.V1.Request{
+        correlation_id: 1,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        topics: []
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 1
+      assert api_version == 1
+    end
+
+    test "V3 request serializes with max_bytes" do
+      request = %Kayrock.Fetch.V3.Request{
+        correlation_id: 3,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        topics: []
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 1
+      assert api_version == 3
+    end
+
+    test "V4 request serializes with isolation_level" do
+      request = %Kayrock.Fetch.V4.Request{
+        correlation_id: 4,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 1,
+        topics: []
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 1
+      assert api_version == 4
+    end
+
+    test "V7 request serializes with session fields" do
+      request = %Kayrock.Fetch.V7.Request{
+        correlation_id: 7,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 0,
+        session_id: 0,
+        session_epoch: -1,
+        topics: [],
+        forgotten_topics_data: []
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 1
+      assert api_version == 7
+    end
+
+    test "V11 request serializes with rack_id" do
+      request = %Kayrock.Fetch.V11.Request{
+        correlation_id: 11,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 0,
+        session_id: 0,
+        session_epoch: -1,
+        topics: [],
+        forgotten_topics_data: [],
+        rack_id: ""
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 1
+      assert api_version == 11
+    end
+  end
+
+  describe "Fetch version compatibility" do
+    test "all versions V0-V11 serialize" do
+      for version <- api_version_range(:fetch) do
+        module = Module.concat([Kayrock, Fetch, :"V#{version}", Request])
+        assert Code.ensure_loaded?(module), "Module #{inspect(module)} should exist"
+
+        base_fields = %{
+          correlation_id: version,
+          client_id: "test",
+          replica_id: -1,
+          max_wait_time: 100,
+          min_bytes: 1,
+          topics: []
+        }
+
+        fields =
+          cond do
+            version >= 11 ->
+              Map.merge(base_fields, %{
+                max_bytes: 10_000_000,
+                isolation_level: 0,
+                session_id: 0,
+                session_epoch: -1,
+                forgotten_topics_data: [],
+                rack_id: ""
+              })
+
+            version >= 7 ->
+              Map.merge(base_fields, %{
+                max_bytes: 10_000_000,
+                isolation_level: 0,
+                session_id: 0,
+                session_epoch: -1,
+                forgotten_topics_data: []
+              })
+
+            version >= 4 ->
+              Map.merge(base_fields, %{
+                max_bytes: 10_000_000,
+                isolation_level: 0
+              })
+
+            version >= 3 ->
+              Map.merge(base_fields, %{max_bytes: 10_000_000})
+
+            true ->
+              base_fields
+          end
+
+        request = struct(module, fields)
+        serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+        assert is_binary(serialized), "V#{version} should serialize"
+      end
+    end
+  end
+
+  # ============================================
+  # Version-specific Edge Cases
+  # ============================================
+
+  describe "Fetch V4+ isolation level edge cases" do
+    test "V4 with read_uncommitted (0) serializes correctly" do
+      request = %Kayrock.Fetch.V4.Request{
+        correlation_id: 4,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 0,
+        topics: [
+          %{
+            topic: "topic",
+            partitions: [
+              %{partition: 0, fetch_offset: 0, partition_max_bytes: 1_000_000}
+            ]
+          }
+        ]
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 1
+      assert api_version == 4
+    end
+
+    test "V4 with read_committed (1) for transactional topics" do
+      request = %Kayrock.Fetch.V4.Request{
+        correlation_id: 4,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 1,
+        topics: [
+          %{
+            topic: "transactional-topic",
+            partitions: [
+              %{partition: 0, fetch_offset: 0, partition_max_bytes: 1_000_000}
+            ]
+          }
+        ]
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      assert is_binary(serialized)
+    end
+  end
+
+  describe "Fetch V7+ session handling edge cases" do
+    test "V7 with session_id and session_epoch" do
+      request = %Kayrock.Fetch.V7.Request{
+        correlation_id: 7,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 0,
+        session_id: 12_345,
+        session_epoch: 1,
+        topics: [
+          %{
+            topic: "topic",
+            partitions: [
+              %{
+                partition: 0,
+                fetch_offset: 0,
+                log_start_offset: -1,
+                partition_max_bytes: 1_000_000
+              }
+            ]
+          }
+        ],
+        forgotten_topics_data: []
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 1
+      assert api_version == 7
+    end
+
+    test "V7 with forgotten_topics_data" do
+      request = %Kayrock.Fetch.V7.Request{
+        correlation_id: 7,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 0,
+        session_id: 12_345,
+        session_epoch: 2,
+        topics: [],
+        forgotten_topics_data: [
+          %{
+            topic: "forgotten-topic",
+            partitions: [
+              %{partition: 0, fetch_offset: 0, log_start_offset: -1, partition_max_bytes: 0},
+              %{partition: 1, fetch_offset: 0, log_start_offset: -1, partition_max_bytes: 0}
+            ]
+          }
+        ]
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      assert String.contains?(serialized, "forgotten-topic")
+    end
+  end
+
+  describe "Fetch V11 rack-aware edge cases" do
+    test "V11 with rack_id for rack-aware fetching" do
+      request = %Kayrock.Fetch.V11.Request{
+        correlation_id: 11,
+        client_id: "test",
+        replica_id: -1,
+        max_wait_time: 100,
+        min_bytes: 1,
+        max_bytes: 10_000_000,
+        isolation_level: 0,
+        session_id: 0,
+        session_epoch: -1,
+        topics: [
+          %{
+            topic: "topic",
+            partitions: [
+              %{
+                partition: 0,
+                current_leader_epoch: -1,
+                fetch_offset: 0,
+                log_start_offset: -1,
+                partition_max_bytes: 1_000_000
+              }
+            ]
+          }
+        ],
+        forgotten_topics_data: [],
+        rack_id: "rack-us-east-1a"
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      assert String.contains?(serialized, "rack-us-east-1a")
+    end
   end
 end
