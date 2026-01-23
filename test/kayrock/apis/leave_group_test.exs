@@ -170,12 +170,10 @@ defmodule Kayrock.Apis.LeaveGroupTest do
         }
 
         fields =
-          cond do
-            version >= 3 ->
-              Map.put(base, :members, [%{member_id: "member", group_instance_id: nil}])
-
-            true ->
-              Map.put(base, :member_id, "member")
+          if version >= 3 do
+            Map.put(base, :members, [%{member_id: "member", group_instance_id: nil}])
+          else
+            Map.put(base, :member_id, "member")
           end
 
         request = struct(module, fields)

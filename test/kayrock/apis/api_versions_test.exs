@@ -569,7 +569,7 @@ defmodule Kayrock.Apis.ApiVersionsTest do
         0,
         0,
         1,
-        # api_key=32767, min=0, max=32767
+        # api_key=32_767, min=0, max=32_767
         127,
         255,
         0,
@@ -580,8 +580,8 @@ defmodule Kayrock.Apis.ApiVersionsTest do
 
       {response, <<>>} = Kayrock.ApiVersions.V0.Response.deserialize(response_binary)
       [entry] = response.api_keys
-      assert entry.api_key == 32767
-      assert entry.max_version == 32767
+      assert entry.api_key == 32_767
+      assert entry.max_version == 32_767
     end
 
     test "handles negative error codes" do

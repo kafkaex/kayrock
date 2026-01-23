@@ -292,11 +292,7 @@ defmodule Kayrock.RequestFactory do
           name: Keyword.fetch!(topic_data, :topic),
           partitions:
             Enum.map(Keyword.get(topic_data, :partitions, []), fn partition ->
-              %{
-                partition_index: Keyword.get(partition, :partition, 0),
-                committed_offset: Keyword.fetch!(partition, :offset),
-                committed_metadata: Keyword.get(partition, :metadata, "")
-              }
+              build_offset_commit_partition(partition, api_version)
             end)
         }
       end)
@@ -306,6 +302,27 @@ defmodule Kayrock.RequestFactory do
     base_request
     |> maybe_add_generation_member(api_version, opts)
     |> maybe_add_retention_time(api_version, opts)
+  end
+
+  defp build_offset_commit_partition(partition, api_version) do
+    base = %{
+      partition_index: Keyword.get(partition, :partition, 0),
+      committed_offset: Keyword.fetch!(partition, :offset),
+      committed_metadata: Keyword.get(partition, :metadata, "")
+    }
+
+    cond do
+      # V1 requires commit_timestamp
+      api_version == 1 ->
+        Map.put(base, :commit_timestamp, Keyword.get(partition, :timestamp, -1))
+
+      # V6+ requires committed_leader_epoch
+      api_version >= 6 ->
+        Map.put(base, :committed_leader_epoch, Keyword.get(partition, :leader_epoch, -1))
+
+      true ->
+        base
+    end
   end
 
   defp maybe_add_generation_member(request, api_version, opts) when api_version >= 1 do
@@ -318,7 +335,9 @@ defmodule Kayrock.RequestFactory do
 
   defp maybe_add_generation_member(request, _, _), do: request
 
-  defp maybe_add_retention_time(request, api_version, opts) when api_version >= 2 do
+  # retention_time_ms exists only in V2, V3, V4
+  defp maybe_add_retention_time(request, api_version, opts)
+       when api_version >= 2 and api_version <= 4 do
     %{request | retention_time_ms: Keyword.get(opts, :retention_time_ms, -1)}
   end
 
@@ -334,16 +353,30 @@ defmodule Kayrock.RequestFactory do
 
     topics =
       Enum.map(topics_data, fn topic_data ->
-        %{
-          topic: Keyword.fetch!(topic_data, :topic),
-          partitions:
-            Enum.map(Keyword.get(topic_data, :partitions, []), fn partition ->
-              %{partition: Keyword.get(partition, :partition, 0)}
-            end)
-        }
+        build_offset_fetch_topic(topic_data, api_version)
       end)
 
     %{request | group_id: group_id, topics: topics}
+  end
+
+  # All OffsetFetch versions use :name and :partition_indexes
+  # V6+ also requires :tagged_fields
+  defp build_offset_fetch_topic(topic_data, api_version) do
+    partition_indexes =
+      topic_data
+      |> Keyword.get(:partitions, [])
+      |> Enum.map(fn partition -> Keyword.get(partition, :partition, 0) end)
+
+    base = %{
+      name: Keyword.fetch!(topic_data, :topic),
+      partition_indexes: partition_indexes
+    }
+
+    if api_version >= 6 do
+      Map.put(base, :tagged_fields, [])
+    else
+      base
+    end
   end
 
   @doc """

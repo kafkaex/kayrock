@@ -1,3 +1,6 @@
+# credo:disable-for-this-file Credo.Check.Warning.IoInspect
+# credo:disable-for-this-file Credo.Check.Refactor.FilterReject
+# credo:disable-for-this-file Credo.Check.Refactor.MapJoin
 defmodule Kayrock.Test.BinaryCapture do
   @moduledoc """
   Utility for capturing request/response binaries from a real Kafka broker.

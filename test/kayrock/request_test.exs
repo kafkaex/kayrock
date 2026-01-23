@@ -4,11 +4,11 @@ defmodule Kayrock.RequestTest do
   """
   use ExUnit.Case, async: true
 
-  alias Kayrock.Request
   alias Kayrock.InvalidRequestError
-  alias Kayrock.RecordBatch
   alias Kayrock.MessageSet
   alias Kayrock.MessageSet.Message
+  alias Kayrock.RecordBatch
+  alias Kayrock.Request
 
   describe "InvalidRequestError" do
     test "creates exception with message" do

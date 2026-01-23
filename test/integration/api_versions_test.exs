@@ -1,6 +1,6 @@
 defmodule Kayrock.Integration.ApiVersionsTest do
   use Kayrock.IntegrationCase
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   import Kayrock.RequestFactory
 
@@ -13,7 +13,7 @@ defmodule Kayrock.Integration.ApiVersionsTest do
         {:ok, client_pid} = build_client(kafka)
 
         request = api_versions_request(api_version)
-        {:ok, response} = Kayrock.client_call(client_pid, request, :any)
+        {:ok, response} = Kayrock.client_call(client_pid, request, :random)
 
         # Check response structure
         assert response.error_code == 0
@@ -53,7 +53,7 @@ defmodule Kayrock.Integration.ApiVersionsTest do
         {:ok, client_pid} = build_client(kafka)
 
         request = api_versions_request(api_version)
-        {:ok, response} = Kayrock.client_call(client_pid, request, :any)
+        {:ok, response} = Kayrock.client_call(client_pid, request, :random)
 
         api_map = Map.new(response.api_keys, fn api -> {api.api_key, api} end)
 
@@ -84,7 +84,7 @@ defmodule Kayrock.Integration.ApiVersionsTest do
         {:ok, client_pid} = build_client(kafka)
 
         request = api_versions_request(api_version)
-        {:ok, response} = Kayrock.client_call(client_pid, request, :any)
+        {:ok, response} = Kayrock.client_call(client_pid, request, :random)
 
         api_map = Map.new(response.api_keys, fn api -> {api.api_key, api} end)
 
@@ -106,7 +106,7 @@ defmodule Kayrock.Integration.ApiVersionsTest do
       {:ok, client_pid} = build_client(kafka)
 
       request = api_versions_request(1)
-      {:ok, response} = Kayrock.client_call(client_pid, request, :any)
+      {:ok, response} = Kayrock.client_call(client_pid, request, :random)
 
       assert response.error_code == 0
       assert is_integer(response.throttle_time_ms)
@@ -118,7 +118,7 @@ defmodule Kayrock.Integration.ApiVersionsTest do
 
       # Get supported versions
       request = api_versions_request(0)
-      {:ok, response} = Kayrock.client_call(client_pid, request, :any)
+      {:ok, response} = Kayrock.client_call(client_pid, request, :random)
 
       api_map = Map.new(response.api_keys, fn api -> {api.api_key, api} end)
 
@@ -134,7 +134,7 @@ defmodule Kayrock.Integration.ApiVersionsTest do
       {:ok, client_pid} = build_client(kafka)
 
       request = api_versions_request(0)
-      {:ok, response} = Kayrock.client_call(client_pid, request, :any)
+      {:ok, response} = Kayrock.client_call(client_pid, request, :random)
 
       api_map = Map.new(response.api_keys, fn api -> {api.api_key, api} end)
 

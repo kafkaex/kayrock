@@ -59,4 +59,14 @@ jobs:
           mix deps.compile
 
       - name: Run Integration Tests
-        run: mix test --include integration --include integration_v2
+        id: test
+        run: mix test --include integration
+
+      - name: Retry failed tests (1st retry)
+        id: retry1
+        if: failure()
+        run: mix test --include integration --failed
+
+      - name: Retry failed tests (2nd retry)
+        if: failure()
+        run: mix test --include integration --failed

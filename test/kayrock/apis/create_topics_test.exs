@@ -31,7 +31,7 @@ defmodule Kayrock.Apis.CreateTopicsTest do
             configs: []
           }
         ],
-        timeout_ms: 30000
+        timeout_ms: 30_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -61,7 +61,7 @@ defmodule Kayrock.Apis.CreateTopicsTest do
             configs: []
           }
         ],
-        timeout_ms: 60000
+        timeout_ms: 60_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -84,7 +84,7 @@ defmodule Kayrock.Apis.CreateTopicsTest do
             ]
           }
         ],
-        timeout_ms: 30000
+        timeout_ms: 30_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -156,7 +156,7 @@ defmodule Kayrock.Apis.CreateTopicsTest do
         correlation_id: 1,
         client_id: "test",
         topics: [],
-        timeout_ms: 30000,
+        timeout_ms: 30_000,
         validate_only: true
       }
 
@@ -246,7 +246,7 @@ defmodule Kayrock.Apis.CreateTopicsTest do
           correlation_id: version,
           client_id: "test",
           topics: [],
-          timeout_ms: 30000
+          timeout_ms: 30_000
         }
 
         fields = if version >= 1, do: Map.put(base, :validate_only, false), else: base

@@ -23,7 +23,7 @@ defmodule Kayrock.Apis.JoinGroupTest do
         correlation_id: 0,
         client_id: "test",
         group_id: "my-group",
-        session_timeout_ms: 30000,
+        session_timeout_ms: 30_000,
         member_id: "",
         protocol_type: "consumer",
         protocols: [
@@ -322,8 +322,8 @@ defmodule Kayrock.Apis.JoinGroupTest do
         correlation_id: 1,
         client_id: "test",
         group_id: "group",
-        session_timeout_ms: 30000,
-        rebalance_timeout_ms: 60000,
+        session_timeout_ms: 30_000,
+        rebalance_timeout_ms: 60_000,
         member_id: "",
         protocol_type: "consumer",
         protocols: []
@@ -345,8 +345,8 @@ defmodule Kayrock.Apis.JoinGroupTest do
         correlation_id: 5,
         client_id: "test",
         group_id: "group",
-        session_timeout_ms: 30000,
-        rebalance_timeout_ms: 60000,
+        session_timeout_ms: 30_000,
+        rebalance_timeout_ms: 60_000,
         member_id: "",
         group_instance_id: "static-instance-1",
         protocol_type: "consumer",
@@ -365,8 +365,8 @@ defmodule Kayrock.Apis.JoinGroupTest do
         correlation_id: 5,
         client_id: "test",
         group_id: "group",
-        session_timeout_ms: 30000,
-        rebalance_timeout_ms: 60000,
+        session_timeout_ms: 30_000,
+        rebalance_timeout_ms: 60_000,
         member_id: "",
         group_instance_id: nil,
         protocol_type: "consumer",
@@ -388,7 +388,7 @@ defmodule Kayrock.Apis.JoinGroupTest do
           correlation_id: version,
           client_id: "test",
           group_id: "group",
-          session_timeout_ms: 30000,
+          session_timeout_ms: 30_000,
           member_id: "",
           protocol_type: "consumer",
           protocols: []
@@ -398,12 +398,12 @@ defmodule Kayrock.Apis.JoinGroupTest do
           cond do
             version >= 5 ->
               Map.merge(base, %{
-                rebalance_timeout_ms: 60000,
+                rebalance_timeout_ms: 60_000,
                 group_instance_id: nil
               })
 
             version >= 1 ->
-              Map.put(base, :rebalance_timeout_ms, 60000)
+              Map.put(base, :rebalance_timeout_ms, 60_000)
 
             true ->
               base

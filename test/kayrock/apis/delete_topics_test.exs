@@ -23,7 +23,7 @@ defmodule Kayrock.Apis.DeleteTopicsTest do
         correlation_id: 0,
         client_id: "test",
         topic_names: ["topic1", "topic2"],
-        timeout_ms: 30000
+        timeout_ms: 30_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -38,7 +38,7 @@ defmodule Kayrock.Apis.DeleteTopicsTest do
         correlation_id: 1,
         client_id: "test",
         topic_names: ["single-topic"],
-        timeout_ms: 30000
+        timeout_ms: 30_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -158,7 +158,7 @@ defmodule Kayrock.Apis.DeleteTopicsTest do
             correlation_id: version,
             client_id: "test",
             topic_names: [],
-            timeout_ms: 30000
+            timeout_ms: 30_000
           })
 
         serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))

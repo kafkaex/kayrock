@@ -38,7 +38,7 @@ defmodule Kayrock.DeserializeTest do
   describe "int16 deserialization" do
     test "deserializes positive int16" do
       assert {256, <<>>} = Deserialize.deserialize(:int16, <<1, 0>>)
-      assert {32767, <<>>} = Deserialize.deserialize(:int16, <<127, 255>>)
+      assert {32_767, <<>>} = Deserialize.deserialize(:int16, <<127, 255>>)
     end
 
     test "deserializes negative int16" do
@@ -277,7 +277,7 @@ defmodule Kayrock.DeserializeTest do
 
     test "decodes multi-byte values" do
       assert {128, <<>>} = Deserialize.decode_unsigned_varint(<<128, 1>>)
-      assert {16384, <<>>} = Deserialize.decode_unsigned_varint(<<128, 128, 1>>)
+      assert {16_384, <<>>} = Deserialize.decode_unsigned_varint(<<128, 128, 1>>)
     end
   end
 end

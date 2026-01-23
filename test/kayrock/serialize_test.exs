@@ -39,7 +39,7 @@ defmodule Kayrock.SerializeTest do
     test "serializes positive int16" do
       assert <<0, 1>> = Serialize.serialize(:int16, 1)
       assert <<1, 0>> = Serialize.serialize(:int16, 256)
-      assert <<127, 255>> = Serialize.serialize(:int16, 32767)
+      assert <<127, 255>> = Serialize.serialize(:int16, 32_767)
     end
 
     test "serializes negative int16" do
@@ -274,7 +274,7 @@ defmodule Kayrock.SerializeTest do
 
     test "encodes multi-byte values" do
       assert <<128, 1>> = Serialize.encode_unsigned_varint(128)
-      assert <<128, 128, 1>> = Serialize.encode_unsigned_varint(16384)
+      assert <<128, 128, 1>> = Serialize.encode_unsigned_varint(16_384)
     end
 
     test "encodes large values" do
@@ -289,7 +289,7 @@ defmodule Kayrock.SerializeTest do
     alias Kayrock.Deserialize
 
     test "int32 round-trip" do
-      value = 12345
+      value = 12_345
       serialized = Serialize.serialize(:int32, value)
       {deserialized, <<>>} = Deserialize.deserialize(:int32, IO.iodata_to_binary(serialized))
       assert deserialized == value
@@ -322,7 +322,7 @@ defmodule Kayrock.SerializeTest do
     end
 
     test "unsigned_varint round-trip" do
-      for value <- [0, 1, 127, 128, 300, 16384, 268_435_455] do
+      for value <- [0, 1, 127, 128, 300, 16_384, 268_435_455] do
         serialized = Serialize.serialize(:unsigned_varint, value)
 
         {deserialized, <<>>} =

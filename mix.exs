@@ -6,7 +6,7 @@ defmodule Kayrock.MixProject do
   def project do
     [
       app: :kayrock,
-      version: "0.3.0",
+      version: "1.0.0-rc1",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
@@ -65,7 +65,8 @@ defmodule Kayrock.MixProject do
       {:excoveralls, "~> 0.18", only: :test},
       {:kafka_protocol, "~> 4.3.1", only: [:dev, :test]},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
-      {:testcontainers, "~> 1.13", only: [:dev, :test], runtime: false}
+      {:testcontainers, "~> 1.13", only: [:dev, :test], runtime: false},
+      {:usage_rules, "~> 0.1", only: [:dev], runtime: false}
     ]
   end
 
@@ -92,8 +93,8 @@ defmodule Kayrock.MixProject do
 
   defp aliases do
     [
-      "test.unit": "test --exclude integration --exclude integration_v2",
-      "test.integration": "test --include integration --include integration_v2"
+      "test.unit": "test --exclude integration",
+      "test.integration": "test --include integration"
     ]
   end
 end

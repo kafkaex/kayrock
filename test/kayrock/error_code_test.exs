@@ -5,8 +5,8 @@ defmodule Kayrock.ErrorCodeTest do
   use ExUnit.Case, async: true
 
   alias Kayrock.ErrorCode
-  alias Kayrock.ErrorCode.InvalidErrorCodeException
   alias Kayrock.ErrorCode.InvalidAtomException
+  alias Kayrock.ErrorCode.InvalidErrorCodeException
 
   describe "code_to_atom/1" do
     test "converts 0 to :no_error" do

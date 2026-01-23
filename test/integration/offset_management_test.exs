@@ -1,6 +1,6 @@
 defmodule Kayrock.Integration.OffsetManagementTest do
   use Kayrock.IntegrationCase
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   import Kayrock.TestSupport
   import Kayrock.RequestFactory
@@ -60,11 +60,11 @@ defmodule Kayrock.Integration.OffsetManagementTest do
 
         {:ok, fetch_response} = Kayrock.client_call(client_pid, fetch_request, node_id)
 
-        [topic_result] = fetch_response.responses
-        assert topic_result.topic == topic_name
-        [partition_result] = topic_result.partition_responses
+        [topic_result] = fetch_response.topics
+        assert topic_result.name == topic_name
+        [partition_result] = topic_result.partitions
         assert partition_result.error_code == 0
-        assert partition_result.offset == 100
+        assert partition_result.committed_offset == 100
 
         # Metadata may or may not be returned depending on version
         if api_version >= 1 do
@@ -135,13 +135,13 @@ defmodule Kayrock.Integration.OffsetManagementTest do
 
         {:ok, fetch_response} = Kayrock.client_call(client_pid, fetch_request, node_id)
 
-        [topic_result] = fetch_response.responses
-        partition_results = Enum.sort_by(topic_result.partition_responses, & &1.partition)
+        [topic_result] = fetch_response.topics
+        partition_results = Enum.sort_by(topic_result.partitions, & &1.partition_index)
 
         [p0, p1, p2] = partition_results
-        assert p0.offset == 10
-        assert p1.offset == 20
-        assert p2.offset == 30
+        assert p0.committed_offset == 10
+        assert p1.committed_offset == 20
+        assert p2.committed_offset == 30
       end
 
       test "v#{api_version} - fetch uncommitted offset returns -1", %{kafka: kafka} do
@@ -172,11 +172,11 @@ defmodule Kayrock.Integration.OffsetManagementTest do
 
         {:ok, fetch_response} = Kayrock.client_call(client_pid, fetch_request, node_id)
 
-        [topic_result] = fetch_response.responses
-        [partition_result] = topic_result.partition_responses
+        [topic_result] = fetch_response.topics
+        [partition_result] = topic_result.partitions
 
         # -1 indicates no committed offset
-        assert partition_result.offset == -1
+        assert partition_result.committed_offset == -1
       end
     end
 
@@ -210,6 +210,18 @@ defmodule Kayrock.Integration.OffsetManagementTest do
       generation_id = join_response.generation_id
       member_id = join_response.member_id
 
+      # Must sync group before committing offsets
+      sync_request =
+        sync_group_request(
+          group_id,
+          member_id,
+          [%{member_id: member_id, topic: topic_name, partitions: [0]}],
+          api_version
+        )
+
+      {:ok, sync_response} = Kayrock.client_call(client_pid, sync_request, node_id)
+      assert sync_response.error_code == 0
+
       # Commit offset with generation and member info
       commit_request =
         offset_commit_request(
@@ -236,9 +248,9 @@ defmodule Kayrock.Integration.OffsetManagementTest do
 
       {:ok, fetch_response} = Kayrock.client_call(client_pid, fetch_request, node_id)
 
-      [topic_result] = fetch_response.responses
-      [partition_result] = topic_result.partition_responses
-      assert partition_result.offset == 50
+      [topic_result] = fetch_response.topics
+      [partition_result] = topic_result.partitions
+      assert partition_result.committed_offset == 50
     end
   end
 

@@ -48,13 +48,13 @@ Compression support requires optional dependencies. Without them, you'll get run
 
 ### Available compression formats:
 
-| Format | Attribute | Dependency |
-|--------|-----------|------------|
-| None | 0 | Built-in |
-| Gzip | 1 | Built-in |
-| Snappy | 2 | `{:snappyer, "~> 1.2"}` |
-| LZ4 | 3 | `{:lz4b, "~> 0.0.13"}` |
-| Zstandard | 4 | `{:ezstd, "~> 1.0"}` |
+| Format    | Attribute | Dependency              |
+|-----------|-----------|-------------------------|
+| None      | 0         | Built-in                |
+| Gzip      | 1         | Built-in                |
+| Snappy    | 2         | `{:snappyer, "~> 1.2"}` |
+| LZ4       | 3         | `{:lz4b, "~> 0.0.13"}`  |
+| Zstandard | 4         | `{:ezstd, "~> 1.0"}`    |
 
 ### Add to mix.exs if using compression:
 
@@ -112,19 +112,19 @@ Different Kafka versions support different API versions. Always check broker com
 
 ### Produce API versions:
 
-| Version | Min Kafka | Features |
-|---------|-----------|----------|
-| V0-V2 | 0.9 | Basic produce |
-| V3 | 0.11 | Idempotent producer |
-| V7 | 2.1 | Transaction support |
+| Version   | Min Kafka   | Features            |
+|-----------|-------------|---------------------|
+| V0-V2     | 0.9         | Basic produce       |
+| V3        | 0.11        | Idempotent producer |
+| V7        | 2.1         | Transaction support |
 
 ### Fetch API versions:
 
-| Version | Min Kafka | Features |
-|---------|-----------|----------|
-| V0-V3 | 0.9 | Basic fetch |
-| V4 | 0.11 | Isolation level |
-| V7 | 1.1 | Session fetch |
+| Version   | Min Kafka  | Features        |
+|-----------|------------|-----------------|
+| V0-V3     | 0.9        | Basic fetch     |
+| V4        | 0.11       | Isolation level |
+| V7        | 1.1        | Session fetch   |
 
 ## Error Handling
 
@@ -173,10 +173,7 @@ request = %Kayrock.Produce.V1.Request{
 ### Check broker API versions:
 
 ```elixir
-request = %Kayrock.ApiVersions.V1.Request{
-  correlation_id: 1,
-  client_id: "my_app"
-}
+request = %Kayrock.ApiVersions.V1.Request{correlation_id: 1, client_id: "my_app"}
 ```
 
 ### Fetch topic metadata:

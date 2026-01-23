@@ -1,6 +1,6 @@
 defmodule Kayrock.Integration.ProducerTest do
   use Kayrock.IntegrationCase
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   import Kayrock.TestSupport
   import Kayrock.RequestFactory
