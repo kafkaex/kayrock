@@ -7,10 +7,16 @@ defmodule Kayrock.MixProject do
     [
       app: :kayrock,
       version: "0.3.0",
-      elixir: "~> 1.12",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test, "test.integration": :test],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.html": :test,
+        "test.unit": :test,
+        "test.integration": :test
+      ],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       aliases: aliases(),
@@ -46,17 +52,20 @@ defmodule Kayrock.MixProject do
       {:varint, "~> 1.2"},
       {:connection, "~> 1.1"},
 
-      # Dev/Test
+      # Optional compression libraries
+      # Users should add the ones they need to their own deps
+      {:snappyer, "~> 1.2", optional: true},
+      {:lz4b, "~> 0.0.13", optional: true},
+      {:ezstd, "~> 1.0", optional: true},
+
+      # Dev/Test only
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.30", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
       {:kafka_protocol, "~> 4.3.1", only: [:dev, :test]},
       {:snappy, git: "https://github.com/fdmanana/snappy-erlang-nif", only: [:dev, :test]},
-      {:snappyer, "~> 1.2", only: [:dev, :test]},
-      {:lz4b, "~> 0.0.13", only: [:dev, :test]},
-      {:ezstd, "~> 1.0", only: [:dev, :test]},
-      {:testcontainers, "~> 1.13", only: [:dev, :test]}
+      {:testcontainers, "~> 1.13", only: [:dev, :test], runtime: false}
     ]
   end
 
@@ -67,7 +76,15 @@ defmodule Kayrock.MixProject do
   defp package do
     [
       maintainers: ["Dan Swain", "Argonus"],
-      files: ["lib", "config/config.exs", "mix.exs", "README.md"],
+      files: [
+        "lib",
+        "config/config.exs",
+        "mix.exs",
+        "README.md",
+        "CHANGELOG.md",
+        "CONTRIBUTING.md",
+        "usage-rules.md"
+      ],
       licenses: ["MIT"],
       links: %{"GitHub" => @source_url}
     ]
@@ -75,7 +92,8 @@ defmodule Kayrock.MixProject do
 
   defp aliases do
     [
-      "test.integration": "test --only integration_v2"
+      "test.unit": "test --exclude integration --exclude integration_v2",
+      "test.integration": "test --include integration --include integration_v2"
     ]
   end
 end
