@@ -233,4 +233,165 @@ defmodule Kayrock.RequestFactory do
     request = Kayrock.DeleteGroups.get_request_struct(api_version)
     %{request | groups_names: group_ids}
   end
+
+  @doc """
+  Creates a request to list offsets for a topic/partition
+  Uses min of api_version and max supported version
+  """
+  def list_offsets_request(topic_name, partitions, api_version) do
+    api_version = min(Kayrock.ListOffsets.max_vsn(), api_version)
+    request = Kayrock.ListOffsets.get_request_struct(api_version)
+
+    topics = [
+      %{
+        topic: topic_name,
+        partitions:
+          Enum.map(partitions, fn partition ->
+            build_list_offset_partition(partition, api_version)
+          end)
+      }
+    ]
+
+    %{request | replica_id: -1, topics: topics}
+    |> maybe_add_isolation_level(api_version)
+  end
+
+  defp build_list_offset_partition(partition, api_version) when api_version >= 1 do
+    %{
+      partition: Keyword.get(partition, :partition, 0),
+      timestamp: Keyword.get(partition, :timestamp, -1),
+      current_leader_epoch: Keyword.get(partition, :current_leader_epoch, -1)
+    }
+  end
+
+  defp build_list_offset_partition(partition, _api_version) do
+    %{
+      partition: Keyword.get(partition, :partition, 0),
+      timestamp: Keyword.get(partition, :timestamp, -1),
+      max_num_offsets: Keyword.get(partition, :max_num_offsets, 1)
+    }
+  end
+
+  defp maybe_add_isolation_level(request, api_version) when api_version >= 2 do
+    %{request | isolation_level: 0}
+  end
+
+  defp maybe_add_isolation_level(request, _), do: request
+
+  @doc """
+  Creates a request to commit offsets
+  Uses min of api_version and max supported version
+  """
+  def offset_commit_request(group_id, topics_data, api_version, opts \\ []) do
+    api_version = min(Kayrock.OffsetCommit.max_vsn(), api_version)
+    request = Kayrock.OffsetCommit.get_request_struct(api_version)
+
+    topics =
+      Enum.map(topics_data, fn topic_data ->
+        %{
+          name: Keyword.fetch!(topic_data, :topic),
+          partitions:
+            Enum.map(Keyword.get(topic_data, :partitions, []), fn partition ->
+              %{
+                partition_index: Keyword.get(partition, :partition, 0),
+                committed_offset: Keyword.fetch!(partition, :offset),
+                committed_metadata: Keyword.get(partition, :metadata, "")
+              }
+            end)
+        }
+      end)
+
+    base_request = %{request | group_id: group_id, topics: topics}
+
+    base_request
+    |> maybe_add_generation_member(api_version, opts)
+    |> maybe_add_retention_time(api_version, opts)
+  end
+
+  defp maybe_add_generation_member(request, api_version, opts) when api_version >= 1 do
+    %{
+      request
+      | generation_id: Keyword.get(opts, :generation_id, -1),
+        member_id: Keyword.get(opts, :member_id, "")
+    }
+  end
+
+  defp maybe_add_generation_member(request, _, _), do: request
+
+  defp maybe_add_retention_time(request, api_version, opts) when api_version >= 2 do
+    %{request | retention_time_ms: Keyword.get(opts, :retention_time_ms, -1)}
+  end
+
+  defp maybe_add_retention_time(request, _, _), do: request
+
+  @doc """
+  Creates a request to fetch committed offsets
+  Uses min of api_version and max supported version
+  """
+  def offset_fetch_request(group_id, topics_data, api_version) do
+    api_version = min(Kayrock.OffsetFetch.max_vsn(), api_version)
+    request = Kayrock.OffsetFetch.get_request_struct(api_version)
+
+    topics =
+      Enum.map(topics_data, fn topic_data ->
+        %{
+          topic: Keyword.fetch!(topic_data, :topic),
+          partitions:
+            Enum.map(Keyword.get(topic_data, :partitions, []), fn partition ->
+              %{partition: Keyword.get(partition, :partition, 0)}
+            end)
+        }
+      end)
+
+    %{request | group_id: group_id, topics: topics}
+  end
+
+  @doc """
+  Creates a heartbeat request for a consumer group
+  Uses min of api_version and max supported version
+  """
+  def heartbeat_request(group_id, member_id, generation_id, api_version) do
+    api_version = min(Kayrock.Heartbeat.max_vsn(), api_version)
+    request = Kayrock.Heartbeat.get_request_struct(api_version)
+
+    %{
+      request
+      | group_id: group_id,
+        member_id: member_id,
+        generation_id: generation_id
+    }
+  end
+
+  @doc """
+  Creates a metadata request for topics
+  Uses min of api_version and max supported version
+  """
+  def metadata_request(topics, api_version) do
+    api_version = min(Kayrock.Metadata.max_vsn(), api_version)
+    request = Kayrock.Metadata.get_request_struct(api_version)
+
+    topics_list =
+      case topics do
+        nil -> nil
+        [] -> []
+        list -> Enum.map(list, fn t -> %{name: t} end)
+      end
+
+    base = %{request | topics: topics_list}
+
+    if api_version >= 4 do
+      %{base | allow_auto_topic_creation: false}
+    else
+      base
+    end
+  end
+
+  @doc """
+  Creates an API versions request
+  Uses min of api_version and max supported version
+  """
+  def api_versions_request(api_version) do
+    api_version = min(Kayrock.ApiVersions.max_vsn(), api_version)
+    Kayrock.ApiVersions.get_request_struct(api_version)
+  end
 end
