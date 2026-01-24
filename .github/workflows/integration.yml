@@ -60,13 +60,13 @@ jobs:
 
       - name: Run Integration Tests
         id: test
-        run: mix test --include integration
+        run: mix test --only integration
 
       - name: Retry failed tests (1st retry)
         id: retry1
         if: failure()
-        run: mix test --include integration --failed
+        run: mix test --only integration --failed
 
       - name: Retry failed tests (2nd retry)
         if: failure()
-        run: mix test --include integration --failed
+        run: mix test --only integration --failed

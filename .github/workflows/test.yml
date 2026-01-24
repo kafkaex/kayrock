@@ -65,7 +65,7 @@ jobs:
         run: mix compile
 
       - name: Run Unit Tests
-        run: mix test --exclude integration --exclude integration_v2
+        run: mix test --exclude integration
 
   coverage:
     name: Test Coverage
@@ -103,4 +103,4 @@ jobs:
           mix deps.compile
 
       - name: Run Coverage
-        run: mix coveralls --exclude integration --exclude integration_v2
+        run: mix coveralls --exclude integration
