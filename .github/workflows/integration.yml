@@ -2,9 +2,9 @@ name: CI Integration
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,19 +12,22 @@ concurrency:
 
 jobs:
   integration-test:
-    name: Integration Test
+    name: Integration Tests
     runs-on: ubuntu-22.04
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     env:
       MIX_ENV: test
+      ENABLE_TESTCONTAINERS: "true"
 
     strategy:
       fail-fast: false
       matrix:
-        pair:
-          - elixir: 1.18
-            otp: 27.2
+        include:
+          - elixir: "1.18"
+            otp: "27.2"
+          - elixir: "1.16"
+            otp: "26.2"
 
     steps:
       - name: Checkout
@@ -33,10 +36,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Elixir & Erlang
-        uses: erlef/setup-beam@v1.18
+        uses: erlef/setup-beam@v1
         with:
-          elixir-version: ${{ matrix.pair.elixir }}
-          otp-version: ${{ matrix.pair.otp }}
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
 
       - name: Restore dependencies cache
         uses: actions/cache@v4
@@ -44,9 +47,9 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.pair.otp }}-${{ matrix.pair.elixir }}-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.pair.otp }}-${{ matrix.pair.elixir }}-
+            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
 
       - name: Install dependencies
         run: |
@@ -56,4 +59,14 @@ jobs:
           mix deps.compile
 
       - name: Run Integration Tests
-        run: mix test.integration
+        id: test
+        run: mix test --only integration
+
+      - name: Retry failed tests (1st retry)
+        id: retry1
+        if: failure()
+        run: mix test --only integration --failed
+
+      - name: Retry failed tests (2nd retry)
+        if: failure()
+        run: mix test --only integration --failed

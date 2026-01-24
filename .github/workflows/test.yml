@@ -2,9 +2,9 @@ name: CI Tests
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -12,9 +12,9 @@ concurrency:
 
 jobs:
   test:
-    name: Test Suite
+    name: Unit Tests (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     env:
       MIX_ENV: test
@@ -22,23 +22,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        pair:
-          - elixir: 1.18
-            otp: 27.2
-          - elixir: 1.16
-            otp: 26.2
-          - elixir: 1.14
-            otp: 24.3
+        include:
+          - elixir: "1.18"
+            otp: "27.2"
+          - elixir: "1.17"
+            otp: "27.0"
+          - elixir: "1.16"
+            otp: "26.2"
+          - elixir: "1.15"
+            otp: "26.0"
+          - elixir: "1.14"
+            otp: "25.3"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Setup Elixir & Erlang
-        uses: erlef/setup-beam@v1.18
+        uses: erlef/setup-beam@v1
         with:
-          elixir-version: ${{ matrix.pair.elixir }}
-          otp-version: ${{ matrix.pair.otp }}
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
 
       - name: Restore dependencies cache
         uses: actions/cache@v4
@@ -46,9 +50,9 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.pair.otp }}-${{ matrix.pair.elixir }}-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.pair.otp }}-${{ matrix.pair.elixir }}-
+            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
 
       - name: Install dependencies
         run: |
@@ -57,5 +61,46 @@ jobs:
           mix deps.get
           mix deps.compile
 
-      - name: Run Tests
-        run: mix test
+      - name: Compile
+        run: mix compile
+
+      - name: Run Unit Tests
+        run: mix test --exclude integration
+
+  coverage:
+    name: Test Coverage
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+
+    env:
+      MIX_ENV: test
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Elixir & Erlang
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.18"
+          otp-version: "27.2"
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-27.2-1.18-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-27.2-1.18-
+
+      - name: Install dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+          mix deps.compile
+
+      - name: Run Coverage
+        run: mix coveralls --exclude integration

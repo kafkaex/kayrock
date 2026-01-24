@@ -6,132 +6,174 @@
 [![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/kayrock/)
 [![Total Download](https://img.shields.io/hexpm/dt/kayrock.svg)](https://hex.pm/packages/kayrock)
 [![License](https://img.shields.io/hexpm/l/kayrock.svg)](https://hex.pm/packages/kayrock)
-[![Last Updated](https://img.shields.io/github/last-commit/dantswain/kayrock.svg)](https://github.com/dantswain/kayrock/commits/master)
+[![Last Updated](https://img.shields.io/github/last-commit/kafkaex/kayrock.svg)](https://github.com/kafkaex/kayrock/commits/master)
 
-Aims to provide an idiomatic Elixir interface to the Kafka protocol.
+Idiomatic Elixir interface to the Kafka protocol.
 
-This work is based on [kafka_protocol](https://github.com/klarna/kafka_protocol)
-for Erlang, which is used in [brod](https://github.com/klarna/brod).  It is
-built to work with [KafkaEx](https://github.com/kafkaex/kafka_ex) though there
+This library provides serialization and deserialization for all Kafka protocol messages,
+based on [kafka_protocol](https://github.com/kafka4beam/kafka_protocol) for Erlang.
+It is built to work with [KafkaEx](https://github.com/kafkaex/kafka_ex) though there
 is no reason why it couldn't be used elsewhere.
 
-## Basic architecture and usage
+## Installation
+
+Add `kayrock` to your list of dependencies in `mix.exs`:
+
+```elixir
+def deps do
+  [
+    {:kayrock, "~> 1.0"}
+  ]
+end
+```
+
+## Requirements
+
+- Elixir 1.14 or later
+- Erlang/OTP 24.3 or later
+
+## Basic Architecture and Usage
 
 Kayrock generates structs for every version of every message in the Kafka
-protocol.  It does this by converting the Erlang-based schema descriptions in
+protocol. It does this by converting the Erlang-based schema descriptions in
 `:kpro_schema` from the `kafka_protocol` library and is therefore limited to
-messages and versions included there.  Each request message has a serializer
-(that generates iodata), and each response message has a deserializer. There is
-also a protocol, `Kayrock.Request`, that has an implementation created for each
-request.  The `Kayrock.Request` protocol defines a serializer as well as a
-response deserializer factory.
+messages and versions included there.
 
-This repo includes a mix task, `mix gen.kafka_protocol`, that produces the code
-in `lib/generated`.  I chose to check the generated code into the repository to
-simplify its use.  End users should not need to run the mix task unless they are
-doing development on Kayrock itself.
+Each request message has a serializer (that generates iodata), and each response
+message has a deserializer. There is also a protocol, `Kayrock.Request`, that has
+an implementation created for each request.
 
-The generated structs are namespaced as follows: `Kayrock.<api>.V<version
-number>.[Request|Response]`.  For example, the version 4 fetch api corresponds
-to `Kayrock.Fetch.V4.Request` and `Kayrock.Fetch.V4.Response`.
+The generated structs are namespaced as follows:
+`Kayrock.<API>.V<version>.[Request|Response]`
 
-An example of basic usage, taken (and modified) from
-`Kayrock.broker_sync_call/2`:
+For example:
+- `Kayrock.Fetch.V4.Request`
+- `Kayrock.Produce.V1.Response`
+- `Kayrock.Metadata.V1.Request`
+
+### Example Usage
 
 ```elixir
 alias Kayrock.Request
 
-request = %Kayrock.ApiVersions.V1.Request{client_id: "some_client", correlation_id: 0}
+# Create a request
+request = %Kayrock.ApiVersions.V1.Request{
+  client_id: "my_client",
+  correlation_id: 0
+}
 
-# wire_protocol will be iodata representing the serialized request
+# Serialize to wire protocol (iodata)
 wire_protocol = Request.serialize(request)
 
-# implementation-specific network request/response handling
-:ok = BrokerConnection.send(broker_pid, wire_protocol)
-{:ok, resp} = BrokerConnection.recv(broker_pid)
+# ... send wire_protocol over your connection ...
+# ... receive binary response ...
 
-# response_deserializer will be a function that accepts binary data and
-# returns {%Kayrock.ApiVersions.V1.Response{}, rest} where rest is any
-# extra binary data in the response
+# Deserialize the response
 response_deserializer = Request.response_deserializer(request)
-{deserialized_resp, _} = response_deserializer.(resp)
+{deserialized_resp, _rest} = response_deserializer.(binary_response)
 
-# deserialized_resp will be a %Kayrock.ApiVersions.V1.Response{} representing
-# the api versions supported by the broker
+# deserialized_resp is now a %Kayrock.ApiVersions.V1.Response{}
 ```
 
-## Messages Compression
+## Message Compression
 
-Currently Kayrock is supporting two types of compression: snappy or gzip
+Kayrock supports four compression formats:
 
-For snappy compression by default will be used [snappy-erlang-nif](https://github.com/skunkwerks/snappy-erlang-nif) but this is 
-deprecated in favor for [snappyer](https://github.com/zmstone/snappyer) which is way more popular.
+| Format | Built-in | Dependency Required |
+|--------|----------|---------------------|
+| gzip | Yes | None |
+| snappy | No | `{:snappyer, "~> 1.2"}` |
+| lz4 | No | `{:lz4b, "~> 0.0.13"}` |
+| zstd | OTP 27+ | `{:ezstd, "~> 1.0"}` (for OTP < 27) |
 
-To change compression library change config from
+### Installing Compression Dependencies
+
+Add the compression libraries you need to your `mix.exs`:
 
 ```elixir
-  config :kayrock, snappy_module: :snappy
+def deps do
+  [
+    {:kayrock, "~> 1.0"},
+
+    # Add compression libraries as needed:
+    {:snappyer, "~> 1.2"},     # For Snappy compression
+    {:lz4b, "~> 0.0.13"},      # For LZ4 compression
+    {:ezstd, "~> 1.0"},        # For Zstandard (OTP < 27)
+  ]
+end
 ```
 
-to
+### Snappy Configuration
+
+By default, Kayrock uses `snappyer` for Snappy compression. To use the legacy
+`snappy` module instead:
 
 ```elixir
-  config :kayrock, snappy_module: :snappyer
+# config/config.exs
+config :kayrock, snappy_module: :snappy
 ```
 
-## Relationship to other libraries
+### Zstandard Support
+
+Zstandard compression is available via:
+1. **OTP 27+**: Native `:zstd` module (no dependency needed)
+2. **OTP < 27**: Add `{:ezstd, "~> 1.0"}` to your dependencies
+
+## Code Generation
+
+This repo includes a mix task, `mix gen.kafka_protocol`, that produces the code
+in `lib/generated`. The generated code is checked into the repository to
+simplify usage. End users should not need to run the mix task unless they are
+doing development on Kayrock itself.
+
+## Relationship to Other Libraries
 
 Kayrock uses only the `kpro_schema` module from `kafka_protocol`.
 `kafka_protocol` provides quite a lot of functionality (especially when used as
-part of `brod`).  This repo chooses to limit the integration surface between
-itself and `kafka_protocol` because
+part of `brod`). This repo limits the integration surface because:
 
-1. `kafka_protocol` produces Erlang records whereas Kayrock aims to provide
-   Elixir structs.
-2. `kafka_protocol` provides network-level implementation whereas Kayrock is
-   intended to only provide serialization and deserialization of the protocol.
+1. `kafka_protocol` produces Erlang records whereas Kayrock provides Elixir structs
+2. `kafka_protocol` provides network-level implementation whereas Kayrock only
+   provides serialization and deserialization
 3. `kpro_schema` is itself automatically generated from the Java source code of
    Kafka, meaning that Kayrock could feasibly reproduce this without needing an
-   intermediate dependency.
+   intermediate dependency
 
-This is in no way meant to detract from the great work that the
-`kafka_protocol`/`brod` team has done.  I have simply chosen a different path
-here.
+### Built-in Client (Development Only)
 
-You will notice that in this repo there is also a lightweight implementation of
-a Kafka client.  This serves a few purposes:
+This repo includes a lightweight Kafka client implementation for development and
+testing purposes.
 
-1. To help with the development of the Kayrock protocol API.
-2. To allow for testing against a server without creating a circular dependency
-   on KafkaEx.
-3. Because I want to mess around with it.
-
-Regardless, it is not a production-ready implementation. I would refer you to
-KafkaEx or brod for that.
+> **Warning:** The built-in client (`Kayrock.Client`) is NOT production-ready.
+> For production usage, please use:
+> - [KafkaEx](https://github.com/kafkaex/kafka_ex)
+> - [brod](https://github.com/kafka4beam/brod)
 
 ## Testing
 
-Kayrock includes a test suite that checks that the generated code is correct.
-We have both unit tests and integration tests.  
+Kayrock includes both unit tests and integration tests.
 
-The unit tests are run as part of the normal mix test process. To run unit tests
+### Unit Tests
 
-```shell
+```bash
 mix test
 ```
 
-The integration tests require a running docker, currently we are using docker-compose to run a kafka cluster.
-But we are in a process of migrating to use [testcontainers](https://github.com/testcontainers/testcontainers-elixir) 
-to run kafka cluster.
+### Integration Tests
 
-To run original integration tests
+Integration tests require Docker. We use
+[testcontainers](https://github.com/testcontainers/testcontainers-elixir)
+to run a Kafka cluster.
 
-```shell
-mix test --include integration
-```
-
-To run integration tests with testcontainers
-
-```shell
+```bash
+# Requires Docker to be running
 mix test.integration
 ```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
+
+## License
+
+MIT License - see [LICENSE.txt](LICENSE.txt) for details.

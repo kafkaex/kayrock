@@ -6,7 +6,7 @@ defmodule Kayrock.IntegrationCase do
 
   using do
     quote do
-      @moduletag :integration_v2
+      @moduletag :integration
       import Testcontainers.ExUnit
 
       alias Testcontainers.Container
