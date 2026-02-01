@@ -207,8 +207,30 @@ defmodule Kayrock.DeserializeTest do
   end
 
   describe "deserialize_array" do
-    test "deserializes empty array" do
+    test "deserializes NULL array (-1) correctly per Kafka protocol" do
+      # Kafka protocol: -1 (0xFFFFFFFF) represents NULL array
+      binary = <<255, 255, 255, 255, 0, 0, 0, 0>>
+
+      {result, rest} = Deserialize.deserialize_array(:int32, binary)
+
+      assert result == nil
+      assert rest == <<0, 0, 0, 0>>
+    end
+
+    test "deserializes empty array (0)" do
       assert {[], <<>>} = Deserialize.deserialize_array(:int32, <<0, 0, 0, 0>>)
+    end
+
+    test "NULL array is different from empty array" do
+      null_binary = <<255, 255, 255, 255>>
+      empty_binary = <<0, 0, 0, 0>>
+
+      {null_result, _} = Deserialize.deserialize_array(:int32, null_binary)
+      {empty_result, _} = Deserialize.deserialize_array(:int32, empty_binary)
+
+      assert null_result == nil
+      assert empty_result == []
+      assert null_result != empty_result
     end
 
     test "deserializes array of int32" do
@@ -278,6 +300,55 @@ defmodule Kayrock.DeserializeTest do
     test "decodes multi-byte values" do
       assert {128, <<>>} = Deserialize.decode_unsigned_varint(<<128, 1>>)
       assert {16_384, <<>>} = Deserialize.decode_unsigned_varint(<<128, 128, 1>>)
+    end
+
+    test "decodes 5-byte varint" do
+      # 5 bytes with continuation bits
+      binary = <<0x80, 0x80, 0x80, 0x80, 0x01, 99>>
+
+      {value, rest} = Deserialize.decode_unsigned_varint(binary)
+
+      assert is_integer(value)
+      assert value > 0
+      assert rest == <<99>>
+    end
+
+    test "accepts 10-byte varint (maximum valid per LEB128)" do
+      # Maximum varint: 10 bytes encoding max uint64
+      max_varint = <<0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01>>
+
+      {value, rest} = Deserialize.decode_unsigned_varint(max_varint <> <<99>>)
+
+      assert is_integer(value)
+      assert value > 0
+      assert rest == <<99>>
+    end
+
+    test "rejects 11-byte varint (exceeds LEB128 maximum)" do
+      # 11 bytes with continuation bits (invalid per LEB128 spec)
+      invalid = <<0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00>>
+
+      assert_raise ArgumentError, ~r/exceeded maximum 10-byte/, fn ->
+        Deserialize.decode_unsigned_varint(invalid)
+      end
+    end
+
+    test "rejects excessive continuation bytes (DoS protection)" do
+      # 20 bytes of continuation bits (malicious input)
+      malicious = (List.duplicate(0x80, 20) ++ [0x00]) |> :binary.list_to_bin()
+
+      assert_raise ArgumentError, ~r/exceeded maximum 10-byte/, fn ->
+        Deserialize.decode_unsigned_varint(malicious)
+      end
+    end
+
+    test "rejects extremely long varint (100+ bytes)" do
+      # Extreme DoS attack vector
+      malicious = List.duplicate(0x80, 100) |> :binary.list_to_bin()
+
+      assert_raise ArgumentError, ~r/exceeded maximum 10-byte/, fn ->
+        Deserialize.decode_unsigned_varint(malicious)
+      end
     end
   end
 end
