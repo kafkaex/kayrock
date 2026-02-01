@@ -11,17 +11,9 @@ defmodule Kayrock.Integration.TopicManagementTest do
   describe "topic management API" do
     for version <- [0, 1, 2] do
       test "v#{version} - allows to manage topic", %{kafka: kafka} do
-        uris = [{"localhost", Container.mapped_port(kafka, 9092)}]
         api_version = unquote(version)
-        {:ok, client_pid} = Kayrock.Client.start_link(uris)
-        topic_name = unique_string()
-
-        # Get Topics
-        refute topic_exists?(client_pid, topic_name)
-
-        # Creates Topic
-        create_request = create_topic_request(topic_name, api_version)
-        {:ok, _} = Kayrock.client_call(client_pid, create_request, :controller)
+        {:ok, client_pid} = build_client(kafka)
+        topic_name = create_topic(client_pid, api_version)
 
         # Get Topic
         topic = get_topic_metadata(client_pid, topic_name)

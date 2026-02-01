@@ -150,9 +150,4 @@ defmodule Kayrock.Integration.ApiVersionsTest do
       assert Map.has_key?(api_map, 9)
     end
   end
-
-  defp build_client(kafka) do
-    uris = [{"localhost", Container.mapped_port(kafka, 9092)}]
-    Kayrock.Client.start_link(uris)
-  end
 end

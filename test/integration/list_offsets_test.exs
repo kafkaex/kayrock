@@ -120,18 +120,6 @@ defmodule Kayrock.Integration.ListOffsetsTest do
     end
   end
 
-  defp build_client(kafka) do
-    uris = [{"localhost", Container.mapped_port(kafka, 9092)}]
-    Kayrock.Client.start_link(uris)
-  end
-
-  defp create_topic(client_pid, api_version) do
-    topic_name = unique_string()
-    create_request = create_topic_request(topic_name, api_version)
-    {:ok, _} = Kayrock.client_call(client_pid, create_request, :controller)
-    topic_name
-  end
-
   # V0 returns offsets as a list
   defp get_offset(%{offsets: [offset | _]}, 0), do: offset
   # V1+ returns offset as a single value
