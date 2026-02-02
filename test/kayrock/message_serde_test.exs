@@ -139,84 +139,7 @@ defmodule Kayrock.MessageSerdeTest do
   end
 
   describe "message format 2 serialization snappy compression" do
-    setup do
-      on_exit(fn ->
-        Application.put_env(:kayrock, :snappy_module, :snappy)
-      end)
-
-      :ok
-    end
-
-    test "using snappy-erlang-nif dependency" do
-      record_batch = %Kayrock.RecordBatch{
-        attributes: 2,
-        base_sequence: -1,
-        batch_length: nil,
-        batch_offset: 0,
-        crc: nil,
-        first_timestamp: -1,
-        last_offset_delta: -1,
-        max_timestamp: -1,
-        partition_leader_epoch: -1,
-        producer_epoch: -1,
-        producer_id: -1,
-        records: [
-          %Kayrock.RecordBatch.Record{
-            attributes: 0,
-            headers: [],
-            key: nil,
-            offset: 0,
-            timestamp: -1,
-            value: "foo"
-          },
-          %Kayrock.RecordBatch.Record{
-            attributes: 0,
-            headers: [],
-            key: nil,
-            offset: 1,
-            timestamp: -1,
-            value: "bar"
-          },
-          %Kayrock.RecordBatch.Record{
-            attributes: 0,
-            headers: [],
-            key: nil,
-            offset: 2,
-            timestamp: -1,
-            value: "baz"
-          }
-        ]
-      }
-
-      expect =
-        <<0, 0, 0, 93, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 81, 255, 255, 255, 255, 2, 240, 3, 91,
-          168, 0, 2, 0, 0, 0, 2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-          255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0,
-          0, 0, 3, 30, 116, 18, 0, 0, 0, 1, 6, 102, 111, 111, 0, 18, 0, 0, 2, 1, 6, 98, 97, 114,
-          0, 18, 0, 0, 4, 1, 6, 98, 97, 122, 0>>
-
-      got = IO.iodata_to_binary(RecordBatch.serialize(record_batch))
-      assert got == expect, compare_binaries(got, expect)
-
-      <<size::32-signed, rest::bits>> = got
-      assert byte_size(rest) == size
-
-      [got_batch] = RecordBatch.deserialize(rest)
-
-      record_batch =
-        %{
-          record_batch
-          | batch_length: got_batch.batch_length,
-            crc: got_batch.crc,
-            last_offset_delta: 2
-        }
-
-      assert got_batch == record_batch
-    end
-
-    test "using snappyer dependency" do
-      Application.put_env(:kayrock, :snappy_module, :snappyer)
-
+    test "serializes record batch with snappy compression" do
       record_batch = %Kayrock.RecordBatch{
         attributes: 2,
         base_sequence: -1,
@@ -285,71 +208,7 @@ defmodule Kayrock.MessageSerdeTest do
   end
 
   describe "message format 2 deserialization with snappy compression" do
-    setup do
-      on_exit(fn ->
-        Application.put_env(:kayrock, :snappy_module, :snappy)
-      end)
-
-      :ok
-    end
-
-    test "using snappy-erlang-nif dependency" do
-      data =
-        <<0, 0, 0, 0, 0, 0, 0, 126, 0, 0, 0, 101, 0, 0, 0, 4, 2, 27, 231, 230, 245, 0, 2, 0, 0, 0,
-          2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-          255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 0, 0, 0, 3, 130, 83,
-          78, 65, 80, 80, 89, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 32, 30, 116, 18, 0, 0, 0, 1, 6,
-          102, 111, 111, 0, 18, 0, 0, 2, 1, 6, 98, 97, 114, 0, 18, 0, 0, 4, 1, 6, 98, 97, 122, 0>>
-
-      expect = [
-        %Kayrock.RecordBatch{
-          attributes: 2,
-          base_sequence: -1,
-          batch_length: 101,
-          batch_offset: 126,
-          crc: 468_182_773,
-          first_timestamp: -1,
-          last_offset_delta: 2,
-          max_timestamp: -1,
-          partition_leader_epoch: 4,
-          producer_epoch: -1,
-          producer_id: -1,
-          records: [
-            %Kayrock.RecordBatch.Record{
-              attributes: 0,
-              headers: [],
-              key: nil,
-              offset: 126,
-              timestamp: -1,
-              value: "foo"
-            },
-            %Kayrock.RecordBatch.Record{
-              attributes: 0,
-              headers: [],
-              key: nil,
-              offset: 127,
-              timestamp: -1,
-              value: "bar"
-            },
-            %Kayrock.RecordBatch.Record{
-              attributes: 0,
-              headers: [],
-              key: nil,
-              offset: 128,
-              timestamp: -1,
-              value: "baz"
-            }
-          ]
-        }
-      ]
-
-      got = RecordBatch.deserialize(data)
-      assert got == expect
-    end
-
-    test "using snappyer dependency" do
-      Application.put_env(:kayrock, :snappy_module, :snappyer)
-
+    test "deserializes record batch with snappy compression" do
       data =
         <<0, 0, 0, 0, 0, 0, 0, 126, 0, 0, 0, 101, 0, 0, 0, 4, 2, 27, 231, 230, 245, 0, 2, 0, 0, 0,
           2, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,

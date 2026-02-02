@@ -1,3 +1,4 @@
+# credo:disable-for-this-file Credo.Check.Refactor.Nesting
 defmodule Kayrock.Test.Factories.DescribeConfigsFactory do
   @moduledoc """
   Factory for generating DescribeConfigs API test data (V0-V2).

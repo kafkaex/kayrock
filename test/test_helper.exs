@@ -13,5 +13,5 @@ if System.get_env("ENABLE_TESTCONTAINERS") == "true" and Code.ensure_loaded?(Tes
   end
 end
 
-ExUnit.configure(exclude: [:integration])
+ExUnit.configure(exclude: [:integration, :chaos])
 ExUnit.start()

@@ -1,17 +1,18 @@
-name: CI Tests
+name: Unit Tests
 
 on:
   push:
-    branches: [master]
   pull_request:
-    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  unit-tests:
     name: Unit Tests (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
     runs-on: ubuntu-22.04
     timeout-minutes: 15
@@ -65,7 +66,7 @@ jobs:
         run: mix compile
 
       - name: Run Unit Tests
-        run: mix test --exclude integration
+        run: mix test.unit
 
   coverage:
     name: Test Coverage
@@ -103,4 +104,4 @@ jobs:
           mix deps.compile
 
       - name: Run Coverage
-        run: mix coveralls --exclude integration
+        run: mix coveralls --exclude integration --exclude chaos

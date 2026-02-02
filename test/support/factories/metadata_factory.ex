@@ -1,3 +1,4 @@
+# credo:disable-for-this-file Credo.Check.Refactor.Nesting
 defmodule Kayrock.Test.Factories.MetadataFactory do
   @moduledoc """
   Factory for generating Metadata test data.

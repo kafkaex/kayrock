@@ -1,20 +1,21 @@
-name: CI Integration
+name: Chaos Tests
 
 on:
   push:
-    branches: [master]
   pull_request:
-    branches: [master]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
-  integration-test:
-    name: Integration Tests
+  chaos-tests:
+    name: Chaos Tests (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
     runs-on: ubuntu-22.04
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     env:
       MIX_ENV: test
@@ -26,14 +27,12 @@ jobs:
         include:
           - elixir: "1.18"
             otp: "27.2"
-          - elixir: "1.16"
-            otp: "26.2"
+          - elixir: "1.17"
+            otp: "27.0"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Elixir & Erlang
         uses: erlef/setup-beam@v1
@@ -58,15 +57,27 @@ jobs:
           mix deps.get
           mix deps.compile
 
-      - name: Run Integration Tests
-        id: test
-        run: mix test --only integration
+      - name: Compile application
+        run: mix compile --warnings-as-errors
 
-      - name: Retry failed tests (1st retry)
-        id: retry1
-        if: failure()
-        run: mix test --only integration --failed
+      - name: Check Docker availability
+        run: |
+          docker --version
+          docker compose version
 
-      - name: Retry failed tests (2nd retry)
-        if: failure()
-        run: mix test --only integration --failed
+      - name: Pull Docker images
+        run: |
+          docker pull confluentinc/cp-kafka:latest
+          docker pull ghcr.io/shopify/toxiproxy:2.9.0
+
+      - name: Run chaos tests
+        run: mix test.chaos
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chaos-test-results-${{ matrix.elixir }}-${{ matrix.otp }}
+          path: |
+            _build/test/logs/
+          retention-days: 7

@@ -2,9 +2,7 @@ defmodule Kayrock.Integration.TopicManagementTest do
   use Kayrock.IntegrationCase
   use ExUnit.Case, async: false
 
-  import Kayrock.TestSupport
   import Kayrock.Convenience
-  import Kayrock.RequestFactory
 
   container(:kafka, KafkaContainer.new(), shared: true)
 

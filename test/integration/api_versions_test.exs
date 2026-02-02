@@ -18,7 +18,7 @@ defmodule Kayrock.Integration.ApiVersionsTest do
         # Check response structure
         assert response.error_code == 0
         assert is_list(response.api_keys)
-        assert length(response.api_keys) > 0
+        assert response.api_keys != [], "api_keys should not be empty"
 
         # Verify common APIs are present
         api_map = Map.new(response.api_keys, fn api -> {api.api_key, api} end)

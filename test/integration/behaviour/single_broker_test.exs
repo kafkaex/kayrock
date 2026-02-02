@@ -2,7 +2,6 @@ defmodule Kayrock.Integration.Behaviour.SingleBrokerTest do
   use Kayrock.IntegrationCase
   use ExUnit.Case, async: false
 
-  import Kayrock.TestSupport
   import Kayrock.RequestFactory
 
   container(:kafka, KafkaContainer.new(), shared: true)

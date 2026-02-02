@@ -17,7 +17,7 @@ defmodule Kayrock.Integration.MetadataTest do
         {:ok, response} = Kayrock.client_call(client_pid, request, :random)
 
         # Should have at least one broker
-        assert length(response.brokers) >= 1
+        assert response.brokers != [], "should have at least one broker"
 
         # Check broker structure
         [broker | _] = response.brokers
@@ -162,8 +162,8 @@ defmodule Kayrock.Integration.MetadataTest do
       isr = Map.get(partition, :isr) || Map.get(partition, :isr_nodes)
       assert is_list(replicas)
       assert is_list(isr)
-      assert length(replicas) >= 1
-      assert length(isr) >= 1
+      assert replicas != [], "replicas should not be empty"
+      assert isr != [], "isr should not be empty"
     end
   end
 end

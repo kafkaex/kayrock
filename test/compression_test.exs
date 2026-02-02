@@ -180,4 +180,50 @@ defmodule Kayrock.CompressionTest do
       end
     end
   end
+
+  # ============================================
+  # Invalid Compression Type Edge Cases
+  # ============================================
+
+  describe "invalid compression types" do
+    test "decompress with unknown type (5) raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(5, "any data")
+      end
+    end
+
+    test "decompress with unknown type (6) raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(6, "data")
+      end
+    end
+
+    test "decompress with unknown type (7) raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(7, "data")
+      end
+    end
+
+    test "decompress with negative type raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(-1, "data")
+      end
+    end
+
+    test "decompress type 0 (none) is not supported - handled at batch level" do
+      # Compression type 0 means no compression - the data is used as-is
+      # The decompress function is only called for types 1-4
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(0, "data")
+      end
+    end
+
+    test "gzip decompression with invalid data raises" do
+      invalid_gzip = "this is not valid gzip data"
+
+      assert_raise ErlangError, fn ->
+        Compression.decompress(1, invalid_gzip)
+      end
+    end
+  end
 end

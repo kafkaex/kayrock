@@ -350,5 +350,139 @@ defmodule Kayrock.DeserializeTest do
         Deserialize.decode_unsigned_varint(malicious)
       end
     end
+
+    test "empty binary raises" do
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.decode_unsigned_varint(<<>>)
+      end
+    end
+
+    test "unterminated continuation bits raises" do
+      # All continuation bits set, but only 3 bytes - will try to read more
+      partial = <<0x80, 0x80, 0x80>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.decode_unsigned_varint(partial)
+      end
+    end
+  end
+
+  # ============================================
+  # Truncated Binary Edge Cases
+  # ============================================
+
+  describe "truncated binary edge cases" do
+    test ":string - truncated length prefix" do
+      truncated = <<0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:string, truncated)
+      end
+    end
+
+    test ":string - truncated string data" do
+      # Claims 10 bytes but only provides 5
+      invalid = <<0, 10, "hello">>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:string, invalid)
+      end
+    end
+
+    test ":bytes - truncated length prefix" do
+      truncated = <<0, 0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:bytes, truncated)
+      end
+    end
+
+    test ":bytes - truncated data" do
+      # Claims 100 bytes but provides only 10
+      invalid = <<0, 0, 0, 100, "0123456789">>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:bytes, invalid)
+      end
+    end
+
+    test ":int32 - truncated" do
+      truncated = <<0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:int32, truncated)
+      end
+    end
+
+    test ":int64 - truncated" do
+      truncated = <<0, 0, 0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:int64, truncated)
+      end
+    end
+
+    test "deserialize_array - truncated count" do
+      truncated = <<0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_array(:int32, truncated)
+      end
+    end
+
+    test "deserialize_array - truncated element" do
+      # Claims 2 elements but only provides 1
+      invalid = <<0, 0, 0, 2, 0, 0, 0, 1>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_array(:int32, invalid)
+      end
+    end
+
+    test "deserialize_compact_array - truncated count varint" do
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_compact_array(:int32, <<>>)
+      end
+    end
+
+    test "deserialize_tagged_fields - truncated tag data" do
+      # 1 tag, tag=0, size=10, but no data follows
+      invalid = <<1, 0, 10>>
+
+      assert_raise MatchError, fn ->
+        Deserialize.deserialize_tagged_fields(invalid)
+      end
+    end
+  end
+
+  # ============================================
+  # Length-Prefix Validation
+  # ============================================
+
+  describe "length prefix validation" do
+    test "array with negative count other than -1 fails" do
+      # -2 is invalid (only -1 means NULL)
+      invalid = <<255, 255, 255, 254>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_array(:int32, invalid)
+      end
+    end
+
+    test ":string with length -2 (invalid) fails" do
+      invalid = <<255, 254>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:string, invalid)
+      end
+    end
+
+    test ":bytes with extremely large length causes controlled failure" do
+      huge_length = <<127, 255, 255, 255, "data">>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:bytes, huge_length)
+      end
+    end
   end
 end
