@@ -73,12 +73,10 @@ defmodule Kayrock.DescribeConfigsTest do
         }
 
         fields =
-          cond do
-            version >= 1 ->
-              Map.put(base, :include_synonyms, false)
-
-            true ->
-              base
+          if version >= 1 do
+            Map.put(base, :include_synonyms, false)
+          else
+            base
           end
 
         request = struct(module, fields)

@@ -77,7 +77,7 @@ defmodule Kayrock.ElectLeadersTest do
         topic_partitions: [
           %{topic: "my-topic", partition_id: [0, 1, 2]}
         ],
-        timeout_ms: 30000
+        timeout_ms: 30_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -114,7 +114,7 @@ defmodule Kayrock.ElectLeadersTest do
         topic_partitions: [
           %{topic: "topic1", partition_id: [0]}
         ],
-        timeout_ms: 30000
+        timeout_ms: 30_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -160,7 +160,7 @@ defmodule Kayrock.ElectLeadersTest do
           correlation_id: 0,
           client_id: "test",
           topic_partitions: [],
-          timeout_ms: 30000
+          timeout_ms: 30_000
         ]
 
         fields =
@@ -190,7 +190,7 @@ defmodule Kayrock.ElectLeadersTest do
           correlation_id: 0,
           client_id: "test",
           topic_partitions: [],
-          timeout_ms: 30000
+          timeout_ms: 30_000
         ]
 
         fields =

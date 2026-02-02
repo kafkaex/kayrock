@@ -21,7 +21,7 @@ defmodule Kayrock.Test.Factories.ElectLeadersFactory do
       topic_partitions: [
         %{topic: "topic1", partition_id: [0, 1]}
       ],
-      timeout_ms: 30000
+      timeout_ms: 30_000
     }
 
     expected_binary = <<
@@ -82,7 +82,7 @@ defmodule Kayrock.Test.Factories.ElectLeadersFactory do
       topic_partitions: [
         %{topic: "topic1", partition_id: [0]}
       ],
-      timeout_ms: 60000
+      timeout_ms: 60_000
     }
 
     expected_binary = <<
@@ -140,7 +140,7 @@ defmodule Kayrock.Test.Factories.ElectLeadersFactory do
       topic_partitions: [
         %{topic: "topic1", partition_id: [0], tagged_fields: []}
       ],
-      timeout_ms: 30000,
+      timeout_ms: 30_000,
       tagged_fields: []
     }
 

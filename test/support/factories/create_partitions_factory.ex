@@ -23,7 +23,7 @@ defmodule Kayrock.Test.Factories.CreatePartitionsFactory do
           new_partitions: %{count: 6, assignment: []}
         }
       ],
-      timeout: 30000,
+      timeout: 30_000,
       validate_only: false
     }
 
@@ -84,7 +84,7 @@ defmodule Kayrock.Test.Factories.CreatePartitionsFactory do
           new_partitions: %{count: 8, assignment: []}
         }
       ],
-      timeout: 60000,
+      timeout: 60_000,
       validate_only: true
     }
 
@@ -123,7 +123,7 @@ defmodule Kayrock.Test.Factories.CreatePartitionsFactory do
       0,
       0,
       0,
-      # timeout (60000)
+      # timeout (60_000)
       0,
       0,
       234,

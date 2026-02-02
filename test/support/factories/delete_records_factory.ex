@@ -23,7 +23,7 @@ defmodule Kayrock.Test.Factories.DeleteRecordsFactory do
           partitions: [%{partition: 0, offset: 100}]
         }
       ],
-      timeout: 30000
+      timeout: 30_000
     }
 
     expected_binary = <<
@@ -93,7 +93,7 @@ defmodule Kayrock.Test.Factories.DeleteRecordsFactory do
           ]
         }
       ],
-      timeout: 60000
+      timeout: 60_000
     }
 
     expected_binary = <<
@@ -154,7 +154,7 @@ defmodule Kayrock.Test.Factories.DeleteRecordsFactory do
       0,
       0,
       150,
-      # timeout (60000)
+      # timeout (60_000)
       0,
       0,
       234,

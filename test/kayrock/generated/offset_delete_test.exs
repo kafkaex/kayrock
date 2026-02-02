@@ -11,6 +11,7 @@ defmodule Kayrock.OffsetDeleteTest do
   use ExUnit.Case, async: true
 
   import Kayrock.TestSupport
+  alias Kayrock.OffsetDelete.V0.{Request, Response}
   alias Kayrock.Test.Factories.OffsetDeleteFactory
 
   # ============================================
@@ -33,7 +34,7 @@ defmodule Kayrock.OffsetDeleteTest do
     test "deserializes version 0 response to expected struct" do
       {response_binary, expected_struct} = OffsetDeleteFactory.response_data(0)
 
-      {actual_struct, rest} = Kayrock.OffsetDelete.V0.Response.deserialize(response_binary)
+      {actual_struct, rest} = Response.deserialize(response_binary)
 
       assert rest == <<>>
       assert actual_struct == expected_struct
@@ -42,8 +43,8 @@ defmodule Kayrock.OffsetDeleteTest do
     end
 
     test "all available versions have modules" do
-      request_module = Kayrock.OffsetDelete.V0.Request
-      response_module = Kayrock.OffsetDelete.V0.Response
+      request_module = Request
+      response_module = Response
 
       assert Code.ensure_loaded?(request_module),
              "Request module #{inspect(request_module)} should exist"
@@ -58,8 +59,8 @@ defmodule Kayrock.OffsetDeleteTest do
   # ============================================
 
   describe "V0 - basic offset delete" do
-    alias Kayrock.OffsetDelete.V0.Request
-    alias Kayrock.OffsetDelete.V0.Response
+    alias Request
+    alias Response
 
     test "request serializes correctly" do
       request = %Request{
@@ -104,7 +105,7 @@ defmodule Kayrock.OffsetDeleteTest do
 
   describe "integration with Request protocol" do
     test "api_vsn returns correct version" do
-      request = %Kayrock.OffsetDelete.V0.Request{
+      request = %Request{
         correlation_id: 0,
         client_id: "test",
         group_id: "group",
@@ -115,7 +116,7 @@ defmodule Kayrock.OffsetDeleteTest do
     end
 
     test "response_deserializer returns deserialize function" do
-      request = %Kayrock.OffsetDelete.V0.Request{
+      request = %Request{
         correlation_id: 0,
         client_id: "test",
         group_id: "group",
@@ -136,7 +137,7 @@ defmodule Kayrock.OffsetDeleteTest do
       {response_binary, _} = OffsetDeleteFactory.response_data(0)
 
       for truncate_at <- truncation_points(response_binary) do
-        assert_truncated_error(Kayrock.OffsetDelete.V0.Response, response_binary, truncate_at)
+        assert_truncated_error(Response, response_binary, truncate_at)
       end
     end
   end
@@ -146,7 +147,7 @@ defmodule Kayrock.OffsetDeleteTest do
       {response_binary, _} = OffsetDeleteFactory.response_data(0)
 
       assert_extra_bytes_returned(
-        Kayrock.OffsetDelete.V0.Response,
+        Response,
         response_binary,
         <<99, 88, 77>>
       )
@@ -156,7 +157,7 @@ defmodule Kayrock.OffsetDeleteTest do
   describe "malformed response handling" do
     test "V0 empty binary fails with MatchError" do
       assert_raise MatchError, fn ->
-        Kayrock.OffsetDelete.V0.Response.deserialize(<<>>)
+        Response.deserialize(<<>>)
       end
     end
   end
@@ -164,7 +165,7 @@ defmodule Kayrock.OffsetDeleteTest do
   describe "error code handling" do
     test "V0 handles GROUP_ID_NOT_FOUND (69)" do
       response_binary = OffsetDeleteFactory.error_response(0, error_code: 69)
-      {response, <<>>} = Kayrock.OffsetDelete.V0.Response.deserialize(response_binary)
+      {response, <<>>} = Response.deserialize(response_binary)
 
       [topic] = response.topics
       [partition] = topic.partitions
@@ -173,7 +174,7 @@ defmodule Kayrock.OffsetDeleteTest do
 
     test "V0 handles GROUP_SUBSCRIBED_TO_TOPIC (86)" do
       response_binary = OffsetDeleteFactory.error_response(0, error_code: 86)
-      {response, <<>>} = Kayrock.OffsetDelete.V0.Response.deserialize(response_binary)
+      {response, <<>>} = Response.deserialize(response_binary)
 
       [topic] = response.topics
       [partition] = topic.partitions

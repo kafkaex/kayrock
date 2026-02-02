@@ -78,7 +78,7 @@ defmodule Kayrock.CreatePartitionsTest do
             new_partitions: %{count: 10, assignment: []}
           }
         ],
-        timeout: 30000,
+        timeout: 30_000,
         validate_only: false
       }
 
@@ -129,7 +129,7 @@ defmodule Kayrock.CreatePartitionsTest do
             correlation_id: 0,
             client_id: "test",
             topic_partitions: [],
-            timeout: 30000,
+            timeout: 30_000,
             validate_only: false
           )
 
@@ -146,7 +146,7 @@ defmodule Kayrock.CreatePartitionsTest do
             correlation_id: 0,
             client_id: "test",
             topic_partitions: [],
-            timeout: 30000,
+            timeout: 30_000,
             validate_only: false
           )
 

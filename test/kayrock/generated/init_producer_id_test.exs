@@ -297,10 +297,10 @@ defmodule Kayrock.InitProducerIdTest do
     end
 
     test "response with high producer_epoch deserializes correctly" do
-      response_binary = InitProducerIdFactory.response_binary(1, producer_epoch: 32767)
+      response_binary = InitProducerIdFactory.response_binary(1, producer_epoch: 32_767)
       {response, <<>>} = Kayrock.InitProducerId.V1.Response.deserialize(response_binary)
 
-      assert response.producer_epoch == 32767
+      assert response.producer_epoch == 32_767
     end
   end
 end

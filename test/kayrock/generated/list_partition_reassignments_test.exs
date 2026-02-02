@@ -11,6 +11,7 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
   use ExUnit.Case, async: true
 
   import Kayrock.TestSupport
+  alias Kayrock.ListPartitionReassignments.V0.{Request, Response}
   alias Kayrock.Test.Factories.ListPartitionReassignmentsFactory
 
   # ============================================
@@ -34,7 +35,7 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
       {response_binary, expected_struct} = ListPartitionReassignmentsFactory.response_data(0)
 
       {actual_struct, rest} =
-        Kayrock.ListPartitionReassignments.V0.Response.deserialize(response_binary)
+        Response.deserialize(response_binary)
 
       assert rest == <<>>
       assert actual_struct == expected_struct
@@ -43,8 +44,8 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
     end
 
     test "all available versions have modules" do
-      request_module = Kayrock.ListPartitionReassignments.V0.Request
-      response_module = Kayrock.ListPartitionReassignments.V0.Response
+      request_module = Request
+      response_module = Response
 
       assert Code.ensure_loaded?(request_module),
              "Request module #{inspect(request_module)} should exist"
@@ -59,14 +60,14 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
   # ============================================
 
   describe "V0 - basic list partition reassignments" do
-    alias Kayrock.ListPartitionReassignments.V0.Request
-    alias Kayrock.ListPartitionReassignments.V0.Response
+    alias Request
+    alias Response
 
     test "request serializes correctly" do
       request = %Request{
         correlation_id: 1,
         client_id: "test",
-        timeout_ms: 60000,
+        timeout_ms: 60_000,
         topics: [
           %{
             name: "my-topic",
@@ -109,10 +110,10 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
 
   describe "integration with Request protocol" do
     test "api_vsn returns correct version" do
-      request = %Kayrock.ListPartitionReassignments.V0.Request{
+      request = %Request{
         correlation_id: 0,
         client_id: "test",
-        timeout_ms: 30000,
+        timeout_ms: 30_000,
         topics: [],
         tagged_fields: []
       }
@@ -121,10 +122,10 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
     end
 
     test "response_deserializer returns deserialize function" do
-      request = %Kayrock.ListPartitionReassignments.V0.Request{
+      request = %Request{
         correlation_id: 0,
         client_id: "test",
-        timeout_ms: 30000,
+        timeout_ms: 30_000,
         topics: [],
         tagged_fields: []
       }
@@ -144,7 +145,7 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
 
       for truncate_at <- truncation_points(response_binary) do
         assert_truncated_error(
-          Kayrock.ListPartitionReassignments.V0.Response,
+          Response,
           response_binary,
           truncate_at
         )
@@ -157,7 +158,7 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
       {response_binary, _} = ListPartitionReassignmentsFactory.response_data(0)
 
       assert_extra_bytes_returned(
-        Kayrock.ListPartitionReassignments.V0.Response,
+        Response,
         response_binary,
         <<99, 88, 77>>
       )
@@ -167,7 +168,7 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
   describe "malformed response handling" do
     test "V0 empty binary fails with MatchError" do
       assert_raise MatchError, fn ->
-        Kayrock.ListPartitionReassignments.V0.Response.deserialize(<<>>)
+        Response.deserialize(<<>>)
       end
     end
   end
@@ -177,7 +178,7 @@ defmodule Kayrock.ListPartitionReassignmentsTest do
       response_binary = ListPartitionReassignmentsFactory.error_response(0, error_code: 58)
 
       {response, <<>>} =
-        Kayrock.ListPartitionReassignments.V0.Response.deserialize(response_binary)
+        Response.deserialize(response_binary)
 
       assert response.error_code == 58
       assert response.error_message == "Not controller"

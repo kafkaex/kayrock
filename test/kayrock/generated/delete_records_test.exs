@@ -78,7 +78,7 @@ defmodule Kayrock.DeleteRecordsTest do
             partitions: [%{partition: 0, offset: 500}]
           }
         ],
-        timeout: 30000
+        timeout: 30_000
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
@@ -132,7 +132,7 @@ defmodule Kayrock.DeleteRecordsTest do
             correlation_id: 0,
             client_id: "test",
             topics: [],
-            timeout: 30000
+            timeout: 30_000
           )
 
         assert Kayrock.Request.api_vsn(request) == version
@@ -148,7 +148,7 @@ defmodule Kayrock.DeleteRecordsTest do
             correlation_id: 0,
             client_id: "test",
             topics: [],
-            timeout: 30000
+            timeout: 30_000
           )
 
         deserializer = Kayrock.Request.response_deserializer(request)

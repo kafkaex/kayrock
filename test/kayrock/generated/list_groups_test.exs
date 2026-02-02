@@ -2,6 +2,7 @@ defmodule Kayrock.ListGroupsTest do
   use ExUnit.Case, async: true
 
   import Kayrock.TestSupport
+  alias Kayrock.ListGroups.V0.Response, as: V0Response
   alias Kayrock.Test.Factories.ListGroupsFactory
 
   # ============================================
@@ -39,7 +40,7 @@ defmodule Kayrock.ListGroupsTest do
 
     test "V0 deserializes empty groups" do
       response_binary = ListGroupsFactory.empty_response(0, correlation_id: 1)
-      {response, <<>>} = Kayrock.ListGroups.V0.Response.deserialize(response_binary)
+      {response, <<>>} = V0Response.deserialize(response_binary)
 
       assert response.correlation_id == 1
       assert response.error_code == 0
@@ -48,7 +49,7 @@ defmodule Kayrock.ListGroupsTest do
 
     test "V0 deserializes error response" do
       response_binary = ListGroupsFactory.error_response(0, correlation_id: 2, error_code: 29)
-      {response, <<>>} = Kayrock.ListGroups.V0.Response.deserialize(response_binary)
+      {response, <<>>} = V0Response.deserialize(response_binary)
 
       assert response.correlation_id == 2
       assert response.error_code == 29
@@ -165,7 +166,7 @@ defmodule Kayrock.ListGroupsTest do
       >>
 
       assert_raise FunctionClauseError, fn ->
-        Kayrock.ListGroups.V0.Response.deserialize(invalid)
+        V0Response.deserialize(invalid)
       end
     end
   end

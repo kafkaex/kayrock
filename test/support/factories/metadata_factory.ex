@@ -1049,79 +1049,15 @@ defmodule Kayrock.Test.Factories.MetadataFactory do
     topics = Keyword.get(opts, :topics, [])
     controller_id = Keyword.get(opts, :controller_id, 0)
 
-    brokers_binary =
-      for broker <- brokers, into: <<>> do
-        %{node_id: node_id, host: host, port: port} = broker
-        rack = Map.get(broker, :rack)
-
-        base = <<node_id::32, byte_size(host)::16, host::binary, port::32>>
-
-        # V1+ adds rack field
-        if version >= 1 do
-          rack_binary =
-            if rack do
-              <<byte_size(rack)::16, rack::binary>>
-            else
-              <<-1::16-signed>>
-            end
-
-          base <> rack_binary
-        else
-          base
-        end
-      end
-
-    topics_binary =
-      for topic <- topics, into: <<>> do
-        build_topic_binary(version, topic)
-      end
+    brokers_binary = encode_brokers(version, brokers)
+    topics_binary = encode_topics(version, topics)
 
     base = <<correlation_id::32>>
-
-    base =
-      if version >= 3 do
-        throttle_time_ms = Keyword.get(opts, :throttle_time_ms, 0)
-        base <> <<throttle_time_ms::32>>
-      else
-        base
-      end
-
+    base = add_throttle_time(version, base, opts)
     base = base <> <<length(brokers)::32, brokers_binary::binary>>
-
-    base =
-      if version >= 2 do
-        cluster_id = Keyword.get(opts, :cluster_id)
-
-        cluster_id_binary =
-          if cluster_id do
-            <<byte_size(cluster_id)::16, cluster_id::binary>>
-          else
-            <<-1::16-signed>>
-          end
-
-        if version >= 4 do
-          # V4-V7: cluster_id then controller_id
-          base <> cluster_id_binary <> <<controller_id::32>>
-        else
-          # V2-V3: cluster_id then controller_id
-          base <> cluster_id_binary <> <<controller_id::32>>
-        end
-      else
-        if version >= 1 do
-          base <> <<controller_id::32>>
-        else
-          base
-        end
-      end
-
+    base = add_cluster_and_controller(version, base, controller_id, opts)
     base = base <> <<length(topics)::32, topics_binary::binary>>
-
-    if version >= 8 do
-      cluster_authorized_operations = Keyword.get(opts, :cluster_authorized_operations, 0)
-      base <> <<cluster_authorized_operations::32>>
-    else
-      base
-    end
+    add_cluster_operations(version, base, opts)
   end
 
   def response_binary(9, opts) do
@@ -1158,6 +1094,58 @@ defmodule Kayrock.Test.Factories.MetadataFactory do
       0
     >>
   end
+
+  defp encode_brokers(version, brokers) do
+    for broker <- brokers, into: <<>> do
+      %{node_id: node_id, host: host, port: port} = broker
+      rack = Map.get(broker, :rack)
+      base = <<node_id::32, byte_size(host)::16, host::binary, port::32>>
+
+      if version >= 1 do
+        rack_binary = if rack, do: <<byte_size(rack)::16, rack::binary>>, else: <<-1::16-signed>>
+        base <> rack_binary
+      else
+        base
+      end
+    end
+  end
+
+  defp encode_topics(version, topics) do
+    for topic <- topics, into: <<>> do
+      build_topic_binary(version, topic)
+    end
+  end
+
+  defp add_throttle_time(version, base, opts) when version >= 3 do
+    throttle_time_ms = Keyword.get(opts, :throttle_time_ms, 0)
+    base <> <<throttle_time_ms::32>>
+  end
+
+  defp add_throttle_time(_version, base, _opts), do: base
+
+  defp add_cluster_and_controller(version, base, controller_id, opts) when version >= 2 do
+    cluster_id = Keyword.get(opts, :cluster_id)
+
+    cluster_id_binary =
+      if cluster_id,
+        do: <<byte_size(cluster_id)::16, cluster_id::binary>>,
+        else: <<-1::16-signed>>
+
+    base <> cluster_id_binary <> <<controller_id::32>>
+  end
+
+  defp add_cluster_and_controller(version, base, controller_id, _opts) when version >= 1 do
+    base <> <<controller_id::32>>
+  end
+
+  defp add_cluster_and_controller(_version, base, _controller_id, _opts), do: base
+
+  defp add_cluster_operations(version, base, opts) when version >= 8 do
+    cluster_authorized_operations = Keyword.get(opts, :cluster_authorized_operations, 0)
+    base <> <<cluster_authorized_operations::32>>
+  end
+
+  defp add_cluster_operations(_version, base, _opts), do: base
 
   defp build_topic_binary(version, topic) do
     error_code = Map.get(topic, :error_code, 0)

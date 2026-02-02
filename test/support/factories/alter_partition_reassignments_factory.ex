@@ -17,7 +17,7 @@ defmodule Kayrock.Test.Factories.AlterPartitionReassignmentsFactory do
     request = %Kayrock.AlterPartitionReassignments.V0.Request{
       correlation_id: 0,
       client_id: "test",
-      timeout_ms: 30000,
+      timeout_ms: 30_000,
       topics: [
         %{
           name: "topic1",
