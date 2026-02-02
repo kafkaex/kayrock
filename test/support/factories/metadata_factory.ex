@@ -948,14 +948,16 @@ defmodule Kayrock.Test.Factories.MetadataFactory do
 
   def response_data(9) do
     # V9 uses compact format with tagged_fields
-    # For now, create a minimal working response but note that full V9 support
-    # requires proper compact format handling
+    # Per KIP-482, flexible version responses have a ResponseHeader v1 with tagged_fields
     binary = <<
       # correlation_id
       0,
       0,
       0,
       9,
+      # ResponseHeader v1 tagged_fields (empty = 0)
+      0x00,
+      # ---- Response body starts here ----
       # throttle_time_ms (0)
       0,
       0,
@@ -977,7 +979,7 @@ defmodule Kayrock.Test.Factories.MetadataFactory do
       0,
       0,
       0,
-      # tagged_fields (no tags = 0)
+      # Response body tagged_fields (empty = 0)
       0x00
     >>
 
@@ -1084,13 +1086,16 @@ defmodule Kayrock.Test.Factories.MetadataFactory do
 
     <<
       correlation_id::32,
+      # ResponseHeader v1 tagged_fields (empty)
+      0,
+      # Response body fields
       throttle_time_ms::32,
       brokers_compact_length,
       cluster_id_binary::binary,
       controller_id::32,
       topics_compact_length,
       cluster_authorized_operations::32,
-      # tagged_fields count
+      # Response body tagged_fields (empty)
       0
     >>
   end

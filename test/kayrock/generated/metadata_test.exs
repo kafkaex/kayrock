@@ -48,49 +48,44 @@ defmodule Kayrock.MetadataTest do
 
       test "deserializes version #{version} response with all fields validated" do
         version = unquote(version)
+        response_module = Module.concat([Kayrock.Metadata, :"V#{version}", Response])
 
-        # TODO: V9 compact format with tagged_fields needs proper binary captures
-        # Skip V9 until we have real broker captures for compact format
-        unless version == 9 do
-          response_module = Module.concat([Kayrock.Metadata, :"V#{version}", Response])
+        # Get response binary and expected struct from factory
+        {response_binary, expected_struct} = MetadataFactory.response_data(version)
 
-          # Get response binary and expected struct from factory
-          {response_binary, expected_struct} = MetadataFactory.response_data(version)
+        # Deserialize response
+        {actual_struct, rest} = response_module.deserialize(response_binary)
 
-          # Deserialize response
-          {actual_struct, rest} = response_module.deserialize(response_binary)
+        # Verify no trailing bytes in captured response
+        assert rest == <<>>, "Captured response should have no trailing bytes"
 
-          # Verify no trailing bytes in captured response
-          assert rest == <<>>, "Captured response should have no trailing bytes"
+        # Test every field matches expected struct
+        assert actual_struct == expected_struct,
+               "V#{version} response struct mismatch"
 
-          # Test every field matches expected struct
-          assert actual_struct == expected_struct,
-                 "V#{version} response struct mismatch"
+        # Additional field-level validations
+        assert actual_struct.correlation_id == version,
+               "correlation_id should match version #{version}"
 
-          # Additional field-level validations
-          assert actual_struct.correlation_id == version,
-                 "correlation_id should match version #{version}"
+        # Version-specific field validations
+        if version >= 1 do
+          assert Map.has_key?(actual_struct, :controller_id),
+                 "V#{version} should have controller_id field"
+        end
 
-          # Version-specific field validations
-          if version >= 1 do
-            assert Map.has_key?(actual_struct, :controller_id),
-                   "V#{version} should have controller_id field"
-          end
+        if version >= 2 do
+          assert Map.has_key?(actual_struct, :cluster_id),
+                 "V#{version} should have cluster_id field"
+        end
 
-          if version >= 2 do
-            assert Map.has_key?(actual_struct, :cluster_id),
-                   "V#{version} should have cluster_id field"
-          end
+        if version >= 3 do
+          assert Map.has_key?(actual_struct, :throttle_time_ms),
+                 "V#{version} should have throttle_time_ms field"
+        end
 
-          if version >= 3 do
-            assert Map.has_key?(actual_struct, :throttle_time_ms),
-                   "V#{version} should have throttle_time_ms field"
-          end
-
-          if version >= 8 do
-            assert Map.has_key?(actual_struct, :cluster_authorized_operations),
-                   "V#{version} should have cluster_authorized_operations field"
-          end
+        if version >= 8 do
+          assert Map.has_key?(actual_struct, :cluster_authorized_operations),
+                 "V#{version} should have cluster_authorized_operations field"
         end
       end
     end
@@ -310,33 +305,27 @@ defmodule Kayrock.MetadataTest do
 
     test "handles truncated binary at various points for all versions" do
       for version <- @versions do
-        # Skip V9 - tagged_fields handling makes truncation test complex
-        unless version == 9 do
-          response_module = Module.concat([Kayrock.Metadata, :"V#{version}", Response])
-          {response_binary, _expected_struct} = MetadataFactory.response_data(version)
+        response_module = Module.concat([Kayrock.Metadata, :"V#{version}", Response])
+        {response_binary, _expected_struct} = MetadataFactory.response_data(version)
 
-          for truncate_at <- truncation_points(response_binary) do
-            assert_truncated_error(response_module, response_binary, truncate_at)
-          end
+        for truncate_at <- truncation_points(response_binary) do
+          assert_truncated_error(response_module, response_binary, truncate_at)
         end
       end
     end
 
     test "handles extra trailing bytes for all versions" do
       for version <- @versions do
-        # Skip V9 - tagged_fields handling makes extra bytes test complex
-        unless version == 9 do
-          response_module = Module.concat([Kayrock.Metadata, :"V#{version}", Response])
-          {response_binary, _expected_struct} = MetadataFactory.response_data(version)
+        response_module = Module.concat([Kayrock.Metadata, :"V#{version}", Response])
+        {response_binary, _expected_struct} = MetadataFactory.response_data(version)
 
-          extra_bytes = <<11, 22, 33, 44>>
+        extra_bytes = <<11, 22, 33, 44>>
 
-          assert_extra_bytes_returned(
-            response_module,
-            response_binary,
-            extra_bytes
-          )
-        end
+        assert_extra_bytes_returned(
+          response_module,
+          response_binary,
+          extra_bytes
+        )
       end
     end
 
