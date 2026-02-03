@@ -13,22 +13,13 @@ permissions:
 
 jobs:
   integration-tests:
-    name: Integration Tests (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    name: Integration Tests
     runs-on: ubuntu-22.04
     timeout-minutes: 30
 
     env:
       MIX_ENV: test
       ENABLE_TESTCONTAINERS: "true"
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - elixir: "1.18"
-            otp: "27.2"
-          - elixir: "1.16"
-            otp: "26.2"
 
     steps:
       - name: Checkout
@@ -39,8 +30,8 @@ jobs:
       - name: Setup Elixir & Erlang
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: ${{ matrix.elixir }}
-          otp-version: ${{ matrix.otp }}
+          elixir-version: "1.18"
+          otp-version: "27.2"
 
       - name: Restore dependencies cache
         uses: actions/cache@v4
@@ -48,9 +39,9 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-27.2-1.18-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
+            ${{ runner.os }}-mix-27.2-1.18-
 
       - name: Install dependencies
         run: |
@@ -65,11 +56,9 @@ jobs:
           docker compose version
 
       - name: Run Integration Tests
-        id: test
         run: mix test.integration
 
       - name: Retry failed tests (1st retry)
-        id: retry1
         if: failure()
         run: mix test --only integration --failed
 

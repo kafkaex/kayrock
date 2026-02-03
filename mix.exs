@@ -93,7 +93,7 @@ defmodule Kayrock.MixProject do
 
   defp aliases do
     [
-      test: "test --exclude integration --exclude chaos",
+      "test.unit": "test --exclude integration --exclude chaos",
       "test.integration": "test --only integration",
       "test.chaos": "test --only chaos"
     ]

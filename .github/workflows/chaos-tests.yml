@@ -13,22 +13,13 @@ permissions:
 
 jobs:
   chaos-tests:
-    name: Chaos Tests (Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }})
+    name: Chaos Tests
     runs-on: ubuntu-22.04
     timeout-minutes: 45
 
     env:
       MIX_ENV: test
       ENABLE_TESTCONTAINERS: "true"
-
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - elixir: "1.18"
-            otp: "27.2"
-          - elixir: "1.17"
-            otp: "27.0"
 
     steps:
       - name: Checkout
@@ -37,8 +28,8 @@ jobs:
       - name: Setup Elixir & Erlang
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: ${{ matrix.elixir }}
-          otp-version: ${{ matrix.otp }}
+          elixir-version: "1.18"
+          otp-version: "27.2"
 
       - name: Restore dependencies cache
         uses: actions/cache@v4
@@ -46,9 +37,9 @@ jobs:
           path: |
             deps
             _build
-          key: ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-${{ hashFiles('**/mix.lock') }}
+          key: ${{ runner.os }}-mix-27.2-1.18-${{ hashFiles('**/mix.lock') }}
           restore-keys: |
-            ${{ runner.os }}-mix-${{ matrix.otp }}-${{ matrix.elixir }}-
+            ${{ runner.os }}-mix-27.2-1.18-
 
       - name: Install dependencies
         run: |
@@ -77,7 +68,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: chaos-test-results-${{ matrix.elixir }}-${{ matrix.otp }}
+          name: chaos-test-results
           path: |
             _build/test/logs/
           retention-days: 7
