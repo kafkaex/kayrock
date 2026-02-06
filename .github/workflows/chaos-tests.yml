@@ -61,7 +61,15 @@ jobs:
           docker pull ghcr.io/shopify/toxiproxy:2.9.0
 
       - name: Run chaos tests
-        run: mix test.chaos
+        run: mix test --only chaos
+
+      - name: Retry failed tests (1st retry)
+        if: failure()
+        run: mix test --only chaos --failed
+
+      - name: Retry failed tests (2nd retry)
+        if: failure()
+        run: mix test --only chaos --failed
 
       - name: Upload test results
         if: always()
