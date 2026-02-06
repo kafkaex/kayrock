@@ -143,20 +143,64 @@ defmodule Kayrock.TestSupport do
   end
 
   @doc """
-  Calls the given function up to 3 times, sleeping 1 second between each call.
+  Calls the given function up to `max_retries` times, sleeping `delay_ms` between each call.
+
+  Retries on transient Kafka errors that are expected under chaos conditions:
+  - 15: COORDINATOR_NOT_AVAILABLE
+  - 16: NOT_COORDINATOR
+  - 25: UNKNOWN_MEMBER_ID
+  - 27: REBALANCE_IN_PROGRESS
+  - 79: COORDINATOR_LOAD_IN_PROGRESS
+
+  ## Options
+  - `:max_retries` - Maximum number of retries (default: 5 for chaos tests)
+  - `:delay_ms` - Delay between retries in milliseconds (default: 2000)
+  - `:accept_errors` - List of error codes to accept as success (default: [])
   """
-  def with_retry(fun), do: do_with_retry(3, fun, nil)
+  def with_retry(fun, opts \\ []) do
+    max_retries = Keyword.get(opts, :max_retries, 5)
+    delay_ms = Keyword.get(opts, :delay_ms, 2000)
+    accept_errors = Keyword.get(opts, :accept_errors, [])
+    do_with_retry(max_retries, fun, nil, delay_ms, accept_errors)
+  end
 
-  defp do_with_retry(0, _fun, result), do: result
+  # Transient errors that indicate "try again later"
+  @transient_errors [
+    15,  # COORDINATOR_NOT_AVAILABLE
+    16,  # NOT_COORDINATOR
+    25,  # UNKNOWN_MEMBER_ID (often transient during rebalance)
+    27,  # REBALANCE_IN_PROGRESS
+    79   # COORDINATOR_LOAD_IN_PROGRESS
+  ]
 
-  defp do_with_retry(n, fun, _result) do
+  defp do_with_retry(0, _fun, result, _delay_ms, _accept_errors), do: result
+
+  defp do_with_retry(n, fun, _result, delay_ms, accept_errors) do
     case fun.() do
       {:ok, response = %{error_code: 0}} ->
         {:ok, response}
 
-      result ->
-        :timer.sleep(1000)
-        do_with_retry(n - 1, fun, result)
+      {:ok, response = %{error_code: code}} when code in @transient_errors ->
+        # Transient error - retry after delay
+        :timer.sleep(delay_ms)
+        do_with_retry(n - 1, fun, {:ok, response}, delay_ms, accept_errors)
+
+      {:ok, response = %{error_code: code}} ->
+        # Check if this error is acceptable
+        if code in accept_errors do
+          {:ok, response}
+        else
+          :timer.sleep(delay_ms)
+          do_with_retry(n - 1, fun, {:ok, response}, delay_ms, accept_errors)
+        end
+
+      {:error, _} = error ->
+        :timer.sleep(delay_ms)
+        do_with_retry(n - 1, fun, error, delay_ms, accept_errors)
+
+      other ->
+        :timer.sleep(delay_ms)
+        do_with_retry(n - 1, fun, other, delay_ms, accept_errors)
     end
   end
 
