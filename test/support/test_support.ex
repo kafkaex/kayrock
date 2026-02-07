@@ -158,7 +158,7 @@ defmodule Kayrock.TestSupport do
   - `:accept_errors` - List of error codes to accept as success (default: [])
   """
   def with_retry(fun, opts \\ []) do
-    max_retries = Keyword.get(opts, :max_retries, 5)
+    max_retries = Keyword.get(opts, :max_retries, 10)
     delay_ms = Keyword.get(opts, :delay_ms, 2000)
     accept_errors = Keyword.get(opts, :accept_errors, [])
     do_with_retry(max_retries, fun, nil, delay_ms, accept_errors)

@@ -238,7 +238,7 @@ defmodule Kayrock.Chaos.MetadataTest do
       topic_meta = Enum.find(response.topics, fn t -> t.name == topic end)
 
       for partition <- topic_meta.partitions do
-        leader = partition.leader
+        leader = partition.leader_id
 
         assert is_integer(leader) and leader >= 0,
                "Partition #{partition.partition_index} should have valid leader (got: #{inspect(leader)})"
@@ -268,7 +268,7 @@ defmodule Kayrock.Chaos.MetadataTest do
       topic_meta2 = Enum.find(response2.topics, fn t -> t.name == topic end)
 
       for partition <- topic_meta2.partitions do
-        leader = partition.leader
+        leader = partition.leader_id
 
         assert is_integer(leader) and leader >= 0,
                "Partition #{partition.partition_index} should have valid leader after recovery (got: #{inspect(leader)})"

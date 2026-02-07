@@ -7,8 +7,9 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
   @extreme_timeout_latency_ms 8_000
 
   @connection_drop_duration_ms 15
-  @session_eviction_wait_ms 500
-  @post_eviction_recovery_ms 50
+  @eviction_session_timeout_ms 500
+  @session_eviction_wait_ms 1_500
+  @post_eviction_recovery_ms 100
 
   @flaky_network_cycles 2
   @flaky_network_down_ms 10
@@ -32,7 +33,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
       assert coordinator.error_code == 0
 
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -53,7 +54,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       Process.sleep(@connection_drop_duration_ms)
       remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
 
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -71,7 +72,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
 
       add_timeout(ctx.toxiproxy, ctx.proxy_name, @timeout_toxic_ms)
 
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       assert_client_fails(fn ->
         Kayrock.client_call(ctx.client, join_request, coordinator.node_id)
@@ -88,7 +89,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       topic = create_topic(ctx.client, 5)
       group_id = "chaos-sync-#{unique_string()}"
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -116,7 +117,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       topic = create_topic(ctx.client, 5)
       group_id = "chaos-sync-drop-#{unique_string()}"
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -183,7 +184,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       topic = create_topic(ctx.client, 5)
       group_id = "chaos-leave-#{unique_string()}"
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -208,7 +209,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       topic = create_topic(ctx.client, 5)
       group_id = "chaos-leave-drop-#{unique_string()}"
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -241,7 +242,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       group_id = "chaos-rebalance-#{unique_string()}"
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
 
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -277,7 +278,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       topic = create_topic(ctx.client, 5)
       group_id = "chaos-rebalance-bw-#{unique_string()}"
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -326,7 +327,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
 
       add_latency(ctx.toxiproxy, ctx.proxy_name, @extreme_timeout_latency_ms)
 
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       assert_client_fails(fn ->
         Kayrock.client_call(ctx.client, join_request, coordinator.node_id)
@@ -352,7 +353,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       topic = create_topic(ctx.client, 5)
       group_id = "chaos-sync-timeout-#{unique_string()}"
       coordinator = find_coordinator_with_retry(ctx.client, group_id, 2)
-      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+      join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 2)
 
       {:ok, join_response} =
         with_retry(fn ->
@@ -382,7 +383,8 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
 
     @tag chaos_type: :session_management
     test "returns eviction error after prolonged heartbeat failure", ctx do
-      {group_id, member_id, generation_id, node_id} = setup_active_member(ctx)
+      {group_id, member_id, generation_id, node_id} =
+        setup_active_member(ctx, session_timeout: @eviction_session_timeout_ms)
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@session_eviction_wait_ms)

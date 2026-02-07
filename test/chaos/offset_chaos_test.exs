@@ -618,6 +618,7 @@ defmodule Kayrock.Chaos.OffsetTest do
       {:ok, _} = Kayrock.client_call(ctx.client, commit_request, coordinator.node_id)
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
+      add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
 
       fetch_request =
         offset_fetch_request(

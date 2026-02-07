@@ -148,7 +148,7 @@ defmodule Kayrock.ChaosTestHelpers do
     end
   end
 
-  def setup_active_member(ctx) do
+  def setup_active_member(ctx, opts \\ []) do
     remove_all_toxics(ctx.toxiproxy, ctx.proxy_name)
 
     topic = create_topic(ctx.client, 5)
@@ -158,7 +158,9 @@ defmodule Kayrock.ChaosTestHelpers do
     assert coordinator.error_code == 0
     node_id = coordinator.node_id
 
-    join_request = join_group_request(%{group_id: group_id, topics: [topic]}, 5)
+    member_data = %{group_id: group_id, topics: [topic]}
+    member_data = if opts[:session_timeout], do: Map.put(member_data, :session_timeout, opts[:session_timeout]), else: member_data
+    join_request = join_group_request(member_data, 2)
 
     {:ok, join_response} =
       with_retry(fn ->

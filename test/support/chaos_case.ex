@@ -173,6 +173,9 @@ defmodule Kayrock.ChaosCase do
     :ok = wait_for_kafka(host, proxy_port)
     Logger.info("Kafka ready via proxy at #{host}:#{proxy_port}")
 
+    # Step 6: Warm up group coordinator to avoid COORDINATOR_LOAD_IN_PROGRESS (error 79)
+    :ok = warm_up_group_coordinator(host, proxy_port)
+
     {:ok,
      %{
        kafka_container: kafka_container,
@@ -221,6 +224,7 @@ defmodule Kayrock.ChaosCase do
     |> Container.with_environment("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1")
     |> Container.with_environment("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1")
     |> Container.with_environment("KAFKA_AUTO_CREATE_TOPICS_ENABLE", "true")
+    |> Container.with_environment("KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS", "0")
     |> Container.with_cmd([
       "sh",
       "-c",
@@ -229,27 +233,40 @@ defmodule Kayrock.ChaosCase do
   end
 
   defp upload_kafka_startup_script(container, kafka_ip, proxy_host, proxy_port) do
-    internal_listener = "BROKER://#{kafka_ip}:#{@kafka_broker_port}"
-    external_listener = "OUTSIDE://#{proxy_host}:#{proxy_port}"
-
-    script = """
-    export KAFKA_BROKER_ID=1
-    export KAFKA_ADVERTISED_LISTENERS=#{internal_listener},#{external_listener}
-    echo '' > /etc/confluent/docker/ensure
-    export KAFKA_ZOOKEEPER_CONNECT='localhost:#{@zookeeper_port}'
-    echo 'clientPort=#{@zookeeper_port}' > zookeeper.properties
-    echo 'dataDir=/var/lib/zookeeper/data' >> zookeeper.properties
-    echo 'dataLogDir=/var/lib/zookeeper/log' >> zookeeper.properties
-    zookeeper-server-start zookeeper.properties &
-    /etc/confluent/docker/run
-    echo finished
-    """
+    # Write server.properties directly to guarantee all settings are applied.
+    # This bypasses the Confluent Docker configure/launch scripts which may
+    # not correctly apply env var overrides for offsets.topic.num.partitions.
+    server_properties =
+      [
+        "broker.id=1",
+        "listeners=BROKER://0.0.0.0:#{@kafka_broker_port},OUTSIDE://0.0.0.0:#{@kafka_port}",
+        "advertised.listeners=BROKER://#{kafka_ip}:#{@kafka_broker_port},OUTSIDE://#{proxy_host}:#{proxy_port}",
+        "listener.security.protocol.map=BROKER:PLAINTEXT,OUTSIDE:PLAINTEXT",
+        "inter.broker.listener.name=BROKER",
+        "zookeeper.connect=localhost:#{@zookeeper_port}",
+        "offsets.topic.replication.factor=1",
+        "offsets.topic.num.partitions=1",
+        "transaction.state.log.replication.factor=1",
+        "transaction.state.log.min.isr=1",
+        "auto.create.topics.enable=true",
+        "group.initial.rebalance.delay.ms=0",
+        "group.min.session.timeout.ms=100",
+        "log.dirs=/var/lib/kafka/data"
+      ]
+      |> Enum.join("\n")
 
     script_content =
-      script
-      |> String.split("\n")
-      |> Enum.map(&String.trim/1)
-      |> Enum.reject(&(&1 == ""))
+      [
+        "echo 'clientPort=#{@zookeeper_port}' > /tmp/zk.properties",
+        "echo 'dataDir=/var/lib/zookeeper/data' >> /tmp/zk.properties",
+        "echo 'dataLogDir=/var/lib/zookeeper/log' >> /tmp/zk.properties",
+        "zookeeper-server-start /tmp/zk.properties &",
+        "sleep 5",
+        "cat > /tmp/kafka.properties << 'KEOF'",
+        server_properties,
+        "KEOF",
+        "kafka-server-start /tmp/kafka.properties"
+      ]
       |> Enum.join("\n")
 
     {:ok, conn} = get_docker_connection()
@@ -322,4 +339,139 @@ defmodule Kayrock.ChaosCase do
 
   defp check_error_code(0), do: :ok
   defp check_error_code(code), do: {:error, {:kafka_error, code}}
+
+  defp warm_up_group_coordinator(host, port) do
+    Logger.info("Warming up group coordinator...")
+
+    # Step 1: FindCoordinator — ensures __consumer_offsets topic is created (1 partition)
+    :ok = retry_find_coordinator(host, port, 60)
+    Logger.info("FindCoordinator succeeded, __consumer_offsets topic created")
+
+    # Step 2: JoinGroup — forces the single __consumer_offsets partition to load
+    :ok = retry_join_group(host, port, "warmup-probe", 90)
+    Logger.info("JoinGroup succeeded for warmup-probe, coordinator loaded")
+
+    # Step 3: Verify with a different group (same partition since num.partitions=1)
+    :ok = retry_join_group(host, port, "warmup-verify-#{:rand.uniform(100_000)}", 60)
+    Logger.info("Group coordinator is fully loaded and ready")
+  end
+
+  defp retry_find_coordinator(_host, _port, 0), do: :ok
+
+  defp retry_find_coordinator(host, port, remaining) do
+    case try_find_coordinator(host, port) do
+      :ok ->
+        :ok
+
+      {:error, reason} ->
+        Logger.debug("Coordinator not ready yet: #{inspect(reason)}")
+        Process.sleep(1_000)
+        retry_find_coordinator(host, port, remaining - 1)
+    end
+  end
+
+  defp try_find_coordinator(host, port) do
+    case :gen_tcp.connect(~c"#{host}", port, [:binary, active: false, packet: :raw], 5_000) do
+      {:ok, socket} ->
+        client_id = "warmup"
+        client_id_bytes = <<byte_size(client_id)::16>> <> client_id
+        group_key = "warmup-probe"
+        group_key_bytes = <<byte_size(group_key)::16>> <> group_key
+
+        request_body =
+          <<10::16-signed, 0::16-signed, 1::32-signed>> <>
+            client_id_bytes <> group_key_bytes
+
+        request = <<byte_size(request_body)::32-signed>> <> request_body
+
+        result =
+          with :ok <- :gen_tcp.send(socket, request),
+               {:ok, <<_size::32-signed, _cid::32-signed, error_code::16-signed, _rest::binary>>} <-
+                 :gen_tcp.recv(socket, 0, 10_000) do
+            check_error_code(error_code)
+          end
+
+        :gen_tcp.close(socket)
+        result
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  # JoinGroup warmup: sends a raw TCP JoinGroup V0 request to force the
+  # coordinator to load its state from __consumer_offsets. Retries on
+  # error 79 (COORDINATOR_LOAD_IN_PROGRESS) and 15 (COORDINATOR_NOT_AVAILABLE).
+  # Any other response means the coordinator is loaded and responsive.
+  defp retry_join_group(_host, _port, _group_id, 0) do
+    Logger.warning("JoinGroup warmup exhausted retries, proceeding anyway")
+    :ok
+  end
+
+  defp retry_join_group(host, port, group_id, remaining) do
+    case try_join_group(host, port, group_id) do
+      :ok ->
+        :ok
+
+      {:error, {:kafka_error, code}} when code in [15, 79] ->
+        Logger.debug("Coordinator not loaded for #{group_id} (error #{code}), retrying...")
+        Process.sleep(1_000)
+        retry_join_group(host, port, group_id, remaining - 1)
+
+      {:error, {:kafka_error, _code}} ->
+        :ok
+
+      {:error, _reason} ->
+        Process.sleep(1_000)
+        retry_join_group(host, port, group_id, remaining - 1)
+    end
+  end
+
+  defp try_join_group(host, port, group_id) do
+    case :gen_tcp.connect(~c"#{host}", port, [:binary, active: false, packet: :raw], 5_000) do
+      {:ok, socket} ->
+        request = build_join_group_warmup_request(group_id)
+
+        result =
+          with :ok <- :gen_tcp.send(socket, request),
+               {:ok,
+                <<_size::32-signed, _cid::32-signed, error_code::16-signed, _rest::binary>>} <-
+                 :gen_tcp.recv(socket, 0, 35_000) do
+            check_error_code(error_code)
+          end
+
+        :gen_tcp.close(socket)
+        result
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp build_join_group_warmup_request(group_id) do
+    client_id = "warmup"
+    protocol_type = "consumer"
+    protocol_name = "range"
+    topic_name = "warmup-topic"
+
+    # Consumer protocol subscription V0: version + topics array + null user_data
+    subscription =
+      <<0::16-signed, 1::32-signed>> <>
+        <<byte_size(topic_name)::16>> <> topic_name <>
+        <<-1::32-signed>>
+
+    # JoinGroup V0 request body
+    request_body =
+      <<11::16-signed, 0::16-signed, 1::32-signed>> <>
+        <<byte_size(client_id)::16>> <> client_id <>
+        <<byte_size(group_id)::16>> <> group_id <>
+        <<30_000::32-signed>> <>
+        <<0::16>> <>
+        <<byte_size(protocol_type)::16>> <> protocol_type <>
+        <<1::32-signed>> <>
+        <<byte_size(protocol_name)::16>> <> protocol_name <>
+        <<byte_size(subscription)::32-signed>> <> subscription
+
+    <<byte_size(request_body)::32-signed>> <> request_body
+  end
 end

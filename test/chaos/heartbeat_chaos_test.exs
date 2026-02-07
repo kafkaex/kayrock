@@ -9,7 +9,8 @@ defmodule Kayrock.Chaos.HeartbeatTest do
 
   @connection_drop_duration_ms 30
   @connection_recovery_wait_ms 50
-  @member_eviction_wait_ms 500
+  @eviction_session_timeout_ms 500
+  @member_eviction_wait_ms 1_500
 
   @heartbeat_interval_ms 100
   @combined_phase_wait_ms 50
@@ -90,7 +91,8 @@ defmodule Kayrock.Chaos.HeartbeatTest do
     end
 
     test "returns eviction error after #{@member_eviction_wait_ms}ms prolonged failure", ctx do
-      {group_id, member_id, generation_id, node_id} = setup_active_member(ctx)
+      {group_id, member_id, generation_id, node_id} =
+        setup_active_member(ctx, session_timeout: @eviction_session_timeout_ms)
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@member_eviction_wait_ms)
