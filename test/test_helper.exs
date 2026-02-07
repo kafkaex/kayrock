@@ -11,7 +11,8 @@ needs_testcontainers? =
         String.contains?(arg, "integration") or
         String.contains?(arg, "chaos")
     end) or
-    Enum.chunk_every(System.argv(), 2, 1, :discard)
+    System.argv()
+    |> Enum.chunk_every(2, 1, :discard)
     |> Enum.any?(fn
       ["--only", tag] -> tag in ["integration", "chaos"]
       ["--include", tag] -> tag in ["integration", "chaos"]

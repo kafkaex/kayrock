@@ -43,7 +43,7 @@ defmodule Kayrock.ChaosCase do
 
   @kafka_image "confluentinc/cp-kafka:7.4.3"
   @kafka_port 9092
-  @kafka_broker_port 29092
+  @kafka_broker_port 29_092
   @zookeeper_port 2181
   @start_script_path "tc-start.sh"
 
@@ -130,7 +130,8 @@ defmodule Kayrock.ChaosCase do
 
     # Step 1: Start Toxiproxy
     toxiproxy_config =
-      Container.new(ToxiproxyContainer.default_image())
+      ToxiproxyContainer.default_image()
+      |> Container.new()
       |> Container.with_exposed_ports([
         ToxiproxyContainer.control_port() | Enum.to_list(8666..8696)
       ])
@@ -201,7 +202,8 @@ defmodule Kayrock.ChaosCase do
 
   # Build Kafka container using startup script approach
   defp build_kafka_container(network_name) do
-    Container.new(@kafka_image)
+    @kafka_image
+    |> Container.new()
     |> Container.with_exposed_port(@kafka_port)
     |> Container.with_network(network_name)
     |> Container.with_hostname("kafka")
@@ -307,11 +309,7 @@ defmodule Kayrock.ChaosCase do
                 <<_size::32-signed, _correlation_id::32-signed, error_code::16-signed,
                   _rest::binary>>} <-
                  :gen_tcp.recv(socket, 0, 10_000) do
-            if error_code == 0 do
-              :ok
-            else
-              {:error, {:kafka_error, error_code}}
-            end
+            check_error_code(error_code)
           end
 
         :gen_tcp.close(socket)
@@ -321,4 +319,7 @@ defmodule Kayrock.ChaosCase do
         {:error, reason}
     end
   end
+
+  defp check_error_code(0), do: :ok
+  defp check_error_code(code), do: {:error, {:kafka_error, code}}
 end
