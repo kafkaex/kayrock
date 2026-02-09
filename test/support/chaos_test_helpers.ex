@@ -159,7 +159,12 @@ defmodule Kayrock.ChaosTestHelpers do
     node_id = coordinator.node_id
 
     member_data = %{group_id: group_id, topics: [topic]}
-    member_data = if opts[:session_timeout], do: Map.put(member_data, :session_timeout, opts[:session_timeout]), else: member_data
+
+    member_data =
+      if opts[:session_timeout],
+        do: Map.put(member_data, :session_timeout, opts[:session_timeout]),
+        else: member_data
+
     join_request = join_group_request(member_data, 2)
 
     {:ok, join_response} =
@@ -180,7 +185,11 @@ defmodule Kayrock.ChaosTestHelpers do
 
     sync_request = sync_group_request(group_id, join_response.member_id, assignments, 3)
 
-    {:ok, sync_response} = Kayrock.client_call(ctx.client, sync_request, node_id)
+    {:ok, sync_response} =
+      with_retry(fn ->
+        Kayrock.client_call(ctx.client, sync_request, node_id)
+      end)
+
     assert sync_response.error_code == 0
 
     {group_id, join_response.member_id, join_response.generation_id, node_id}

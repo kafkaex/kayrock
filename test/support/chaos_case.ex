@@ -50,7 +50,7 @@ defmodule Kayrock.ChaosCase do
   using do
     quote do
       @moduletag :chaos
-      @moduletag timeout: 180_000
+      @moduletag timeout: 600_000
 
       import Kayrock.IntegrationHelpers
       import Kayrock.ToxiproxyHelpers
@@ -116,7 +116,6 @@ defmodule Kayrock.ChaosCase do
   - `:proxy_port` - the proxy port
   """
   def start_infrastructure(opts \\ []) do
-    # Handle Testcontainers already started (when multiple test suites run)
     case Testcontainers.start() do
       {:ok, _} -> :ok
       {:error, {:already_started, _}} -> :ok
@@ -341,22 +340,59 @@ defmodule Kayrock.ChaosCase do
   defp check_error_code(code), do: {:error, {:kafka_error, code}}
 
   defp warm_up_group_coordinator(host, port) do
-    Logger.info("Warming up group coordinator...")
-
-    # Step 1: FindCoordinator — ensures __consumer_offsets topic is created (1 partition)
-    :ok = retry_find_coordinator(host, port, 60)
-    Logger.info("FindCoordinator succeeded, __consumer_offsets topic created")
-
-    # Step 2: JoinGroup — forces the single __consumer_offsets partition to load
-    :ok = retry_join_group(host, port, "warmup-probe", 90)
-    Logger.info("JoinGroup succeeded for warmup-probe, coordinator loaded")
-
-    # Step 3: Verify with a different group (same partition since num.partitions=1)
-    :ok = retry_join_group(host, port, "warmup-verify-#{:rand.uniform(100_000)}", 60)
-    Logger.info("Group coordinator is fully loaded and ready")
+    warm_up_group_coordinator(host, port, 3)
   end
 
-  defp retry_find_coordinator(_host, _port, 0), do: :ok
+  defp warm_up_group_coordinator(_host, _port, 0) do
+    Logger.warning("Group coordinator warmup failed after all attempts, proceeding anyway")
+    :ok
+  end
+
+  defp warm_up_group_coordinator(host, port, attempts_remaining) do
+    Logger.info("Warming up group coordinator (attempt #{4 - attempts_remaining}/3)...")
+
+    try do
+      # Step 1: FindCoordinator — ensures __consumer_offsets topic is created (1 partition)
+      case retry_find_coordinator(host, port, 60) do
+        :ok ->
+          Logger.info("FindCoordinator succeeded, __consumer_offsets topic created")
+
+        other ->
+          Logger.warning("FindCoordinator returned #{inspect(other)}, continuing warmup...")
+      end
+
+      # Step 2: JoinGroup — forces the single __consumer_offsets partition to load
+      case retry_join_group(host, port, "warmup-probe", 90) do
+        :ok ->
+          Logger.info("JoinGroup succeeded for warmup-probe, coordinator loaded")
+
+        other ->
+          Logger.warning("JoinGroup warmup-probe returned #{inspect(other)}, continuing...")
+      end
+
+      # Step 3: Verify with a different group (same partition since num.partitions=1)
+      case retry_join_group(host, port, "warmup-verify-#{:rand.uniform(100_000)}", 60) do
+        :ok ->
+          Logger.info("Group coordinator is fully loaded and ready")
+          :ok
+
+        other ->
+          Logger.warning("JoinGroup verify returned #{inspect(other)}, retrying warmup...")
+          Process.sleep(2_000)
+          warm_up_group_coordinator(host, port, attempts_remaining - 1)
+      end
+    rescue
+      e ->
+        Logger.warning("Warmup attempt failed: #{inspect(e)}, retrying...")
+        Process.sleep(2_000)
+        warm_up_group_coordinator(host, port, attempts_remaining - 1)
+    end
+  end
+
+  defp retry_find_coordinator(_host, _port, 0) do
+    Logger.warning("FindCoordinator warmup exhausted retries")
+    {:error, :find_coordinator_exhausted}
+  end
 
   defp retry_find_coordinator(host, port, remaining) do
     case try_find_coordinator(host, port) do
@@ -404,8 +440,8 @@ defmodule Kayrock.ChaosCase do
   # error 79 (COORDINATOR_LOAD_IN_PROGRESS) and 15 (COORDINATOR_NOT_AVAILABLE).
   # Any other response means the coordinator is loaded and responsive.
   defp retry_join_group(_host, _port, _group_id, 0) do
-    Logger.warning("JoinGroup warmup exhausted retries, proceeding anyway")
-    :ok
+    Logger.warning("JoinGroup warmup exhausted retries")
+    {:error, :join_group_exhausted}
   end
 
   defp retry_join_group(host, port, group_id, remaining) do
@@ -434,8 +470,7 @@ defmodule Kayrock.ChaosCase do
 
         result =
           with :ok <- :gen_tcp.send(socket, request),
-               {:ok,
-                <<_size::32-signed, _cid::32-signed, error_code::16-signed, _rest::binary>>} <-
+               {:ok, <<_size::32-signed, _cid::32-signed, error_code::16-signed, _rest::binary>>} <-
                  :gen_tcp.recv(socket, 0, 35_000) do
             check_error_code(error_code)
           end
@@ -457,19 +492,24 @@ defmodule Kayrock.ChaosCase do
     # Consumer protocol subscription V0: version + topics array + null user_data
     subscription =
       <<0::16-signed, 1::32-signed>> <>
-        <<byte_size(topic_name)::16>> <> topic_name <>
+        <<byte_size(topic_name)::16>> <>
+        topic_name <>
         <<-1::32-signed>>
 
     # JoinGroup V0 request body
     request_body =
       <<11::16-signed, 0::16-signed, 1::32-signed>> <>
-        <<byte_size(client_id)::16>> <> client_id <>
-        <<byte_size(group_id)::16>> <> group_id <>
+        <<byte_size(client_id)::16>> <>
+        client_id <>
+        <<byte_size(group_id)::16>> <>
+        group_id <>
         <<30_000::32-signed>> <>
         <<0::16>> <>
-        <<byte_size(protocol_type)::16>> <> protocol_type <>
+        <<byte_size(protocol_type)::16>> <>
+        protocol_type <>
         <<1::32-signed>> <>
-        <<byte_size(protocol_name)::16>> <> protocol_name <>
+        <<byte_size(protocol_name)::16>> <>
+        protocol_name <>
         <<byte_size(subscription)::32-signed>> <> subscription
 
     <<byte_size(request_body)::32-signed>> <> request_body

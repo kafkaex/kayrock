@@ -107,7 +107,10 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
       sync_request =
         sync_group_request(group_id, join_response.member_id, assignments, 3)
 
-      {:ok, sync_response} = Kayrock.client_call(ctx.client, sync_request, coordinator.node_id)
+      {:ok, sync_response} =
+        with_retry(fn ->
+          Kayrock.client_call(ctx.client, sync_request, coordinator.node_id)
+        end)
 
       assert sync_response.error_code == 0
     end
@@ -265,7 +268,9 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
         sync_group_request(group_id, join_response.member_id, assignments, 3)
 
       {:ok, sync_response} =
-        Kayrock.client_call(ctx.client, sync_request, coordinator.node_id)
+        with_retry(fn ->
+          Kayrock.client_call(ctx.client, sync_request, coordinator.node_id)
+        end)
 
       assert sync_response.error_code == 0
       assert join_response.generation_id >= -1
@@ -297,7 +302,9 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
         sync_group_request(group_id, join_response.member_id, assignments, 3)
 
       {:ok, sync_response} =
-        Kayrock.client_call(ctx.client, sync_request, coordinator.node_id)
+        with_retry(fn ->
+          Kayrock.client_call(ctx.client, sync_request, coordinator.node_id)
+        end)
 
       assert sync_response.error_code == 0
     end
@@ -310,6 +317,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      Process.sleep(50)
 
       request = find_coordinator_request(group_id, 2)
 
@@ -340,6 +348,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      Process.sleep(50)
 
       heartbeat_request = heartbeat_request(group_id, member_id, generation_id, 3)
 

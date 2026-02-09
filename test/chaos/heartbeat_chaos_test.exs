@@ -120,6 +120,7 @@ defmodule Kayrock.Chaos.HeartbeatTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      Process.sleep(50)
 
       heartbeat_request = heartbeat_request(group_id, member_id, generation_id, 3)
 

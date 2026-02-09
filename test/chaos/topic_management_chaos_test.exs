@@ -267,6 +267,7 @@ defmodule Kayrock.Chaos.TopicManagementTest do
     test "fails when connection is permanently down during create", ctx do
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      Process.sleep(50)
 
       topic_name = "chaos-create-down-#{unique_string()}"
       request = create_topic_request(topic_name, 5)

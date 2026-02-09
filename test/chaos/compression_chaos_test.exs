@@ -321,6 +321,7 @@ defmodule Kayrock.Chaos.CompressionTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      Process.sleep(50)
 
       result = try_produce_compressed(ctx.client, topic, messages, 5, :snappy)
       assert_produce_failed(result, "snappy produce should fail when connection is down")
