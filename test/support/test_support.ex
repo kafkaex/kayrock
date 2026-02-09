@@ -153,13 +153,13 @@ defmodule Kayrock.TestSupport do
   - 79: COORDINATOR_LOAD_IN_PROGRESS
 
   ## Options
-  - `:max_retries` - Maximum number of retries (default: 5 for chaos tests)
-  - `:delay_ms` - Delay between retries in milliseconds (default: 2000)
+  - `:max_retries` - Maximum number of retries (default: 10)
+  - `:delay_ms` - Delay between retries in milliseconds (default: 500)
   - `:accept_errors` - List of error codes to accept as success (default: [])
   """
   def with_retry(fun, opts \\ []) do
-    max_retries = Keyword.get(opts, :max_retries, 30)
-    delay_ms = Keyword.get(opts, :delay_ms, 2000)
+    max_retries = Keyword.get(opts, :max_retries, 10)
+    delay_ms = Keyword.get(opts, :delay_ms, 500)
     accept_errors = Keyword.get(opts, :accept_errors, [])
     do_with_retry(max_retries, fun, nil, delay_ms, accept_errors)
   end

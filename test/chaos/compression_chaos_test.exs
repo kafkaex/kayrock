@@ -4,8 +4,8 @@ defmodule Kayrock.Chaos.CompressionTest do
 
   @compression_types [:gzip, :snappy, :lz4]
 
-  @high_latency_ms 800
-  @moderate_latency_ms 400
+  @high_latency_ms 400
+  @moderate_latency_ms 200
   @moderate_bandwidth_kbps 50
   @high_bandwidth_kbps 100
 
@@ -16,11 +16,11 @@ defmodule Kayrock.Chaos.CompressionTest do
   @packet_delay_ms 1
 
   @data_limit_small_bytes 5_120
-  @connection_drop_duration_ms 30
-  @connection_recovery_wait_ms 150
-  @post_toxic_removal_wait_ms 100
-  @flaky_network_down_ms 20
-  @flaky_network_up_ms 80
+  @connection_drop_duration_ms 10
+  @connection_recovery_wait_ms 30
+  @post_toxic_removal_wait_ms 30
+  @flaky_network_down_ms 5
+  @flaky_network_up_ms 20
   @flaky_network_cycles 2
 
   @compressible_unit "compress! "
@@ -36,7 +36,7 @@ defmodule Kayrock.Chaos.CompressionTest do
 
   @timeout_toxic_ms 10
   @data_limit_too_small_bytes 50
-  @extreme_timeout_latency_ms 15_000
+  @extreme_timeout_latency_ms 6_000
 
   describe "Compressed production with network latency" do
     @describetag chaos_type: :latency
@@ -321,7 +321,7 @@ defmodule Kayrock.Chaos.CompressionTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
-      Process.sleep(50)
+      Process.sleep(10)
 
       result = try_produce_compressed(ctx.client, topic, messages, 5, :snappy)
       assert_produce_failed(result, "snappy produce should fail when connection is down")

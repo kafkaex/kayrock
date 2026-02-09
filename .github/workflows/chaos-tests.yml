@@ -14,7 +14,7 @@ jobs:
   chaos-tests:
     name: Chaos Tests
     runs-on: ubuntu-22.04
-    timeout-minutes: 45
+    timeout-minutes: 25
 
     env:
       MIX_ENV: test
@@ -57,7 +57,7 @@ jobs:
 
       - name: Pull Docker images
         run: |
-          docker pull confluentinc/cp-kafka:latest
+          docker pull confluentinc/cp-kafka:7.4.3
           docker pull ghcr.io/shopify/toxiproxy:2.9.0
 
       - name: Run chaos tests

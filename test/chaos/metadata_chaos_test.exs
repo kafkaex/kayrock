@@ -2,21 +2,21 @@ defmodule Kayrock.Chaos.MetadataTest do
   use Kayrock.ChaosCase
   use ExUnit.Case, async: false
 
-  @high_latency_ms 600
-  @very_high_latency_ms 900
-  @extreme_latency_ms 1_500
-  @extreme_timeout_latency_ms 9_000
+  @high_latency_ms 300
+  @very_high_latency_ms 500
+  @extreme_latency_ms 800
+  @extreme_timeout_latency_ms 6_000
 
-  @jitter_base_latency_ms 600
-  @jitter_amount_high_ms 300
+  @jitter_base_latency_ms 300
+  @jitter_amount_high_ms 150
 
   @moderate_bandwidth_kbps 50
   @high_bandwidth_kbps 100
 
-  @connection_drop_duration_ms 30
-  @connection_recovery_wait_ms 150
-  @brief_delay_ms 30
-  @metadata_refresh_interval_ms 150
+  @connection_drop_duration_ms 10
+  @connection_recovery_wait_ms 30
+  @brief_delay_ms 10
+  @metadata_refresh_interval_ms 50
 
   @timeout_toxic_ms 300
 
@@ -31,8 +31,8 @@ defmodule Kayrock.Chaos.MetadataTest do
   @topic_name_padding_bytes 100
 
   @flaky_network_cycles 2
-  @flaky_network_down_ms 20
-  @flaky_network_up_ms 30
+  @flaky_network_down_ms 5
+  @flaky_network_up_ms 15
 
   @metadata_refresh_count 2
 

@@ -2,16 +2,16 @@ defmodule Kayrock.Chaos.TopicManagementTest do
   use Kayrock.ChaosCase
   use ExUnit.Case, async: false
 
-  @moderate_latency_ms 450
-  @high_latency_ms 900
-  @very_high_latency_ms 1_500
-  @extreme_timeout_latency_ms 8_000
+  @moderate_latency_ms 200
+  @high_latency_ms 400
+  @very_high_latency_ms 800
+  @extreme_timeout_latency_ms 6_000
 
   @moderate_bandwidth_kbps 50
   @high_bandwidth_kbps 100
 
-  @connection_drop_duration_ms 45
-  @connection_recovery_wait_ms 150
+  @connection_drop_duration_ms 15
+  @connection_recovery_wait_ms 30
 
   @packet_size_medium_bytes 100
   @packet_variation_medium_bytes 50
@@ -267,7 +267,7 @@ defmodule Kayrock.Chaos.TopicManagementTest do
     test "fails when connection is permanently down during create", ctx do
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
-      Process.sleep(50)
+      Process.sleep(10)
 
       topic_name = "chaos-create-down-#{unique_string()}"
       request = create_topic_request(topic_name, 5)

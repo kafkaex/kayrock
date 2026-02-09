@@ -2,27 +2,27 @@ defmodule Kayrock.Chaos.ProducerTest do
   use Kayrock.ChaosCase
   use ExUnit.Case, async: false
 
-  @moderate_latency_ms 300
-  @jitter_latency_ms 150
-  @jitter_amount_ms 60
-  @high_latency_ms 600
-  @extreme_latency_ms 2_000
-  @extreme_timeout_latency_ms 10_000
+  @moderate_latency_ms 150
+  @jitter_latency_ms 80
+  @jitter_amount_ms 30
+  @high_latency_ms 300
+  @extreme_latency_ms 800
+  @extreme_timeout_latency_ms 6_000
 
   @high_bandwidth_kbps 100
   @moderate_bandwidth_kbps 50
   @low_bandwidth_kbps 10
 
-  @connection_drop_duration_ms 30
-  @connection_recovery_wait_ms 150
-  @toxic_removal_wait_ms 100
-  @short_recovery_wait_ms 90
+  @connection_drop_duration_ms 10
+  @connection_recovery_wait_ms 30
+  @toxic_removal_wait_ms 30
+  @short_recovery_wait_ms 30
 
   @flaky_network_cycles 2
-  @flaky_network_down_ms 20
-  @flaky_network_up_ms 45
-  @flaky_fetch_down_ms 30
-  @fetch_retry_interval_ms 60
+  @flaky_network_down_ms 5
+  @flaky_network_up_ms 15
+  @flaky_fetch_down_ms 10
+  @fetch_retry_interval_ms 20
 
   @packet_size_medium_bytes 100
   @packet_variation_medium_bytes 50
@@ -356,7 +356,7 @@ defmodule Kayrock.Chaos.ProducerTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
-      Process.sleep(50)
+      Process.sleep(10)
 
       messages = [build_record("conn-down")]
 

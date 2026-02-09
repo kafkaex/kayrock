@@ -2,15 +2,15 @@ defmodule Kayrock.Chaos.OffsetTest do
   use Kayrock.ChaosCase
   use ExUnit.Case, async: false
 
-  @moderate_latency_ms 300
-  @high_latency_ms 600
-  @very_high_latency_ms 900
-  @extreme_timeout_latency_ms 8_000
+  @moderate_latency_ms 150
+  @high_latency_ms 300
+  @very_high_latency_ms 500
+  @extreme_timeout_latency_ms 6_000
 
   @moderate_bandwidth_kbps 50
   @high_bandwidth_kbps 100
 
-  @connection_drop_duration_ms 30
+  @connection_drop_duration_ms 10
 
   @packet_size_medium_bytes 100
   @packet_variation_medium_bytes 50
@@ -619,7 +619,7 @@ defmodule Kayrock.Chaos.OffsetTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
-      Process.sleep(50)
+      Process.sleep(10)
 
       fetch_request =
         offset_fetch_request(

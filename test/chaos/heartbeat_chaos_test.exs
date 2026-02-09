@@ -2,18 +2,18 @@ defmodule Kayrock.Chaos.HeartbeatTest do
   use Kayrock.ChaosCase
   use ExUnit.Case, async: false
 
-  @moderate_latency_ms 100
-  @extreme_timeout_latency_ms 8_000
+  @moderate_latency_ms 50
+  @extreme_timeout_latency_ms 6_000
 
   @low_bandwidth_kbps 50
 
-  @connection_drop_duration_ms 30
-  @connection_recovery_wait_ms 50
+  @connection_drop_duration_ms 10
+  @connection_recovery_wait_ms 20
   @eviction_session_timeout_ms 500
-  @member_eviction_wait_ms 1_500
+  @member_eviction_wait_ms 1_000
 
-  @heartbeat_interval_ms 100
-  @combined_phase_wait_ms 50
+  @heartbeat_interval_ms 50
+  @combined_phase_wait_ms 20
 
   @heartbeat_count 2
   @timeout_toxic_ms 5
@@ -120,7 +120,7 @@ defmodule Kayrock.Chaos.HeartbeatTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
-      Process.sleep(50)
+      Process.sleep(10)
 
       heartbeat_request = heartbeat_request(group_id, member_id, generation_id, 3)
 

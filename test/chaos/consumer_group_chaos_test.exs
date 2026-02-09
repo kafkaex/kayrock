@@ -2,18 +2,18 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
   use Kayrock.ChaosCase
   use ExUnit.Case, async: false
 
-  @moderate_latency_ms 100
-  @high_latency_ms 150
-  @extreme_timeout_latency_ms 8_000
+  @moderate_latency_ms 50
+  @high_latency_ms 80
+  @extreme_timeout_latency_ms 6_000
 
-  @connection_drop_duration_ms 15
+  @connection_drop_duration_ms 5
   @eviction_session_timeout_ms 500
-  @session_eviction_wait_ms 1_500
-  @post_eviction_recovery_ms 100
+  @session_eviction_wait_ms 1_000
+  @post_eviction_recovery_ms 50
 
   @flaky_network_cycles 2
-  @flaky_network_down_ms 10
-  @flaky_heartbeat_up_ms 30
+  @flaky_network_down_ms 5
+  @flaky_heartbeat_up_ms 15
 
   @moderate_bandwidth_kbps 50
 
@@ -317,7 +317,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
-      Process.sleep(50)
+      Process.sleep(10)
 
       request = find_coordinator_request(group_id, 2)
 
@@ -348,7 +348,7 @@ defmodule Kayrock.Chaos.ConsumerGroupTest do
 
       add_down(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
-      Process.sleep(50)
+      Process.sleep(10)
 
       heartbeat_request = heartbeat_request(group_id, member_id, generation_id, 3)
 

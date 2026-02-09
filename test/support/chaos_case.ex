@@ -62,13 +62,9 @@ defmodule Kayrock.ChaosCase do
       alias Testcontainers.ToxiproxyContainer
 
       setup_all do
-        # Start infrastructure for all tests in this module
+        # Start or reuse shared infrastructure for all chaos test modules
         {:ok, ctx} = Kayrock.ChaosCase.start_infrastructure()
-
-        on_exit(fn ->
-          Kayrock.ChaosCase.stop_infrastructure(ctx)
-        end)
-
+        # Infrastructure is shared across modules and cleaned up by Testcontainers on VM exit
         {:ok, ctx}
       end
 
@@ -116,6 +112,20 @@ defmodule Kayrock.ChaosCase do
   - `:proxy_port` - the proxy port
   """
   def start_infrastructure(opts \\ []) do
+    # Reuse existing infrastructure if already started (shared across modules)
+    case Application.get_env(:kayrock, :chaos_infrastructure) do
+      %{} = cached_ctx ->
+        Logger.info("Reusing existing chaos infrastructure")
+        return_infrastructure(cached_ctx)
+
+      nil ->
+        do_start_infrastructure(opts)
+    end
+  end
+
+  defp return_infrastructure(ctx), do: {:ok, ctx}
+
+  defp do_start_infrastructure(opts) do
     case Testcontainers.start() do
       {:ok, _} -> :ok
       {:error, {:already_started, _}} -> :ok
@@ -175,15 +185,17 @@ defmodule Kayrock.ChaosCase do
     # Step 6: Warm up group coordinator to avoid COORDINATOR_LOAD_IN_PROGRESS (error 79)
     :ok = warm_up_group_coordinator(host, proxy_port)
 
-    {:ok,
-     %{
-       kafka_container: kafka_container,
-       toxiproxy: toxiproxy_container,
-       network_name: network_name,
-       proxy_name: proxy_name,
-       broker_via_proxy: {host, proxy_port},
-       proxy_port: proxy_port
-     }}
+    ctx = %{
+      kafka_container: kafka_container,
+      toxiproxy: toxiproxy_container,
+      network_name: network_name,
+      proxy_name: proxy_name,
+      broker_via_proxy: {host, proxy_port},
+      proxy_port: proxy_port
+    }
+
+    Application.put_env(:kayrock, :chaos_infrastructure, ctx)
+    {:ok, ctx}
   end
 
   @doc """
@@ -287,7 +299,7 @@ defmodule Kayrock.ChaosCase do
         Logger.info("Kafka is ready and responding to API requests!")
         # Wait for internal topics to initialize
         Logger.info("Waiting for Kafka internal topics to initialize...")
-        Process.sleep(5000)
+        Process.sleep(2000)
 
         case try_kafka_api_versions(host, port) do
           :ok ->
@@ -353,7 +365,7 @@ defmodule Kayrock.ChaosCase do
 
     try do
       # Step 1: FindCoordinator — ensures __consumer_offsets topic is created (1 partition)
-      case retry_find_coordinator(host, port, 60) do
+      case retry_find_coordinator(host, port, 30) do
         :ok ->
           Logger.info("FindCoordinator succeeded, __consumer_offsets topic created")
 
@@ -362,7 +374,7 @@ defmodule Kayrock.ChaosCase do
       end
 
       # Step 2: JoinGroup — forces the single __consumer_offsets partition to load
-      case retry_join_group(host, port, "warmup-probe", 90) do
+      case retry_join_group(host, port, "warmup-probe", 30) do
         :ok ->
           Logger.info("JoinGroup succeeded for warmup-probe, coordinator loaded")
 
@@ -371,14 +383,14 @@ defmodule Kayrock.ChaosCase do
       end
 
       # Step 3: Verify with a different group (same partition since num.partitions=1)
-      case retry_join_group(host, port, "warmup-verify-#{:rand.uniform(100_000)}", 60) do
+      case retry_join_group(host, port, "warmup-verify-#{:rand.uniform(100_000)}", 30) do
         :ok ->
           Logger.info("Group coordinator is fully loaded and ready")
           :ok
 
         other ->
           Logger.warning("JoinGroup verify returned #{inspect(other)}, retrying warmup...")
-          Process.sleep(2_000)
+          Process.sleep(1_000)
           warm_up_group_coordinator(host, port, attempts_remaining - 1)
       end
     rescue
