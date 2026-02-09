@@ -112,9 +112,11 @@ defmodule Kayrock.Deserialize do
     {Varint.Zigzag.decode(encoded), rest}
   end
 
+  # Kafka protocol uses -1 to represent NULL for nullable arrays
+  def deserialize_array(_type, <<-1::32-signed, rest::bits>>), do: {nil, rest}
   def deserialize_array(_type, <<0::32-signed, rest::bits>>), do: {[], rest}
 
-  def deserialize_array(type, <<len::32-signed, rest::bits>>) do
+  def deserialize_array(type, <<len::32-signed, rest::bits>>) when len > 0 do
     Enum.reduce(1..len, {[], rest}, fn _ix, {acc, d} ->
       {val, r} = deserialize(type, d)
       {[val | acc], r}
@@ -179,6 +181,17 @@ defmodule Kayrock.Deserialize do
   end
 
   def decode_unsigned_varint(data), do: decode_unsigned_varint_loop(data, 0, 0)
+
+  # LEB128 spec: maximum 10 bytes for 64-bit integers (10 bytes × 7 bits = 70 bits)
+  # After 9 iterations, shift = 63, so 10th iteration has shift = 63 (allowed)
+  # 11th iteration would have shift = 70 (rejected)
+  defp decode_unsigned_varint_loop(<<_byte, _rest::binary>>, _acc, shift) when shift > 63 do
+    raise ArgumentError, """
+    Invalid varint: exceeded maximum 10-byte limit per LEB128 specification.
+    This indicates malformed or malicious data.
+    Shift value: #{shift} (max allowed: 63 for 10th byte)
+    """
+  end
 
   defp decode_unsigned_varint_loop(<<byte, rest::binary>>, acc, shift) do
     value = Bitwise.bor(acc, Bitwise.bsl(Bitwise.band(byte, 0x7F), shift))

@@ -1,0 +1,488 @@
+defmodule Kayrock.DeserializeTest do
+  @moduledoc """
+  Tests for Kayrock.Deserialize module - primitive type deserialization.
+  """
+  use ExUnit.Case, async: true
+
+  alias Kayrock.Deserialize
+
+  describe "boolean deserialization" do
+    test "deserializes true (1)" do
+      assert {1, <<>>} = Deserialize.deserialize(:boolean, <<1>>)
+    end
+
+    test "deserializes false (0)" do
+      assert {0, <<>>} = Deserialize.deserialize(:boolean, <<0>>)
+    end
+
+    test "preserves remaining bytes" do
+      assert {1, <<2, 3>>} = Deserialize.deserialize(:boolean, <<1, 2, 3>>)
+    end
+  end
+
+  describe "int8 deserialization" do
+    test "deserializes positive int8" do
+      assert {127, <<>>} = Deserialize.deserialize(:int8, <<127>>)
+    end
+
+    test "deserializes negative int8" do
+      assert {-1, <<>>} = Deserialize.deserialize(:int8, <<255>>)
+      assert {-128, <<>>} = Deserialize.deserialize(:int8, <<128>>)
+    end
+
+    test "deserializes zero" do
+      assert {0, <<>>} = Deserialize.deserialize(:int8, <<0>>)
+    end
+  end
+
+  describe "int16 deserialization" do
+    test "deserializes positive int16" do
+      assert {256, <<>>} = Deserialize.deserialize(:int16, <<1, 0>>)
+      assert {32_767, <<>>} = Deserialize.deserialize(:int16, <<127, 255>>)
+    end
+
+    test "deserializes negative int16" do
+      assert {-1, <<>>} = Deserialize.deserialize(:int16, <<255, 255>>)
+    end
+
+    test "preserves remaining bytes" do
+      assert {1, <<2, 3>>} = Deserialize.deserialize(:int16, <<0, 1, 2, 3>>)
+    end
+  end
+
+  describe "int32 deserialization" do
+    test "deserializes positive int32" do
+      assert {1, <<>>} = Deserialize.deserialize(:int32, <<0, 0, 0, 1>>)
+      assert {256, <<>>} = Deserialize.deserialize(:int32, <<0, 0, 1, 0>>)
+    end
+
+    test "deserializes negative int32" do
+      assert {-1, <<>>} = Deserialize.deserialize(:int32, <<255, 255, 255, 255>>)
+    end
+  end
+
+  describe "int64 deserialization" do
+    test "deserializes positive int64" do
+      assert {1, <<>>} = Deserialize.deserialize(:int64, <<0, 0, 0, 0, 0, 0, 0, 1>>)
+    end
+
+    test "deserializes negative int64" do
+      assert {-1, <<>>} =
+               Deserialize.deserialize(:int64, <<255, 255, 255, 255, 255, 255, 255, 255>>)
+    end
+
+    test "deserializes large positive int64" do
+      assert {1_000_000_000_000, <<>>} =
+               Deserialize.deserialize(:int64, <<0, 0, 0, 232, 212, 165, 16, 0>>)
+    end
+  end
+
+  describe "string deserialization" do
+    test "deserializes empty string" do
+      assert {"", <<>>} = Deserialize.deserialize(:string, <<0, 0>>)
+    end
+
+    test "deserializes short string" do
+      assert {"hello", <<>>} = Deserialize.deserialize(:string, <<0, 5, "hello">>)
+    end
+
+    test "preserves remaining bytes" do
+      assert {"hi", <<1, 2>>} = Deserialize.deserialize(:string, <<0, 2, "hi", 1, 2>>)
+    end
+  end
+
+  describe "nullable_string deserialization" do
+    test "deserializes null string (-1 length)" do
+      assert {nil, <<>>} = Deserialize.deserialize(:nullable_string, <<255, 255>>)
+    end
+
+    test "deserializes non-null string" do
+      assert {"test", <<>>} = Deserialize.deserialize(:nullable_string, <<0, 4, "test">>)
+    end
+
+    test "deserializes empty string" do
+      assert {"", <<>>} = Deserialize.deserialize(:nullable_string, <<0, 0>>)
+    end
+  end
+
+  describe "bytes deserialization" do
+    test "deserializes empty bytes" do
+      assert {"", <<>>} = Deserialize.deserialize(:bytes, <<0, 0, 0, 0>>)
+    end
+
+    test "deserializes bytes" do
+      assert {<<1, 2, 3>>, <<>>} = Deserialize.deserialize(:bytes, <<0, 0, 0, 3, 1, 2, 3>>)
+    end
+  end
+
+  describe "nullable_bytes deserialization" do
+    test "deserializes null bytes (-1 length)" do
+      assert {nil, <<>>} = Deserialize.deserialize(:nullable_bytes, <<255, 255, 255, 255>>)
+    end
+
+    test "deserializes non-null bytes" do
+      assert {<<1, 2>>, <<>>} = Deserialize.deserialize(:nullable_bytes, <<0, 0, 0, 2, 1, 2>>)
+    end
+  end
+
+  describe "compact_string deserialization" do
+    test "deserializes null compact string (length 0)" do
+      assert {nil, <<>>} = Deserialize.deserialize(:compact_string, <<0>>)
+    end
+
+    test "deserializes empty compact string (length 1)" do
+      assert {"", <<>>} = Deserialize.deserialize(:compact_string, <<1>>)
+    end
+
+    test "deserializes compact string" do
+      # length_plus_one = 6, so actual length = 5
+      assert {"hello", <<>>} = Deserialize.deserialize(:compact_string, <<6, "hello">>)
+    end
+
+    test "preserves remaining bytes" do
+      assert {"hi", <<1, 2>>} = Deserialize.deserialize(:compact_string, <<3, "hi", 1, 2>>)
+    end
+  end
+
+  describe "compact_nullable_string deserialization" do
+    test "delegates to compact_string" do
+      assert {nil, <<>>} = Deserialize.deserialize(:compact_nullable_string, <<0>>)
+      assert {"test", <<>>} = Deserialize.deserialize(:compact_nullable_string, <<5, "test">>)
+    end
+  end
+
+  describe "compact_bytes deserialization" do
+    test "deserializes null compact bytes" do
+      assert {nil, <<>>} = Deserialize.deserialize(:compact_bytes, <<0>>)
+    end
+
+    test "deserializes empty compact bytes" do
+      assert {"", <<>>} = Deserialize.deserialize(:compact_bytes, <<1>>)
+    end
+
+    test "deserializes compact bytes" do
+      assert {<<1, 2, 3>>, <<>>} = Deserialize.deserialize(:compact_bytes, <<4, 1, 2, 3>>)
+    end
+  end
+
+  describe "compact_nullable_bytes deserialization" do
+    test "delegates to compact_bytes" do
+      assert {nil, <<>>} = Deserialize.deserialize(:compact_nullable_bytes, <<0>>)
+    end
+  end
+
+  describe "unsigned_varint deserialization" do
+    test "deserializes single byte varint" do
+      assert {0, <<>>} = Deserialize.deserialize(:unsigned_varint, <<0>>)
+      assert {1, <<>>} = Deserialize.deserialize(:unsigned_varint, <<1>>)
+      assert {127, <<>>} = Deserialize.deserialize(:unsigned_varint, <<127>>)
+    end
+
+    test "deserializes multi-byte varint" do
+      # 128 = 0x80 0x01
+      assert {128, <<>>} = Deserialize.deserialize(:unsigned_varint, <<128, 1>>)
+      # 300 = 0xAC 0x02
+      assert {300, <<>>} = Deserialize.deserialize(:unsigned_varint, <<172, 2>>)
+    end
+
+    test "preserves remaining bytes" do
+      assert {1, <<2, 3>>} = Deserialize.deserialize(:unsigned_varint, <<1, 2, 3>>)
+    end
+  end
+
+  describe "varint (signed zigzag) deserialization" do
+    test "deserializes zero" do
+      assert {0, <<>>} = Deserialize.deserialize(:varint, <<0>>)
+    end
+
+    test "deserializes positive values" do
+      # zigzag: 1 -> 2
+      assert {1, <<>>} = Deserialize.deserialize(:varint, <<2>>)
+    end
+
+    test "deserializes negative values" do
+      # zigzag: -1 -> 1
+      assert {-1, <<>>} = Deserialize.deserialize(:varint, <<1>>)
+    end
+  end
+
+  describe "deserialize_array" do
+    test "deserializes NULL array (-1) correctly per Kafka protocol" do
+      # Kafka protocol: -1 (0xFFFFFFFF) represents NULL array
+      binary = <<255, 255, 255, 255, 0, 0, 0, 0>>
+
+      {result, rest} = Deserialize.deserialize_array(:int32, binary)
+
+      assert result == nil
+      assert rest == <<0, 0, 0, 0>>
+    end
+
+    test "deserializes empty array (0)" do
+      assert {[], <<>>} = Deserialize.deserialize_array(:int32, <<0, 0, 0, 0>>)
+    end
+
+    test "NULL array is different from empty array" do
+      null_binary = <<255, 255, 255, 255>>
+      empty_binary = <<0, 0, 0, 0>>
+
+      {null_result, _} = Deserialize.deserialize_array(:int32, null_binary)
+      {empty_result, _} = Deserialize.deserialize_array(:int32, empty_binary)
+
+      assert null_result == nil
+      assert empty_result == []
+      assert null_result != empty_result
+    end
+
+    test "deserializes array of int32" do
+      data = <<0, 0, 0, 2, 0, 0, 0, 1, 0, 0, 0, 2>>
+      {result, <<>>} = Deserialize.deserialize_array(:int32, data)
+      assert Enum.sort(result) == [1, 2]
+    end
+
+    test "deserializes array of strings" do
+      data = <<0, 0, 0, 2, 0, 1, "a", 0, 1, "b">>
+      {result, <<>>} = Deserialize.deserialize_array(:string, data)
+      assert Enum.sort(result) == ["a", "b"]
+    end
+  end
+
+  describe "deserialize_compact_array" do
+    test "deserializes null compact array (0)" do
+      assert {nil, <<>>} = Deserialize.deserialize_compact_array(:int32, <<0>>)
+    end
+
+    test "deserializes empty compact array (1)" do
+      assert {[], <<>>} = Deserialize.deserialize_compact_array(:int32, <<1>>)
+    end
+
+    test "deserializes compact array with elements" do
+      # length_plus_one = 3, so 2 elements
+      data = <<3, 0, 0, 0, 1, 0, 0, 0, 2>>
+      {result, <<>>} = Deserialize.deserialize_compact_array(:int32, data)
+      assert Enum.sort(result) == [1, 2]
+    end
+
+    test "deserializes compact array with deserializer function" do
+      deserializer = fn <<val::32-signed, rest::binary>> -> {val, rest} end
+      data = <<3, 0, 0, 0, 10, 0, 0, 0, 20>>
+      {result, <<>>} = Deserialize.deserialize_compact_array(data, deserializer)
+      assert Enum.sort(result) == [10, 20]
+    end
+  end
+
+  describe "deserialize_tagged_fields" do
+    test "deserializes empty tagged fields" do
+      assert {[], <<>>} = Deserialize.deserialize_tagged_fields(<<0>>)
+    end
+
+    test "deserializes single tagged field" do
+      # 1 tag, tag=0, size=2, data=<<1,2>>
+      data = <<1, 0, 2, 1, 2>>
+      {result, <<>>} = Deserialize.deserialize_tagged_fields(data)
+      assert result == [{0, <<1, 2>>}]
+    end
+
+    test "deserializes multiple tagged fields" do
+      # 2 tags: tag=0 size=1 data=<<1>>, tag=1 size=2 data=<<2,3>>
+      data = <<2, 0, 1, 1, 1, 2, 2, 3>>
+      {result, <<>>} = Deserialize.deserialize_tagged_fields(data)
+      assert length(result) == 2
+    end
+  end
+
+  describe "decode_unsigned_varint" do
+    test "decodes single byte values" do
+      assert {0, <<>>} = Deserialize.decode_unsigned_varint(<<0>>)
+      assert {1, <<>>} = Deserialize.decode_unsigned_varint(<<1>>)
+      assert {127, <<>>} = Deserialize.decode_unsigned_varint(<<127>>)
+    end
+
+    test "decodes multi-byte values" do
+      assert {128, <<>>} = Deserialize.decode_unsigned_varint(<<128, 1>>)
+      assert {16_384, <<>>} = Deserialize.decode_unsigned_varint(<<128, 128, 1>>)
+    end
+
+    test "decodes 5-byte varint" do
+      # 5 bytes with continuation bits
+      binary = <<0x80, 0x80, 0x80, 0x80, 0x01, 99>>
+
+      {value, rest} = Deserialize.decode_unsigned_varint(binary)
+
+      assert is_integer(value)
+      assert value > 0
+      assert rest == <<99>>
+    end
+
+    test "accepts 10-byte varint (maximum valid per LEB128)" do
+      # Maximum varint: 10 bytes encoding max uint64
+      max_varint = <<0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01>>
+
+      {value, rest} = Deserialize.decode_unsigned_varint(max_varint <> <<99>>)
+
+      assert is_integer(value)
+      assert value > 0
+      assert rest == <<99>>
+    end
+
+    test "rejects 11-byte varint (exceeds LEB128 maximum)" do
+      # 11 bytes with continuation bits (invalid per LEB128 spec)
+      invalid = <<0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x00>>
+
+      assert_raise ArgumentError, ~r/exceeded maximum 10-byte/, fn ->
+        Deserialize.decode_unsigned_varint(invalid)
+      end
+    end
+
+    test "rejects excessive continuation bytes (DoS protection)" do
+      # 20 bytes of continuation bits (malicious input)
+      malicious = (List.duplicate(0x80, 20) ++ [0x00]) |> :binary.list_to_bin()
+
+      assert_raise ArgumentError, ~r/exceeded maximum 10-byte/, fn ->
+        Deserialize.decode_unsigned_varint(malicious)
+      end
+    end
+
+    test "rejects extremely long varint (100+ bytes)" do
+      # Extreme DoS attack vector
+      malicious = List.duplicate(0x80, 100) |> :binary.list_to_bin()
+
+      assert_raise ArgumentError, ~r/exceeded maximum 10-byte/, fn ->
+        Deserialize.decode_unsigned_varint(malicious)
+      end
+    end
+
+    test "empty binary raises" do
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.decode_unsigned_varint(<<>>)
+      end
+    end
+
+    test "unterminated continuation bits raises" do
+      # All continuation bits set, but only 3 bytes - will try to read more
+      partial = <<0x80, 0x80, 0x80>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.decode_unsigned_varint(partial)
+      end
+    end
+  end
+
+  # ============================================
+  # Truncated Binary Edge Cases
+  # ============================================
+
+  describe "truncated binary edge cases" do
+    test ":string - truncated length prefix" do
+      truncated = <<0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:string, truncated)
+      end
+    end
+
+    test ":string - truncated string data" do
+      # Claims 10 bytes but only provides 5
+      invalid = <<0, 10, "hello">>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:string, invalid)
+      end
+    end
+
+    test ":bytes - truncated length prefix" do
+      truncated = <<0, 0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:bytes, truncated)
+      end
+    end
+
+    test ":bytes - truncated data" do
+      # Claims 100 bytes but provides only 10
+      invalid = <<0, 0, 0, 100, "0123456789">>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:bytes, invalid)
+      end
+    end
+
+    test ":int32 - truncated" do
+      truncated = <<0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:int32, truncated)
+      end
+    end
+
+    test ":int64 - truncated" do
+      truncated = <<0, 0, 0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:int64, truncated)
+      end
+    end
+
+    test "deserialize_array - truncated count" do
+      truncated = <<0, 0>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_array(:int32, truncated)
+      end
+    end
+
+    test "deserialize_array - truncated element" do
+      # Claims 2 elements but only provides 1
+      invalid = <<0, 0, 0, 2, 0, 0, 0, 1>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_array(:int32, invalid)
+      end
+    end
+
+    test "deserialize_compact_array - truncated count varint" do
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_compact_array(:int32, <<>>)
+      end
+    end
+
+    test "deserialize_tagged_fields - truncated tag data" do
+      # 1 tag, tag=0, size=10, but no data follows
+      invalid = <<1, 0, 10>>
+
+      assert_raise MatchError, fn ->
+        Deserialize.deserialize_tagged_fields(invalid)
+      end
+    end
+  end
+
+  # ============================================
+  # Length-Prefix Validation
+  # ============================================
+
+  describe "length prefix validation" do
+    test "array with negative count other than -1 fails" do
+      # -2 is invalid (only -1 means NULL)
+      invalid = <<255, 255, 255, 254>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize_array(:int32, invalid)
+      end
+    end
+
+    test ":string with length -2 (invalid) fails" do
+      invalid = <<255, 254>>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:string, invalid)
+      end
+    end
+
+    test ":bytes with extremely large length causes controlled failure" do
+      huge_length = <<127, 255, 255, 255, "data">>
+
+      assert_raise FunctionClauseError, fn ->
+        Deserialize.deserialize(:bytes, huge_length)
+      end
+    end
+  end
+end

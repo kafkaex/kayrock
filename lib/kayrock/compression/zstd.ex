@@ -9,7 +9,7 @@ defmodule Kayrock.Compression.Zstd do
   @min_level 1
   @max_level 22
 
-  @compile {:no_warn_undefined, [:zstd]}
+  @compile {:no_warn_undefined, [:zstd, :ezstd]}
   @dialyzer {:nowarn_function, [do_compress: 2, decompress: 1]}
 
   @impl true

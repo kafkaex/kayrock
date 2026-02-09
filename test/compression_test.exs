@@ -106,4 +106,124 @@ defmodule Kayrock.CompressionTest do
 
     assert expected == Compression.decompress(2, data)
   end
+
+  # ============================================
+  # Edge Cases
+  # ============================================
+
+  describe "edge cases" do
+    test "empty string compression/decompression" do
+      {compressed, 1} = Compression.compress(:gzip, "")
+      assert Compression.decompress(1, compressed) == ""
+    end
+
+    test "single byte compression/decompression" do
+      {compressed, 1} = Compression.compress(:gzip, "X")
+      assert Compression.decompress(1, compressed) == "X"
+    end
+
+    test "binary with null bytes compresses correctly" do
+      data = <<0, 1, 0, 2, 0, 3, 0, 4>>
+      {compressed, 1} = Compression.compress(:gzip, data)
+      assert Compression.decompress(1, compressed) == data
+    end
+
+    test "highly compressible data (repeated pattern)" do
+      data = String.duplicate("A", 10_000)
+      {compressed, 1} = Compression.compress(:gzip, data)
+      # Should compress very well
+      assert byte_size(compressed) < byte_size(data) / 10
+      assert Compression.decompress(1, compressed) == data
+    end
+
+    test "incompressible data (random bytes)" do
+      data = :crypto.strong_rand_bytes(1000)
+      {compressed, 1} = Compression.compress(:gzip, data)
+      # May not compress well, but should round-trip
+      assert Compression.decompress(1, compressed) == data
+    end
+
+    test "large data compression (100KB)" do
+      data = :crypto.strong_rand_bytes(100_000)
+      {compressed, 1} = Compression.compress(:gzip, data)
+      assert Compression.decompress(1, compressed) == data
+    end
+
+    test "gzip with different levels produces valid output" do
+      for level <- 1..9 do
+        {compressed, 1} = Compression.compress(:gzip, @large_data, level: level)
+        assert Compression.decompress(1, compressed) == @large_data
+      end
+    end
+
+    test "snappy round-trip with large data" do
+      if_available :snappy do
+        data = String.duplicate("Kafka message payload ", 5000)
+        {compressed, 2} = Compression.compress(:snappy, data)
+        assert Compression.decompress(2, compressed) == data
+      end
+    end
+
+    test "lz4 round-trip with large data" do
+      if_available :lz4 do
+        data = String.duplicate("Kafka message payload ", 5000)
+        {compressed, 3} = Compression.compress(:lz4, data)
+        assert Compression.decompress(3, compressed) == data
+      end
+    end
+
+    test "zstd round-trip with large data" do
+      if_available :zstd do
+        data = String.duplicate("Kafka message payload ", 5000)
+        {compressed, 4} = Compression.compress(:zstd, data)
+        assert Compression.decompress(4, compressed) == data
+      end
+    end
+  end
+
+  # ============================================
+  # Invalid Compression Type Edge Cases
+  # ============================================
+
+  describe "invalid compression types" do
+    test "decompress with unknown type (5) raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(5, "any data")
+      end
+    end
+
+    test "decompress with unknown type (6) raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(6, "data")
+      end
+    end
+
+    test "decompress with unknown type (7) raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(7, "data")
+      end
+    end
+
+    test "decompress with negative type raises" do
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(-1, "data")
+      end
+    end
+
+    test "decompress type 0 (none) is not supported - handled at batch level" do
+      # Compression type 0 means no compression - the data is used as-is
+      # The decompress function is only called for types 1-4
+      assert_raise FunctionClauseError, fn ->
+        Compression.decompress(0, "data")
+      end
+    end
+
+    test "gzip decompression with invalid data raises" do
+      invalid_gzip = "this is not valid gzip data"
+
+      assert_raise ErlangError, fn ->
+        Compression.decompress(1, invalid_gzip)
+      end
+    end
+  end
 end

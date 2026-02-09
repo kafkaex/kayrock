@@ -1,6 +1,16 @@
 defmodule Kayrock.Client do
   @moduledoc """
-  Manages communication with a single cluster
+  Development client for communicating with a Kafka cluster.
+
+  ## Limitations
+
+  This client lacks:
+  - Connection pooling
+  - Proper supervision tree
+  - Circuit breaker patterns
+  - Automatic reconnection handling
+  - Production-grade error handling
+  - Telemetry/monitoring
   """
 
   defmodule Opts do
@@ -230,23 +240,64 @@ defmodule Kayrock.Client do
         {:ok, node_id, state}
 
       {:error, :no_such_topic} ->
-        # we don't know about the topic yet, so try to fetch metadata for that
-        # topic and then try again
-        {_, topic, _} = node_selector
-        updated_state = update_metadata(state, [topic])
+        handle_missing_topic(state, node_selector)
 
-        # should better handle if a topic is out of sync or being created
-
-        case ClusterMetadata.select_node(updated_state.cluster_metadata, node_selector) do
-          {:ok, node_id} ->
-            {:ok, node_id, updated_state}
-
-          other ->
-            {:error, other, state}
-        end
+      {:error, :no_such_partition} ->
+        handle_missing_partition(state, node_selector)
 
       {:error, other} ->
         {:error, other, state}
+    end
+  end
+
+  # Handle case where topic is not in our metadata
+  # This can happen when:
+  # 1. Topic doesn't exist
+  # 2. Topic was just created and metadata is stale
+  # 3. Topic is being created (race condition)
+  defp handle_missing_topic(state, node_selector) do
+    {_, topic, _partition} = node_selector
+
+    Logger.debug("Topic '#{topic}' not found in metadata, refreshing...")
+    updated_state = update_metadata(state, [topic])
+
+    case ClusterMetadata.select_node(updated_state.cluster_metadata, node_selector) do
+      {:ok, node_id} ->
+        {:ok, node_id, updated_state}
+
+      {:error, :no_such_topic} ->
+        # Topic still not found after metadata refresh
+        Logger.warning("Topic '#{topic}' not found after metadata refresh")
+        {:error, {:topic_not_found, topic}, updated_state}
+
+      {:error, :no_such_partition} ->
+        # Topic exists but partition doesn't
+        {_, _, partition} = node_selector
+        Logger.warning("Partition #{partition} not found for topic '#{topic}'")
+        {:error, {:partition_not_found, topic, partition}, updated_state}
+
+      {:error, reason} ->
+        {:error, {:metadata_error, reason}, updated_state}
+    end
+  end
+
+  # Handle case where topic exists but partition doesn't
+  defp handle_missing_partition(state, node_selector) do
+    {_, topic, partition} = node_selector
+
+    Logger.debug("Partition #{partition} not found for topic '#{topic}', refreshing metadata...")
+    updated_state = update_metadata(state, [topic])
+
+    case ClusterMetadata.select_node(updated_state.cluster_metadata, node_selector) do
+      {:ok, node_id} ->
+        {:ok, node_id, updated_state}
+
+      {:error, :no_such_partition} ->
+        Logger.warning("Partition #{partition} not found for topic '#{topic}' after refresh")
+        {:error, {:partition_not_found, topic, partition}, updated_state}
+
+      {:error, reason} ->
+        {:error, {:metadata_error, reason}, updated_state}
     end
   end
 end

@@ -1,6 +1,17 @@
 defmodule Kayrock do
   @moduledoc """
-  Documentation for Kayrock.
+  Idiomatic Elixir interface to the Kafka protocol.
+
+  Kayrock provides serialization and deserialization for all Kafka protocol
+  messages. It generates Elixir structs from the Kafka protocol schema,
+  allowing you to work with Kafka at the wire protocol level.
+
+  ## Core Features
+
+  - Generated structs for every Kafka API version
+  - Serialization to wire protocol (iodata)
+  - Deserialization from binary responses
+  - Compression support (gzip, snappy, LZ4, Zstandard)
   """
 
   alias Kayrock.BrokerConnection
@@ -61,43 +72,100 @@ defmodule Kayrock do
   """
   @type api_response :: map
 
-  def produce(client_pid, record_batch, topic, partition, acks \\ -1, timeout \\ 1_000) do
-    request = %Kayrock.Produce.V1.Request{
-      acks: acks,
-      timeout: timeout,
-      topic_data: [
-        %{
-          topic: topic,
-          data: [
-            %{partition: partition, record_set: record_batch}
-          ]
-        }
-      ]
+  @doc """
+  Produce messages to a Kafka topic.
+
+  ## Options
+
+  - `:version` - Protocol version to use (default: 1)
+  - `:acks` - Acknowledgment level (default: -1 for all replicas)
+  - `:timeout` - Request timeout in ms (default: 1000)
+  """
+  def produce(client_pid, record_batch, topic, partition, acks, timeout)
+      when is_integer(acks) and is_integer(timeout) do
+    produce(client_pid, record_batch, topic, partition, acks: acks, timeout: timeout)
+  end
+
+  def produce(client_pid, record_batch, topic, partition, opts \\ []) when is_list(opts) do
+    version = Keyword.get(opts, :version, 1)
+    acks = Keyword.get(opts, :acks, -1)
+    timeout = Keyword.get(opts, :timeout, 1_000)
+
+    request = Kayrock.Produce.get_request_struct(version)
+
+    request = %{
+      request
+      | acks: acks,
+        timeout: timeout,
+        topic_data: [
+          %{
+            topic: topic,
+            data: [
+              %{partition: partition, record_set: record_batch}
+            ]
+          }
+        ]
     }
 
     client_call(client_pid, request, {:topic_partition, topic, partition})
   end
 
-  def fetch(client_pid, topic, partition, offset) do
-    request = %Kayrock.Fetch.V4.Request{
+  @doc """
+  Fetch messages from a Kafka topic.
+
+  ## Options
+
+  - `:version` - Protocol version to use (default: 4)
+  - `:max_wait_time` - Maximum wait time in ms (default: 1000)
+  - `:min_bytes` - Minimum bytes to return (default: 0)
+  - `:max_bytes` - Maximum bytes to return (default: 1_000_000)
+  - `:isolation_level` - 0 = read uncommitted, 1 = read committed (default: 1)
+  """
+  def fetch(client_pid, topic, partition, offset, opts \\ []) do
+    version = Keyword.get(opts, :version, 4)
+    max_wait_time = Keyword.get(opts, :max_wait_time, 1000)
+    min_bytes = Keyword.get(opts, :min_bytes, 0)
+    max_bytes = Keyword.get(opts, :max_bytes, 1_000_000)
+    isolation_level = Keyword.get(opts, :isolation_level, 1)
+
+    request = Kayrock.Fetch.get_request_struct(version)
+
+    base_fields = %{
       replica_id: -1,
-      max_wait_time: 1000,
-      min_bytes: 0,
-      max_bytes: 1_000_000,
-      isolation_level: 1,
+      max_wait_time: max_wait_time,
+      min_bytes: min_bytes,
+      max_bytes: max_bytes,
       topics: [
         %{
           topic: topic,
           partitions: [
-            %{partition: partition, fetch_offset: offset, partition_max_bytes: 1_000_000}
+            %{partition: partition, fetch_offset: offset, partition_max_bytes: max_bytes}
           ]
         }
       ]
     }
 
+    # Add isolation_level for V4+
+    fields =
+      if version >= 4 do
+        Map.put(base_fields, :isolation_level, isolation_level)
+      else
+        base_fields
+      end
+
+    request = struct(request, fields)
+
     client_call(client_pid, request, {:topic_partition, topic, partition})
   end
 
+  @doc """
+  Fetch metadata for topics from the Kafka cluster.
+
+  ## Parameters
+
+  - `client_pid` - PID of a `Kayrock.Client` process
+  - `topics` - List of topic names, or `nil` for all topics
+  """
   def topics_metadata(client_pid, topics) when is_list(topics) or topics == nil do
     # we use version 4 here so that it will not try to create topics
     topics_param = if topics, do: Enum.map(topics, fn topic -> %{name: topic} end), else: nil
@@ -108,9 +176,7 @@ defmodule Kayrock do
 
   @doc """
   Fetch the supported API versions from the cluster
-
   Kayrock currently supports versions 0 and 1.
-
   [ApiVersions](https://kafka.apache.org/protocol.html#The_Messages_ApiVersions)
   """
   @spec api_versions(client_pid, api_version, node_selector) :: {:ok, api_response}
@@ -134,6 +200,9 @@ defmodule Kayrock do
     client_call(client_pid, request, node_selector)
   end
 
+  @doc """
+  Delete topics from the Kafka cluster.
+  """
   def delete_topics(client_pid, topics, timeout \\ -1, version \\ 1, node_selector \\ :controller) do
     request = Kayrock.DeleteTopics.get_request_struct(version)
     request = %{request | topic_names: topics, timeout_ms: timeout}

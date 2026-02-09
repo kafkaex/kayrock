@@ -1,8 +1,7 @@
 defmodule Kayrock.Integration.Behaviour.SingleBrokerTest do
   use Kayrock.IntegrationCase
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
-  import Kayrock.TestSupport
   import Kayrock.RequestFactory
 
   container(:kafka, KafkaContainer.new(), shared: true)
@@ -83,18 +82,6 @@ defmodule Kayrock.Integration.Behaviour.SingleBrokerTest do
     assert record_two.key == "3"
     assert record_two.value == "test-three"
     assert record_two.offset == 2
-  end
-
-  defp build_client(kafka) do
-    uris = [{"localhost", Container.mapped_port(kafka, 9092)}]
-    Kayrock.Client.start_link(uris)
-  end
-
-  defp create_topic(client_pid, api_version) do
-    topic_name = unique_string()
-    create_request = create_topic_request(topic_name, api_version)
-    {:ok, _} = Kayrock.client_call(client_pid, create_request, :controller)
-    topic_name
   end
 
   defp record_set(key_values) do
