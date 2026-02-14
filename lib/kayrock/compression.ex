@@ -21,7 +21,7 @@ defmodule Kayrock.Compression do
 
   ## Dependencies
 
-  - **Snappy**: `{:snappy, "~> 1.1"}` or `{:snappyer, "~> 1.2"}`
+  - **Snappy**: `{:snappyer, "~> 1.2"}`
   - **LZ4**: `{:lz4b, "~> 0.2.0"}`
   - **Zstandard**: `{:ezstd, "~> 1.0"}`
 

@@ -103,16 +103,6 @@ def deps do
 end
 ```
 
-### Snappy Configuration
-
-By default, Kayrock uses `snappyer` for Snappy compression. To use the legacy
-`snappy` module instead:
-
-```elixir
-# config/config.exs
-config :kayrock, snappy_module: :snappy
-```
-
 ### Zstandard Support
 
 Zstandard compression is available via:

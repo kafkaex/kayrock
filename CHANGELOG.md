@@ -22,12 +22,8 @@ First stable release of Kayrock.
   - Add `{:lz4b, "~> 0.0.13"}` for LZ4 compression
   - Add `{:ezstd, "~> 1.0"}` for Zstandard (OTP < 27)
 - **BREAKING:** Minimum Elixir version bumped to 1.14
-- **BREAKING:** Default Snappy module changed from `:snappy` to `:snappyer`
+- **BREAKING:** Snappy compression now requires `snappyer` (the legacy `snappy` module is no longer supported)
 - Improved error messages for missing compression dependencies
-- Fixed application config key from `:kafka_ex` to `:kayrock` for snappy module
-
-### Fixed
-- Snappy module configuration now correctly uses `:kayrock` app (was `:kafka_ex`)
 
 ### Deprecated
 - `Kayrock.Client` - Use KafkaEx or brod for production clients
@@ -53,19 +49,10 @@ First stable release of Kayrock.
 
    Ensure you're running Elixir 1.14 or later.
 
-3. **Snappy Configuration**
+3. **Snappy Module**
 
-   If you were configuring the snappy module, update the config key:
-
-   ```elixir
-   # Before (broken)
-   config :kafka_ex, snappy_module: :snappyer
-
-   # After (correct)
-   config :kayrock, snappy_module: :snappyer
-   ```
-
-   Note: The default is now `:snappyer`, so you only need this config if using `:snappy`.
+   The legacy `:snappy` module is no longer supported. Use `{:snappyer, "~> 1.2"}` instead.
+   Remove any `snappy_module` configuration from your config files.
 
 4. **Client Usage**
 
