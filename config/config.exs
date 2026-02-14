@@ -10,7 +10,6 @@ config :kayrock,
       keyfile: File.cwd!() <> "/ssl/key.pem"
     ]
   ],
-  snappy_module: :snappyer,
   debug_write_generated_code: false
 
 # This configuration is loaded before any dependency and is restricted

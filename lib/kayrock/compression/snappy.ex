@@ -12,17 +12,15 @@ defmodule Kayrock.Compression.Snappy do
   @impl true
   @spec available?() :: boolean
   def available? do
-    Code.ensure_loaded?(snappy_module())
+    Code.ensure_loaded?(:snappyer)
   end
 
   @impl true
   @spec compress(binary) :: binary
   def compress(data) do
-    mod = snappy_module()
-
-    unless Code.ensure_loaded?(mod) do
+    unless Code.ensure_loaded?(:snappyer) do
       raise """
-      Snappy compression requires the #{mod} dependency.
+      Snappy compression requires the snappyer dependency.
 
       Add to your mix.exs:
 
@@ -32,18 +30,16 @@ defmodule Kayrock.Compression.Snappy do
       """
     end
 
-    {:ok, out} = mod.compress(data)
+    {:ok, out} = :snappyer.compress(data)
     out
   end
 
   @impl true
   @spec decompress(binary) :: binary
   def decompress(data) do
-    mod = snappy_module()
-
-    unless Code.ensure_loaded?(mod) do
+    unless Code.ensure_loaded?(:snappyer) do
       raise """
-      Snappy decompression requires the #{mod} dependency.
+      Snappy decompression requires the snappyer dependency.
 
       Add to your mix.exs:
 
@@ -60,7 +56,7 @@ defmodule Kayrock.Compression.Snappy do
 
       # Raw snappy format
       _ ->
-        case mod.decompress(data) do
+        case :snappyer.decompress(data) do
           {:ok, decompressed} -> decompressed
           {:error, reason} ->
             raise "Snappy decompression failed: #{inspect(reason)}"
@@ -76,18 +72,12 @@ defmodule Kayrock.Compression.Snappy do
          <<valsize::32-unsigned, value::size(valsize)-binary, rest::binary>>,
          acc
        ) do
-    mod = snappy_module()
-
-    case mod.decompress(value) do
+    case :snappyer.decompress(value) do
       {:ok, decompressed} ->
         decompress_chunks(rest, acc <> decompressed)
 
       {:error, reason} ->
         raise "Snappy chunk decompression failed: #{inspect(reason)}"
     end
-  end
-
-  defp snappy_module do
-    Application.get_env(:kayrock, :snappy_module, :snappyer)
   end
 end
