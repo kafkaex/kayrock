@@ -621,7 +621,16 @@ The schema of this API is
                 for v <- vals do
                   [
                     serialize(:compact_string, Map.fetch!(v, :member_id)),
-                    serialize(:compact_bytes, Map.fetch!(v, :assignment)),
+                    case Map.fetch!(v, :assignment) do
+                      %Kayrock.MemberAssignment{} = m ->
+                        Kayrock.Serialize.serialize(
+                          :compact_bytes,
+                          IO.iodata_to_binary(Kayrock.MemberAssignment.serialize(m))
+                        )
+
+                      b when is_binary(b) ->
+                        Kayrock.Serialize.serialize(:compact_bytes, b)
+                    end,
                     serialize_tagged_fields(Map.get(v, :tagged_fields, []))
                   ]
                 end
@@ -1041,7 +1050,22 @@ The schema of this API is
     end
 
     defp deserialize_field(:root, :assignment, acc, data) do
-      {val, rest} = deserialize(:compact_bytes, data)
+      {raw, rest} = Kayrock.Deserialize.deserialize(:compact_bytes, data)
+
+      val =
+        case raw do
+          nil ->
+            nil
+
+          binary ->
+            {parsed, _} =
+              Kayrock.MemberAssignment.deserialize(
+                <<byte_size(binary)::32-signed, binary::binary>>
+              )
+
+            parsed
+        end
+
       deserialize_field(:root, :tagged_fields, Map.put(acc, :assignment, val), rest)
     end
 

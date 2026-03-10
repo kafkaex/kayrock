@@ -569,6 +569,35 @@ defmodule Kayrock.Generate do
     {first_field_name, fields_with_next_field}
   end
 
+  def generate_field_deserializer(scope, {:assignment, :compact_bytes}, next_field_name) do
+    quote do
+      defp deserialize_field(unquote(scope), :assignment, acc, data) do
+        {raw, rest} = Kayrock.Deserialize.deserialize(:compact_bytes, data)
+
+        val =
+          case raw do
+            nil ->
+              nil
+
+            binary ->
+              {parsed, _} =
+                Kayrock.MemberAssignment.deserialize(
+                  <<byte_size(binary)::32-signed, binary::binary>>
+                )
+
+              parsed
+          end
+
+        deserialize_field(
+          unquote(scope),
+          unquote(next_field_name),
+          Map.put(acc, :assignment, val),
+          rest
+        )
+      end
+    end
+  end
+
   def generate_field_deserializer(scope, {field_name, type}, next_field_name)
       when type in Kayrock.Deserialize.compact_primitive_types() do
     quote do
@@ -678,6 +707,7 @@ defmodule Kayrock.Generate do
       end
     end
   end
+
 
   def generate_field_deserializer(scope, {field_name, {:array, type}}, next_field_name)
       when type in Kayrock.Deserialize.primitive_types() do
@@ -847,6 +877,36 @@ defmodule Kayrock.Generate do
 
         b when is_binary(b) ->
           Kayrock.Serialize.serialize(:bytes, b)
+      end
+    end
+  end
+
+  defp field_serializer({:metadata, :compact_bytes}, varname) do
+    quote do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :metadata) do
+        %Kayrock.GroupProtocolMetadata{} = m ->
+          Kayrock.Serialize.serialize(
+            :compact_bytes,
+            IO.iodata_to_binary(Kayrock.GroupProtocolMetadata.serialize(m))
+          )
+
+        b when is_binary(b) ->
+          Kayrock.Serialize.serialize(:compact_bytes, b)
+      end
+    end
+  end
+
+  defp field_serializer({:assignment, :compact_bytes}, varname) do
+    quote do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), :assignment) do
+        %Kayrock.MemberAssignment{} = m ->
+          Kayrock.Serialize.serialize(
+            :compact_bytes,
+            IO.iodata_to_binary(Kayrock.MemberAssignment.serialize(m))
+          )
+
+        b when is_binary(b) ->
+          Kayrock.Serialize.serialize(:compact_bytes, b)
       end
     end
   end

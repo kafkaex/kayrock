@@ -277,6 +277,46 @@ defmodule Kayrock.SyncGroupTest do
   end
 
   # ============================================
+  # V4 Special Case: assignment struct deserialization
+  # ============================================
+
+  describe "V4 Response special case: assignment struct deserialization" do
+    test "deserializes assignment field as %MemberAssignment{} struct" do
+      member_assignment = %Kayrock.MemberAssignment{
+        version: 0,
+        partition_assignments: [
+          %Kayrock.MemberAssignment.PartitionAssignment{
+            topic: "test-topic",
+            partitions: [0, 1]
+          }
+        ],
+        user_data: ""
+      }
+
+      assignment_binary =
+        Kayrock.MemberAssignment.serialize(member_assignment) |> IO.iodata_to_binary()
+
+      assignment_compact =
+        Kayrock.Serialize.encode_unsigned_varint(byte_size(assignment_binary) + 1)
+
+      response_binary =
+        IO.iodata_to_binary([
+          <<4::32-signed>>,
+          <<0>>,
+          <<0::32-signed>>,
+          <<0::16-signed>>,
+          assignment_compact,
+          assignment_binary,
+          <<0>>
+        ])
+
+      {response, _rest} = Kayrock.SyncGroup.V4.Response.deserialize(response_binary)
+
+      assert %Kayrock.MemberAssignment{} = response.assignment
+    end
+  end
+
+  # ============================================
   # Malformed Response Handling
   # ============================================
 

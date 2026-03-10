@@ -932,7 +932,16 @@ The schema of this API is
                 for v <- vals do
                   [
                     serialize(:compact_string, Map.fetch!(v, :name)),
-                    serialize(:compact_bytes, Map.fetch!(v, :metadata)),
+                    case Map.fetch!(v, :metadata) do
+                      %Kayrock.GroupProtocolMetadata{} = m ->
+                        Kayrock.Serialize.serialize(
+                          :compact_bytes,
+                          IO.iodata_to_binary(Kayrock.GroupProtocolMetadata.serialize(m))
+                        )
+
+                      b when is_binary(b) ->
+                        Kayrock.Serialize.serialize(:compact_bytes, b)
+                    end,
                     serialize_tagged_fields(Map.get(v, :tagged_fields, []))
                   ]
                 end
