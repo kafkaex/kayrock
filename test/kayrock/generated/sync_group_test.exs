@@ -294,7 +294,9 @@ defmodule Kayrock.SyncGroupTest do
       }
 
       assignment_binary =
-        Kayrock.MemberAssignment.serialize(member_assignment) |> IO.iodata_to_binary()
+        member_assignment
+        |> Kayrock.MemberAssignment.serialize()
+        |> IO.iodata_to_binary()
 
       assignment_compact =
         Kayrock.Serialize.encode_unsigned_varint(byte_size(assignment_binary) + 1)

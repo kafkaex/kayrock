@@ -708,7 +708,6 @@ defmodule Kayrock.Generate do
     end
   end
 
-
   def generate_field_deserializer(scope, {field_name, {:array, type}}, next_field_name)
       when type in Kayrock.Deserialize.primitive_types() do
     quote do
