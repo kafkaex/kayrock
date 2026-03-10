@@ -376,7 +376,6 @@ defmodule Kayrock.Chaos.MetadataTest do
 
     test "fails when all brokers unreachable", ctx do
       disable_proxy(ctx.toxiproxy, ctx.proxy_name)
-      add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
       Process.sleep(@brief_delay_ms)
 
       request = metadata_request([], 9)

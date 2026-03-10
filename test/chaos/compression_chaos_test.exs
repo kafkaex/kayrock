@@ -320,7 +320,6 @@ defmodule Kayrock.Chaos.CompressionTest do
       messages = build_test_records(@batch_size_small, "conn-down")
 
       disable_proxy(ctx.toxiproxy, ctx.proxy_name)
-      add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
       Process.sleep(10)
 
       result = try_produce_compressed(ctx.client, topic, messages, 5, :snappy)

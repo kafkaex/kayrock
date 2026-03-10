@@ -277,6 +277,123 @@ defmodule Kayrock.SyncGroupTest do
   end
 
   # ============================================
+  # V4 Special Case: assignment struct serialization
+  # ============================================
+
+  describe "V4 Request special case: assignment struct serialization" do
+    test "accepts %MemberAssignment{} struct in assignments field" do
+      member_assignment = %Kayrock.MemberAssignment{
+        version: 0,
+        partition_assignments: [
+          %Kayrock.MemberAssignment.PartitionAssignment{
+            topic: "test-topic",
+            partitions: [0, 1]
+          }
+        ],
+        user_data: ""
+      }
+
+      request = %Kayrock.SyncGroup.V4.Request{
+        correlation_id: 1,
+        client_id: "test",
+        group_id: "test-group",
+        generation_id: 1,
+        member_id: "member-1",
+        group_instance_id: nil,
+        assignments: [
+          %{member_id: "member-1", assignment: member_assignment, tagged_fields: []}
+        ],
+        tagged_fields: []
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      assert is_binary(serialized)
+      <<api_key::16, api_version::16, _rest::binary>> = serialized
+      assert api_key == 14
+      assert api_version == 4
+    end
+
+    test "accepts pre-serialized binary in assignments field" do
+      assignment_binary =
+        %Kayrock.MemberAssignment{
+          version: 0,
+          partition_assignments: [
+            %Kayrock.MemberAssignment.PartitionAssignment{
+              topic: "test-topic",
+              partitions: [0, 1]
+            }
+          ],
+          user_data: ""
+        }
+        |> Kayrock.MemberAssignment.serialize()
+        |> IO.iodata_to_binary()
+
+      request = %Kayrock.SyncGroup.V4.Request{
+        correlation_id: 1,
+        client_id: "test",
+        group_id: "test-group",
+        generation_id: 1,
+        member_id: "member-1",
+        group_instance_id: nil,
+        assignments: [
+          %{member_id: "member-1", assignment: assignment_binary, tagged_fields: []}
+        ],
+        tagged_fields: []
+      }
+
+      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+      assert is_binary(serialized)
+    end
+
+    test "struct and binary produce identical wire output" do
+      member_assignment = %Kayrock.MemberAssignment{
+        version: 0,
+        partition_assignments: [
+          %Kayrock.MemberAssignment.PartitionAssignment{
+            topic: "orders",
+            partitions: [0, 2]
+          }
+        ],
+        user_data: ""
+      }
+
+      assignment_binary =
+        member_assignment
+        |> Kayrock.MemberAssignment.serialize()
+        |> IO.iodata_to_binary()
+
+      base = %{
+        correlation_id: 1,
+        client_id: "test",
+        group_id: "test-group",
+        generation_id: 1,
+        member_id: "member-1",
+        group_instance_id: nil,
+        tagged_fields: []
+      }
+
+      request_struct =
+        struct(
+          Kayrock.SyncGroup.V4.Request,
+          Map.put(base, :assignments, [
+            %{member_id: "m1", assignment: member_assignment, tagged_fields: []}
+          ])
+        )
+
+      request_binary =
+        struct(
+          Kayrock.SyncGroup.V4.Request,
+          Map.put(base, :assignments, [
+            %{member_id: "m1", assignment: assignment_binary, tagged_fields: []}
+          ])
+        )
+
+      assert IO.iodata_to_binary(Kayrock.Request.serialize(request_struct)) ==
+               IO.iodata_to_binary(Kayrock.Request.serialize(request_binary))
+    end
+  end
+
+  # ============================================
   # V4 Special Case: assignment struct deserialization
   # ============================================
 

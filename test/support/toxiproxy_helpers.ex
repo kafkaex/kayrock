@@ -29,7 +29,7 @@ defmodule Kayrock.ToxiproxyHelpers do
   - **timeout** - Stop all data after timeout and close connection
   - **slicer** - Slice data into smaller packets
   - **limit_data** - Close connection after transmitting N bytes
-  - **down** - Take connection offline (0% availability)
+  - **disable/enable proxy** - Take connection offline/online (see `disable_proxy/2`, `enable_proxy/2`)
   """
 
   alias Testcontainers.ToxiproxyContainer
@@ -136,22 +136,7 @@ defmodule Kayrock.ToxiproxyHelpers do
       # Bring it back
       :ok = enable_proxy(toxiproxy, "kafka")
   """
-  def disable_proxy(container, proxy_name) do
-    host = Testcontainers.get_host()
-    api_port = ToxiproxyContainer.mapped_control_port(container)
-
-    :inets.start()
-
-    url = ~c"http://#{host}:#{api_port}/proxies/#{proxy_name}"
-    body = Jason.encode!(%{enabled: false})
-    headers = [{~c"content-type", ~c"application/json"}]
-
-    case :httpc.request(:post, {url, headers, ~c"application/json", body}, [], []) do
-      {:ok, {{_, 200, _}, _, _}} -> :ok
-      {:ok, {{_, code, _}, _, resp_body}} -> {:error, {:http_error, code, resp_body}}
-      {:error, reason} -> {:error, reason}
-    end
-  end
+  def disable_proxy(container, proxy_name), do: set_proxy_enabled(container, proxy_name, false)
 
   @doc """
   Re-enables a previously disabled proxy.
@@ -161,14 +146,16 @@ defmodule Kayrock.ToxiproxyHelpers do
     - `container` - The Toxiproxy container
     - `proxy_name` - Name of the proxy
   """
-  def enable_proxy(container, proxy_name) do
+  def enable_proxy(container, proxy_name), do: set_proxy_enabled(container, proxy_name, true)
+
+  defp set_proxy_enabled(container, proxy_name, enabled) do
     host = Testcontainers.get_host()
     api_port = ToxiproxyContainer.mapped_control_port(container)
 
     :inets.start()
 
     url = ~c"http://#{host}:#{api_port}/proxies/#{proxy_name}"
-    body = Jason.encode!(%{enabled: true})
+    body = Jason.encode!(%{enabled: enabled})
     headers = [{~c"content-type", ~c"application/json"}]
 
     case :httpc.request(:post, {url, headers, ~c"application/json", body}, [], []) do

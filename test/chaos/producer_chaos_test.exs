@@ -355,7 +355,6 @@ defmodule Kayrock.Chaos.ProducerTest do
       topic = create_topic(ctx.client, 5)
 
       disable_proxy(ctx.toxiproxy, ctx.proxy_name)
-      add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
       Process.sleep(10)
 
       messages = [build_record("conn-down")]
