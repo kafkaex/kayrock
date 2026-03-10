@@ -75,9 +75,9 @@ defmodule Kayrock.Chaos.HeartbeatTest do
     test "recovers after brief connection drop", ctx do
       {group_id, member_id, generation_id, node_id} = setup_active_member(ctx)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       heartbeat_request = heartbeat_request(group_id, member_id, generation_id, 3)
@@ -94,10 +94,10 @@ defmodule Kayrock.Chaos.HeartbeatTest do
       {group_id, member_id, generation_id, node_id} =
         setup_active_member(ctx, session_timeout: @eviction_session_timeout_ms)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@member_eviction_wait_ms)
 
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       heartbeat_request = heartbeat_request(group_id, member_id, generation_id, 3)
@@ -118,7 +118,7 @@ defmodule Kayrock.Chaos.HeartbeatTest do
     test "fails when connection is down", ctx do
       {group_id, member_id, generation_id, node_id} = setup_active_member(ctx)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
       Process.sleep(10)
 
@@ -186,9 +186,9 @@ defmodule Kayrock.Chaos.HeartbeatTest do
       assert response1.error_code == 0
 
       remove_all_toxics(ctx.toxiproxy, ctx.proxy_name)
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@combined_phase_wait_ms)
 
       heartbeat2 = heartbeat_request(group_id, member_id, generation_id, 3)

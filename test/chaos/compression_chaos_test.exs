@@ -104,9 +104,9 @@ defmodule Kayrock.Chaos.CompressionTest do
       messages_before = build_test_records(@batch_size_small, "before-drop")
       offset1 = produce_compressed!(ctx.client, topic, messages_before, 5, :gzip)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       messages_after = build_test_records(@batch_size_small, "after-drop")
@@ -136,9 +136,9 @@ defmodule Kayrock.Chaos.CompressionTest do
       topic = create_topic(ctx.client, 5)
 
       for _ <- 1..@flaky_network_cycles do
-        add_down(ctx.toxiproxy, ctx.proxy_name)
+        disable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@flaky_network_down_ms)
-        remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+        enable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@flaky_network_up_ms)
       end
 
@@ -319,7 +319,7 @@ defmodule Kayrock.Chaos.CompressionTest do
       topic = create_topic(ctx.client, 5)
       messages = build_test_records(@batch_size_small, "conn-down")
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
       Process.sleep(10)
 

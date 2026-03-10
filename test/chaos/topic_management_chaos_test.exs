@@ -84,9 +84,9 @@ defmodule Kayrock.Chaos.TopicManagementTest do
     @describetag chaos_type: :connection_failure
 
     test "recovers from brief connection drop during topic creation", ctx do
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       topic_name = "chaos-create-drop-#{unique_string()}"
@@ -179,9 +179,9 @@ defmodule Kayrock.Chaos.TopicManagementTest do
           Kayrock.client_call(ctx.client, create_request, :controller)
         end)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       delete_request = delete_topic_request(topic_name, 4)
@@ -265,7 +265,7 @@ defmodule Kayrock.Chaos.TopicManagementTest do
     end
 
     test "fails when connection is permanently down during create", ctx do
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
       Process.sleep(10)
 
