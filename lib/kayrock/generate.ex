@@ -981,5 +981,7 @@ defmodule Kayrock.Generate do
   defp default_val({:array, _}), do: []
   defp default_val({:compact_array, _}), do: []
   defp default_val(:tagged_fields), do: []
+  defp default_val(:compact_string), do: ""
+  defp default_val(:compact_bytes), do: ""
   defp default_val(_), do: nil
 end

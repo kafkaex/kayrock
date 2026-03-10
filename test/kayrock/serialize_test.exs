@@ -137,6 +137,12 @@ defmodule Kayrock.SerializeTest do
       # "hello" = 5 bytes, length_plus_one = 6
       assert [<<6>>, "hello"] = Serialize.serialize(:compact_string, "hello")
     end
+
+    test "raises ArgumentError on nil (non-nullable)" do
+      assert_raise ArgumentError, ~r/compact_string field cannot be nil/, fn ->
+        Serialize.serialize(:compact_string, nil)
+      end
+    end
   end
 
   describe "compact_nullable_string serialization" do
@@ -157,6 +163,12 @@ defmodule Kayrock.SerializeTest do
 
     test "serializes bytes" do
       assert [<<4>>, <<1, 2, 3>>] = Serialize.serialize(:compact_bytes, <<1, 2, 3>>)
+    end
+
+    test "raises ArgumentError on nil (non-nullable)" do
+      assert_raise ArgumentError, ~r/compact_bytes field cannot be nil/, fn ->
+        Serialize.serialize(:compact_bytes, nil)
+      end
     end
   end
 
