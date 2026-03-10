@@ -573,20 +573,7 @@ defmodule Kayrock.Generate do
     quote do
       defp deserialize_field(unquote(scope), :assignment, acc, data) do
         {raw, rest} = Kayrock.Deserialize.deserialize(:compact_bytes, data)
-
-        val =
-          case raw do
-            nil ->
-              nil
-
-            binary ->
-              {parsed, _} =
-                Kayrock.MemberAssignment.deserialize(
-                  <<byte_size(binary)::32-signed, binary::binary>>
-                )
-
-              parsed
-          end
+        val = Kayrock.MemberAssignment.deserialize_content(raw)
 
         deserialize_field(
           unquote(scope),

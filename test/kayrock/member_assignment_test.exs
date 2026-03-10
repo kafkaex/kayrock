@@ -31,7 +31,7 @@ defmodule Kayrock.MemberAssignmentTest do
 
     test "deserialize member assignments with user_data" do
       member_assignment =
-        <<0::16, 1::32, 6::16, "topic1", 3::32, 1::32, 3::32, 5::32, "user_data">>
+        <<0::16, 1::32, 6::16, "topic1", 3::32, 1::32, 3::32, 5::32, 9::32-signed, "user_data">>
 
       member_assignment = <<byte_size(member_assignment)::32-signed, member_assignment::bytes>>
 
@@ -92,7 +92,114 @@ defmodule Kayrock.MemberAssignmentTest do
              }
 
       assert deserialized_assignment.version == 0
-      assert deserialized_assignment.user_data == <<0, 0, 0, 0>>
+      assert deserialized_assignment.user_data == ""
+    end
+  end
+
+  describe "round-trip serialize/deserialize" do
+    test "round-trip with non-empty user_data preserves content" do
+      original = %MemberAssignment{
+        version: 0,
+        partition_assignments: [
+          %MemberAssignment.PartitionAssignment{topic: "orders", partitions: [0, 1, 2]}
+        ],
+        user_data: "sticky-assignor-state"
+      }
+
+      serialized = IO.iodata_to_binary(MemberAssignment.serialize(original))
+      wire = <<byte_size(serialized)::32-signed, serialized::binary>>
+      {deserialized, <<>>} = MemberAssignment.deserialize(wire)
+
+      assert deserialized.version == original.version
+      assert deserialized.user_data == "sticky-assignor-state"
+      assert length(deserialized.partition_assignments) == 1
+      [pa] = deserialized.partition_assignments
+      assert pa.topic == "orders"
+      assert Enum.sort(pa.partitions) == [0, 1, 2]
+    end
+
+    test "round-trip with empty user_data" do
+      original = %MemberAssignment{
+        version: 0,
+        partition_assignments: [
+          %MemberAssignment.PartitionAssignment{topic: "events", partitions: [0]}
+        ],
+        user_data: ""
+      }
+
+      serialized = IO.iodata_to_binary(MemberAssignment.serialize(original))
+      wire = <<byte_size(serialized)::32-signed, serialized::binary>>
+      {deserialized, <<>>} = MemberAssignment.deserialize(wire)
+
+      assert deserialized.user_data == ""
+      assert deserialized.version == 0
+    end
+
+    test "round-trip with binary user_data" do
+      original = %MemberAssignment{
+        version: 1,
+        partition_assignments: [],
+        user_data: <<0xFF, 0xFE, 0x00, 0x01>>
+      }
+
+      serialized = IO.iodata_to_binary(MemberAssignment.serialize(original))
+      wire = <<byte_size(serialized)::32-signed, serialized::binary>>
+      {deserialized, <<>>} = MemberAssignment.deserialize(wire)
+
+      assert deserialized.user_data == <<0xFF, 0xFE, 0x00, 0x01>>
+      assert deserialized.version == 1
+    end
+
+    test "round-trip with multiple topics preserves all data" do
+      original = %MemberAssignment{
+        version: 0,
+        partition_assignments: [
+          %MemberAssignment.PartitionAssignment{topic: "foo", partitions: [0, 3]},
+          %MemberAssignment.PartitionAssignment{topic: "bar", partitions: [1]}
+        ],
+        user_data: "test"
+      }
+
+      serialized = IO.iodata_to_binary(MemberAssignment.serialize(original))
+      wire = <<byte_size(serialized)::32-signed, serialized::binary>>
+      {deserialized, <<>>} = MemberAssignment.deserialize(wire)
+
+      assert deserialized.version == 0
+      assert deserialized.user_data == "test"
+      assert length(deserialized.partition_assignments) == 2
+
+      topics =
+        deserialized.partition_assignments
+        |> Enum.map(& &1.topic)
+        |> Enum.sort()
+
+      assert topics == ["bar", "foo"]
+
+      foo = Enum.find(deserialized.partition_assignments, &(&1.topic == "foo"))
+      assert Enum.sort(foo.partitions) == [0, 3]
+
+      bar = Enum.find(deserialized.partition_assignments, &(&1.topic == "bar"))
+      assert bar.partitions == [1]
+    end
+  end
+
+  describe "deserialize_content/1" do
+    test "parses raw inner bytes without length prefix" do
+      inner =
+        <<0::16, 1::32, 5::16, "topic", 2::32, 0::32, 1::32, 0::32, "">>
+
+      result = MemberAssignment.deserialize_content(inner)
+
+      assert %MemberAssignment{} = result
+      assert result.version == 0
+      assert length(result.partition_assignments) == 1
+      [pa] = result.partition_assignments
+      assert pa.topic == "topic"
+      assert Enum.sort(pa.partitions) == [0, 1]
+    end
+
+    test "handles empty binary" do
+      assert %MemberAssignment{} = MemberAssignment.deserialize_content(<<>>)
     end
   end
 

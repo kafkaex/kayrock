@@ -315,6 +315,62 @@ defmodule Kayrock.SyncGroupTest do
       {response, _rest} = Kayrock.SyncGroup.V4.Response.deserialize(response_binary)
 
       assert %Kayrock.MemberAssignment{} = response.assignment
+      assert length(response.assignment.partition_assignments) == 1
+      [pa] = response.assignment.partition_assignments
+      assert pa.topic == "test-topic"
+      assert Enum.sort(pa.partitions) == [0, 1]
+    end
+
+    test "deserializes empty assignment (compact bytes varint 1) as empty struct" do
+      response_binary =
+        IO.iodata_to_binary([
+          <<4::32-signed>>,
+          <<0>>,
+          <<0::32-signed>>,
+          <<0::16-signed>>,
+          <<1>>,
+          <<0>>
+        ])
+
+      {response, _rest} = Kayrock.SyncGroup.V4.Response.deserialize(response_binary)
+      assert %Kayrock.MemberAssignment{} = response.assignment
+      assert response.assignment.partition_assignments == []
+    end
+
+    test "preserves user_data through V4 response deserialization" do
+      member_assignment = %Kayrock.MemberAssignment{
+        version: 0,
+        partition_assignments: [
+          %Kayrock.MemberAssignment.PartitionAssignment{
+            topic: "orders",
+            partitions: [0]
+          }
+        ],
+        user_data: "sticky-state"
+      }
+
+      assignment_binary =
+        member_assignment
+        |> Kayrock.MemberAssignment.serialize()
+        |> IO.iodata_to_binary()
+
+      assignment_compact =
+        Kayrock.Serialize.encode_unsigned_varint(byte_size(assignment_binary) + 1)
+
+      response_binary =
+        IO.iodata_to_binary([
+          <<4::32-signed>>,
+          <<0>>,
+          <<0::32-signed>>,
+          <<0::16-signed>>,
+          assignment_compact,
+          assignment_binary,
+          <<0>>
+        ])
+
+      {response, _rest} = Kayrock.SyncGroup.V4.Response.deserialize(response_binary)
+
+      assert response.assignment.user_data == "sticky-state"
     end
   end
 

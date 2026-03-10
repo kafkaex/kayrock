@@ -73,37 +73,32 @@ defmodule Kayrock.Deserialize do
   def deserialize(:nullable_bytes, data), do: deserialize(:bytes, data)
 
   # Compact types (KIP-482)
+  # Non-nullable variants raise on null (varint 0), matching Java kafka-clients behavior.
+  # Nullable variants return nil.
+
   def deserialize(:compact_string, data) do
-    {len_plus_one, rest} = decode_unsigned_varint(data)
+    case decode_compact_data(data) do
+      {nil, _rest} ->
+        raise ArgumentError, "non-nullable compact_string field was serialized as null"
 
-    case len_plus_one do
-      0 ->
-        {nil, rest}
-
-      n ->
-        len = n - 1
-        <<val::size(len)-binary, rest2::binary>> = rest
-        {val, rest2}
+      result ->
+        result
     end
   end
 
-  def deserialize(:compact_nullable_string, data), do: deserialize(:compact_string, data)
+  def deserialize(:compact_nullable_string, data), do: decode_compact_data(data)
 
   def deserialize(:compact_bytes, data) do
-    {len_plus_one, rest} = decode_unsigned_varint(data)
+    case decode_compact_data(data) do
+      {nil, _rest} ->
+        raise ArgumentError, "non-nullable compact_bytes field was serialized as null"
 
-    case len_plus_one do
-      0 ->
-        {nil, rest}
-
-      n ->
-        len = n - 1
-        <<val::size(len)-binary, rest2::binary>> = rest
-        {val, rest2}
+      result ->
+        result
     end
   end
 
-  def deserialize(:compact_nullable_bytes, data), do: deserialize(:compact_bytes, data)
+  def deserialize(:compact_nullable_bytes, data), do: decode_compact_data(data)
 
   def deserialize(:unsigned_varint, data), do: decode_unsigned_varint(data)
 
@@ -177,6 +172,20 @@ defmodule Kayrock.Deserialize do
         <<tag_data::size(size)-binary, d3::binary>> = d2
         {[{tag, tag_data} | acc], d3}
       end)
+    end
+  end
+
+  defp decode_compact_data(data) do
+    {len_plus_one, rest} = decode_unsigned_varint(data)
+
+    case len_plus_one do
+      0 ->
+        {nil, rest}
+
+      n ->
+        len = n - 1
+        <<val::size(len)-binary, rest2::binary>> = rest
+        {val, rest2}
     end
   end
 

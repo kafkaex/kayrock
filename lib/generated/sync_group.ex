@@ -1051,21 +1051,7 @@ The schema of this API is
 
     defp deserialize_field(:root, :assignment, acc, data) do
       {raw, rest} = Kayrock.Deserialize.deserialize(:compact_bytes, data)
-
-      val =
-        case raw do
-          nil ->
-            nil
-
-          binary ->
-            {parsed, _} =
-              Kayrock.MemberAssignment.deserialize(
-                <<byte_size(binary)::32-signed, binary::binary>>
-              )
-
-            parsed
-        end
-
+      val = Kayrock.MemberAssignment.deserialize_content(raw)
       deserialize_field(:root, :tagged_fields, Map.put(acc, :assignment, val), rest)
     end
 
