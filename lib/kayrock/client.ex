@@ -92,7 +92,7 @@ defmodule Kayrock.Client do
   end
 
   def broker_call(pid, node_selector, request) do
-    GenServer.call(pid, {:broker_call, node_selector, request})
+    GenServer.call(pid, {:broker_call, node_selector, request}, 15_000)
   end
 
   def cluster_metadata(pid) do
@@ -127,8 +127,21 @@ defmodule Kayrock.Client do
     case find_node(state_out, node_selector) do
       {:ok, node_id, state_out} ->
         {broker_pid, state_out} = ensure_broker_connection(state_out, node_id)
-        resp = Kayrock.broker_sync_call(broker_pid, request)
-        {:reply, resp, state_out}
+
+        try do
+          case Kayrock.broker_sync_call(broker_pid, request) do
+            {:ok, _} = resp ->
+              {:reply, resp, state_out}
+
+            {:error, reason} ->
+              state_out = invalidate_broker(state_out, node_id)
+              {:reply, {:error, reason}, state_out}
+          end
+        catch
+          :exit, reason ->
+            state_out = invalidate_broker(state_out, node_id)
+            {:reply, {:error, {:connection_error, reason}}, state_out}
+        end
 
       {:error, error, state_out} ->
         {:reply, {:error, error}, state_out}
@@ -209,6 +222,18 @@ defmodule Kayrock.Client do
 
     {:ok, metadata} = Kayrock.broker_sync_call(pid, metadata_request)
     {metadata, updated_state}
+  end
+
+  # clears a cached broker pid so the next call creates a fresh connection
+  defp invalidate_broker(%State{} = state, node_id) do
+    {_pid, updated_state} =
+      State.get_and_update_cluster_metadata(state, fn cluster_metadata ->
+        ClusterMetadata.get_and_update_broker(cluster_metadata, node_id, fn broker ->
+          {nil, %{broker | pid: nil}}
+        end)
+      end)
+
+    updated_state
   end
 
   # checks for a connection to the given node; returns the pid if it is already

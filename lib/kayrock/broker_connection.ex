@@ -32,7 +32,7 @@ defmodule Kayrock.BrokerConnection do
   def send(conn, data), do: Connection.call(conn, {:send, data})
 
   def recv(conn, timeout \\ 5000) do
-    Connection.call(conn, {:recv, timeout})
+    Connection.call(conn, {:recv, timeout}, timeout + 5000)
   end
 
   def stop(conn) do
@@ -113,7 +113,7 @@ defmodule Kayrock.BrokerConnection do
           "Sending to #{describe_self(s, self())} failed with reason #{inspect(reason)}"
         )
 
-        {:disconnect, reason, reason, s}
+        {:disconnect, reason, {:error, reason}, s}
     end
   end
 
