@@ -30,7 +30,10 @@ defmodule Kayrock.ChaosTestHelpers do
     produce_request =
       produce_messages_request(topic, [[record_set: record_batch]], 1, api_version)
 
-    {:ok, response} = Kayrock.client_call(client, produce_request, :controller)
+    {:ok, response} =
+      with_retry(fn ->
+        Kayrock.client_call(client, produce_request, :controller)
+      end)
 
     [topic_response] = response.responses
     assert topic_response.topic == topic
@@ -74,7 +77,10 @@ defmodule Kayrock.ChaosTestHelpers do
     partition_data = [[topic: topic, partition: 0, fetch_offset: offset]]
     fetch_request = fetch_messages_request(partition_data, [], api_version)
 
-    {:ok, response} = Kayrock.client_call(client, fetch_request, :controller)
+    {:ok, response} =
+      with_retry(fn ->
+        Kayrock.client_call(client, fetch_request, :controller)
+      end)
 
     [topic_response] = response.responses
     assert topic_response.topic == topic
