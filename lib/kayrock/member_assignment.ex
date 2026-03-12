@@ -36,7 +36,7 @@ defmodule Kayrock.MemberAssignment do
     ]
   end
 
-  @spec deserialize_content(binary) :: t
+  @spec deserialize_content(binary) :: t | no_return
   def deserialize_content(<<>>), do: %__MODULE__{}
   def deserialize_content(data), do: deserialize_member_assignments(data)
 
