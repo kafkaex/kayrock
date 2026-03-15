@@ -36,6 +36,10 @@ defmodule Kayrock.MemberAssignment do
     ]
   end
 
+  @spec deserialize_content(binary) :: t | no_return
+  def deserialize_content(<<>>), do: %__MODULE__{}
+  def deserialize_content(data), do: deserialize_member_assignments(data)
+
   @spec deserialize(binary) :: {t, binary}
   def deserialize(<<>>), do: {%__MODULE__{}, <<>>}
 
@@ -50,13 +54,21 @@ defmodule Kayrock.MemberAssignment do
   defp deserialize_member_assignments(
          <<version::16-signed, assignments_size::32-signed, rest::binary>>
        ) do
-    {partition_assignments, user_data} = parse_assignments(assignments_size, rest, [])
+    {partition_assignments, remaining} = parse_assignments(assignments_size, rest, [])
+    user_data = deserialize_user_data(remaining)
 
     %__MODULE__{
       version: version,
       partition_assignments: partition_assignments,
       user_data: user_data
     }
+  end
+
+  defp deserialize_user_data(<<>>), do: ""
+
+  defp deserialize_user_data(data) do
+    {val, _rest} = Kayrock.Deserialize.deserialize(:bytes, data)
+    val
   end
 
   defp parse_assignments(0, rest, assignments), do: {assignments, rest}

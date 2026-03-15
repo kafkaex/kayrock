@@ -141,9 +141,9 @@ defmodule Kayrock.Chaos.OffsetTest do
 
       {:ok, _} = Kayrock.client_call(ctx.client, commit_request1, coordinator.node_id)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
 
       commit_request2 =
         offset_commit_request(
@@ -311,9 +311,9 @@ defmodule Kayrock.Chaos.OffsetTest do
 
       {:ok, _} = Kayrock.client_call(ctx.client, commit_request, coordinator.node_id)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
 
       fetch_request =
         offset_fetch_request(
@@ -617,8 +617,7 @@ defmodule Kayrock.Chaos.OffsetTest do
 
       {:ok, _} = Kayrock.client_call(ctx.client, commit_request, coordinator.node_id)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
-      add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(10)
 
       fetch_request =

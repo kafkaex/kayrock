@@ -126,8 +126,10 @@ defmodule Kayrock.DeserializeTest do
   end
 
   describe "compact_string deserialization" do
-    test "deserializes null compact string (length 0)" do
-      assert {nil, <<>>} = Deserialize.deserialize(:compact_string, <<0>>)
+    test "raises on null (varint 0) for non-nullable compact_string" do
+      assert_raise ArgumentError, ~r/non-nullable compact_string/, fn ->
+        Deserialize.deserialize(:compact_string, <<0>>)
+      end
     end
 
     test "deserializes empty compact string (length 1)" do
@@ -145,15 +147,24 @@ defmodule Kayrock.DeserializeTest do
   end
 
   describe "compact_nullable_string deserialization" do
-    test "delegates to compact_string" do
+    test "returns nil on null (varint 0)" do
       assert {nil, <<>>} = Deserialize.deserialize(:compact_nullable_string, <<0>>)
+    end
+
+    test "deserializes non-null string" do
       assert {"test", <<>>} = Deserialize.deserialize(:compact_nullable_string, <<5, "test">>)
+    end
+
+    test "deserializes empty string" do
+      assert {"", <<>>} = Deserialize.deserialize(:compact_nullable_string, <<1>>)
     end
   end
 
   describe "compact_bytes deserialization" do
-    test "deserializes null compact bytes" do
-      assert {nil, <<>>} = Deserialize.deserialize(:compact_bytes, <<0>>)
+    test "raises on null (varint 0) for non-nullable compact_bytes" do
+      assert_raise ArgumentError, ~r/non-nullable compact_bytes/, fn ->
+        Deserialize.deserialize(:compact_bytes, <<0>>)
+      end
     end
 
     test "deserializes empty compact bytes" do
@@ -166,8 +177,17 @@ defmodule Kayrock.DeserializeTest do
   end
 
   describe "compact_nullable_bytes deserialization" do
-    test "delegates to compact_bytes" do
+    test "returns nil on null (varint 0)" do
       assert {nil, <<>>} = Deserialize.deserialize(:compact_nullable_bytes, <<0>>)
+    end
+
+    test "deserializes non-null bytes" do
+      assert {<<1, 2, 3>>, <<>>} =
+               Deserialize.deserialize(:compact_nullable_bytes, <<4, 1, 2, 3>>)
+    end
+
+    test "deserializes empty bytes" do
+      assert {"", <<>>} = Deserialize.deserialize(:compact_nullable_bytes, <<1>>)
     end
   end
 

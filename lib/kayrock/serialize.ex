@@ -69,6 +69,12 @@ defmodule Kayrock.Serialize do
   def serialize(:nullable_bytes, val), do: serialize(:bytes, val)
 
   # Compact types (KIP-482) - use unsigned varint, length+1 encoding
+  def serialize(:compact_string, nil) do
+    raise ArgumentError,
+          "compact_string field cannot be nil (non-nullable per Kafka protocol). " <>
+            "Set the field to a string value, or use compact_nullable_string for nullable fields."
+  end
+
   def serialize(:compact_string, val) when is_binary(val) do
     [encode_unsigned_varint(byte_size(val) + 1), val]
   end
@@ -77,6 +83,12 @@ defmodule Kayrock.Serialize do
 
   def serialize(:compact_nullable_string, val) when is_binary(val) do
     serialize(:compact_string, val)
+  end
+
+  def serialize(:compact_bytes, nil) do
+    raise ArgumentError,
+          "compact_bytes field cannot be nil (non-nullable per Kafka protocol). " <>
+            "Set the field to a binary value, or use compact_nullable_bytes for nullable fields."
   end
 
   def serialize(:compact_bytes, val) when is_binary(val) do

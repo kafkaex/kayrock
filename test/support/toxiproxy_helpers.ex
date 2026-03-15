@@ -29,7 +29,7 @@ defmodule Kayrock.ToxiproxyHelpers do
   - **timeout** - Stop all data after timeout and close connection
   - **slicer** - Slice data into smaller packets
   - **limit_data** - Close connection after transmitting N bytes
-  - **down** - Take connection offline (0% availability)
+  - **disable/enable proxy** - Take connection offline/online (see `disable_proxy/2`, `enable_proxy/2`)
   """
 
   alias Testcontainers.ToxiproxyContainer
@@ -116,7 +116,10 @@ defmodule Kayrock.ToxiproxyHelpers do
   end
 
   @doc """
-  Takes the connection down (makes it unavailable).
+  Disables a proxy entirely (makes it unavailable, connection refused).
+
+  This sets `enabled: false` on the proxy via the Toxiproxy API rather than
+  adding a toxic (there is no "down" toxic type).
 
   ## Parameters
 
@@ -126,23 +129,40 @@ defmodule Kayrock.ToxiproxyHelpers do
   ## Examples
 
       # Take connection offline
-      :ok = add_down(toxiproxy, "kafka")
+      :ok = disable_proxy(toxiproxy, "kafka")
 
       # Do something while offline
 
       # Bring it back
-      :ok = remove_toxic(toxiproxy, "kafka", "down_downstream")
+      :ok = enable_proxy(toxiproxy, "kafka")
   """
-  def add_down(container, proxy_name) do
-    toxic = %{
-      type: "down",
-      name: "down_downstream",
-      stream: "downstream",
-      toxicity: 1.0,
-      attributes: %{}
-    }
+  def disable_proxy(container, proxy_name), do: set_proxy_enabled(container, proxy_name, false)
 
-    add_toxic(container, proxy_name, toxic)
+  @doc """
+  Re-enables a previously disabled proxy.
+
+  ## Parameters
+
+    - `container` - The Toxiproxy container
+    - `proxy_name` - Name of the proxy
+  """
+  def enable_proxy(container, proxy_name), do: set_proxy_enabled(container, proxy_name, true)
+
+  defp set_proxy_enabled(container, proxy_name, enabled) do
+    host = Testcontainers.get_host()
+    api_port = ToxiproxyContainer.mapped_control_port(container)
+
+    :inets.start()
+
+    url = ~c"http://#{host}:#{api_port}/proxies/#{proxy_name}"
+    body = Jason.encode!(%{enabled: enabled})
+    headers = [{~c"content-type", ~c"application/json"}]
+
+    case :httpc.request(:post, {url, headers, ~c"application/json", body}, [], []) do
+      {:ok, {{_, 200, _}, _, _}} -> :ok
+      {:ok, {{_, code, _}, _, resp_body}} -> {:error, {:http_error, code, resp_body}}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   @doc """

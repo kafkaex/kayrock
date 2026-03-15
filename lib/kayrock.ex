@@ -224,7 +224,7 @@ defmodule Kayrock do
   `broker_id` should be the pid of a `Kayrock.BrokerConnection`.  `request` must
   have an implementation for the `Kayrock.Request` protocol.
   """
-  @spec broker_sync_call(pid, Request.t()) :: {:ok, map}
+  @spec broker_sync_call(pid, Request.t()) :: {:ok, map} | {:error, term}
   def broker_sync_call(
         broker_pid,
         %{correlation_id: correlation_id, client_id: client_id} = request
@@ -234,11 +234,13 @@ defmodule Kayrock do
     wire_protocol = Request.serialize(request)
     response_deserializer = Request.response_deserializer(request)
 
-    :ok = BrokerConnection.send(broker_pid, wire_protocol)
-    {:ok, resp} = BrokerConnection.recv(broker_pid)
-    {deserialized_resp, _} = response_deserializer.(resp)
-
-    {:ok, deserialized_resp}
+    with :ok <- BrokerConnection.send(broker_pid, wire_protocol),
+         {:ok, resp} <- BrokerConnection.recv(broker_pid) do
+      {deserialized_resp, _} = response_deserializer.(resp)
+      {:ok, deserialized_resp}
+    else
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   defp build_create_topic_request(topic) when is_map(topic) do

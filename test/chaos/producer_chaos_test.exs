@@ -127,9 +127,9 @@ defmodule Kayrock.Chaos.ProducerTest do
       messages_before = build_test_records(@batch_size_medium, "before-drop")
       offset1 = produce_messages!(ctx.client, topic, messages_before, 5)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       messages_after = build_test_records(@batch_size_medium, "after-drop")
@@ -158,9 +158,9 @@ defmodule Kayrock.Chaos.ProducerTest do
       topic = create_topic(ctx.client, 5)
 
       for _ <- 1..@flaky_network_cycles do
-        add_down(ctx.toxiproxy, ctx.proxy_name)
+        disable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@flaky_network_down_ms)
-        remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+        enable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@flaky_network_up_ms)
       end
 
@@ -316,9 +316,9 @@ defmodule Kayrock.Chaos.ProducerTest do
       offset1 = produce_messages!(ctx.client, topic, messages_p1, 5)
 
       remove_all_toxics(ctx.toxiproxy, ctx.proxy_name)
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@short_recovery_wait_ms)
 
       messages_p2 = build_test_records(@batch_size_small, "phase2")
@@ -354,8 +354,7 @@ defmodule Kayrock.Chaos.ProducerTest do
     test "fails when connection is permanently down during produce", ctx do
       topic = create_topic(ctx.client, 5)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
-      add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(10)
 
       messages = [build_record("conn-down")]
@@ -464,9 +463,9 @@ defmodule Kayrock.Chaos.ProducerTest do
       offset = produce_messages!(ctx.client, topic, messages, 5)
 
       for _ <- 1..@flaky_network_cycles do
-        add_down(ctx.toxiproxy, ctx.proxy_name)
+        disable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@flaky_fetch_down_ms)
-        remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+        enable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@fetch_retry_interval_ms)
       end
 

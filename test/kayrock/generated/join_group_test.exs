@@ -244,6 +244,36 @@ defmodule Kayrock.JoinGroupTest do
   end
 
   # ============================================
+  # V6 Special Case: metadata struct serialization
+  # ============================================
+
+  describe "V6 Request special case: metadata struct serialization" do
+    test "accepts %GroupProtocolMetadata{} struct in protocols metadata field" do
+      metadata = %Kayrock.GroupProtocolMetadata{
+        version: 0,
+        topics: ["test-topic"],
+        user_data: ""
+      }
+
+      request = %Kayrock.JoinGroup.V6.Request{
+        correlation_id: 1,
+        client_id: "test",
+        group_id: "test-group",
+        session_timeout_ms: 30_000,
+        rebalance_timeout_ms: 10_000,
+        member_id: "",
+        group_instance_id: nil,
+        protocol_type: "consumer",
+        protocols: [%{name: "range", metadata: metadata, tagged_fields: []}],
+        tagged_fields: []
+      }
+
+      serialized = Kayrock.JoinGroup.V6.Request.serialize(request)
+      assert is_list(serialized) or is_binary(serialized)
+    end
+  end
+
+  # ============================================
   # Edge Cases
   # ============================================
 

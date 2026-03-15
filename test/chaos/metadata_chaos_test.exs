@@ -107,9 +107,9 @@ defmodule Kayrock.Chaos.MetadataTest do
       {:ok, response1} = Kayrock.client_call(ctx.client, request1, :random)
       initial_broker_count = length(response1.brokers)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       request2 = metadata_request([topic], 9)
@@ -130,9 +130,9 @@ defmodule Kayrock.Chaos.MetadataTest do
       topic = create_topic(ctx.client, 5)
 
       for _ <- 1..@flaky_network_cycles do
-        add_down(ctx.toxiproxy, ctx.proxy_name)
+        disable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@flaky_network_down_ms)
-        remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+        enable_proxy(ctx.toxiproxy, ctx.proxy_name)
         Process.sleep(@flaky_network_up_ms)
       end
 
@@ -253,9 +253,9 @@ defmodule Kayrock.Chaos.MetadataTest do
       topic_meta1 = Enum.find(response1.topics, fn t -> t.name == topic end)
       initial_partition_count = length(topic_meta1.partitions)
 
-      add_down(ctx.toxiproxy, ctx.proxy_name)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_drop_duration_ms)
-      remove_toxic(ctx.toxiproxy, ctx.proxy_name, "down_downstream")
+      enable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@connection_recovery_wait_ms)
 
       request2 = metadata_request([topic], 9)
@@ -375,8 +375,7 @@ defmodule Kayrock.Chaos.MetadataTest do
     end
 
     test "fails when all brokers unreachable", ctx do
-      add_down(ctx.toxiproxy, ctx.proxy_name)
-      add_timeout(ctx.toxiproxy, ctx.proxy_name, 0)
+      disable_proxy(ctx.toxiproxy, ctx.proxy_name)
       Process.sleep(@brief_delay_ms)
 
       request = metadata_request([], 9)

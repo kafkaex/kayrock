@@ -341,7 +341,7 @@ defmodule Kayrock.Test.Factories.SyncGroupFactory do
       assignment: %Kayrock.MemberAssignment{
         version: 0,
         partition_assignments: [],
-        user_data: <<0, 0, 0, 0>>
+        user_data: ""
       }
     }
 
@@ -474,8 +474,8 @@ defmodule Kayrock.Test.Factories.SyncGroupFactory do
       # error_code
       0,
       0,
-      # assignment (compact bytes: 0 = null)
-      0,
+      # assignment (compact bytes: 1 = empty, 0 bytes)
+      1,
       # tagged_fields
       0
     >>
@@ -484,7 +484,7 @@ defmodule Kayrock.Test.Factories.SyncGroupFactory do
       correlation_id: 4,
       throttle_time_ms: 0,
       error_code: 0,
-      assignment: nil,
+      assignment: %Kayrock.MemberAssignment{},
       tagged_fields: []
     }
 
@@ -583,8 +583,8 @@ defmodule Kayrock.Test.Factories.SyncGroupFactory do
     assignment_bytes =
       case assignment do
         nil ->
-          # Compact nullable bytes: 0 = null
-          <<0>>
+          # Compact bytes: 1 = empty (0 bytes)
+          <<1>>
 
         binary when is_binary(binary) ->
           binary

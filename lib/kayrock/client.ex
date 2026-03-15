@@ -92,7 +92,7 @@ defmodule Kayrock.Client do
   end
 
   def broker_call(pid, node_selector, request) do
-    GenServer.call(pid, {:broker_call, node_selector, request})
+    GenServer.call(pid, {:broker_call, node_selector, request}, 15_000)
   end
 
   def cluster_metadata(pid) do
@@ -127,8 +127,21 @@ defmodule Kayrock.Client do
     case find_node(state_out, node_selector) do
       {:ok, node_id, state_out} ->
         {broker_pid, state_out} = ensure_broker_connection(state_out, node_id)
-        resp = Kayrock.broker_sync_call(broker_pid, request)
-        {:reply, resp, state_out}
+
+        try do
+          case Kayrock.broker_sync_call(broker_pid, request) do
+            {:ok, _} = resp ->
+              {:reply, resp, state_out}
+
+            {:error, reason} ->
+              state_out = invalidate_broker(state_out, node_id)
+              {:reply, {:error, reason}, state_out}
+          end
+        catch
+          :exit, reason ->
+            state_out = invalidate_broker(state_out, node_id)
+            {:reply, {:error, {:connection_error, reason}}, state_out}
+        end
 
       {:error, error, state_out} ->
         {:reply, {:error, error}, state_out}
@@ -142,7 +155,15 @@ defmodule Kayrock.Client do
   @impl true
   def handle_info(:update_metadata, state) do
     Logger.debug("Performing scheduled update of cluster metadata #{inspect(self())}")
-    {:noreply, update_metadata(state)}
+
+    case safe_update_metadata(state) do
+      {:ok, updated_state} ->
+        {:noreply, updated_state}
+
+      {:error, reason} ->
+        Logger.warning("Failed to update cluster metadata: #{inspect(reason)}")
+        {:noreply, state}
+    end
   end
 
   @impl true
@@ -167,7 +188,7 @@ defmodule Kayrock.Client do
     {:ok, seed_pid} = BrokerConnection.start_link(seed_host, seed_port, connect_opts)
 
     # ignore the state update since we're throwing away the connection
-    {metadata, _} = fetch_metadata(seed_pid, state, [])
+    {:ok, metadata, _} = fetch_metadata(seed_pid, state, [])
 
     :ok = BrokerConnection.stop(seed_pid)
     Logger.debug("Disconnected from seed broker #{inspect(seed_pid)}")
@@ -179,6 +200,15 @@ defmodule Kayrock.Client do
   # this gets called periodically to keep metadata fresh (see the
   # handle_info(:timeout, _) clause above) as well as when we try to interact
   # with a topic for which we don't yet have metadata
+  # safe version for periodic metadata updates — catches all errors
+  defp safe_update_metadata(state) do
+    try do
+      {:ok, update_metadata(state)}
+    catch
+      :exit, reason -> {:error, {:connection_error, reason}}
+    end
+  end
+
   defp update_metadata(state, topics \\ []) do
     {controller_pid, updated_state} =
       ensure_broker_connection(state, state.cluster_metadata.controller_id)
@@ -186,19 +216,25 @@ defmodule Kayrock.Client do
     # update existing topics as well as the new one
     topics = topics ++ ClusterMetadata.known_topics(state.cluster_metadata)
 
-    {metadata_response, updated_state} = fetch_metadata(controller_pid, updated_state, topics)
-    new_cluster_metadata = ClusterMetadata.from_metadata_v1_response(metadata_response)
+    case fetch_metadata(controller_pid, updated_state, topics) do
+      {:ok, metadata_response, updated_state} ->
+        new_cluster_metadata = ClusterMetadata.from_metadata_v1_response(metadata_response)
 
-    # we want to keep any broker connections that are still valid and close any
-    # that are no longer appropriate
-    {updated_cluster_metadata, brokers_to_close} =
-      ClusterMetadata.merge_brokers(updated_state.cluster_metadata, new_cluster_metadata)
+        # we want to keep any broker connections that are still valid and close any
+        # that are no longer appropriate
+        {updated_cluster_metadata, brokers_to_close} =
+          ClusterMetadata.merge_brokers(updated_state.cluster_metadata, new_cluster_metadata)
 
-    for broker <- brokers_to_close do
-      BrokerConnection.close(broker.pid)
+        for broker <- brokers_to_close do
+          BrokerConnection.close(broker.pid)
+        end
+
+        %{updated_state | cluster_metadata: updated_cluster_metadata}
+
+      {:error, reason, _updated_state} ->
+        Logger.warning("Metadata fetch failed: #{inspect(reason)}")
+        state
     end
-
-    %{updated_state | cluster_metadata: updated_cluster_metadata}
   end
 
   defp fetch_metadata(pid, %State{} = state, topics) do
@@ -207,8 +243,25 @@ defmodule Kayrock.Client do
     {updated_state, metadata_request} =
       State.request(state, %Kayrock.Metadata.V1.Request{topics: topics_param})
 
-    {:ok, metadata} = Kayrock.broker_sync_call(pid, metadata_request)
-    {metadata, updated_state}
+    case Kayrock.broker_sync_call(pid, metadata_request) do
+      {:ok, metadata} ->
+        {:ok, metadata, updated_state}
+
+      {:error, reason} ->
+        {:error, reason, updated_state}
+    end
+  end
+
+  # clears a cached broker pid so the next call creates a fresh connection
+  defp invalidate_broker(%State{} = state, node_id) do
+    {_pid, updated_state} =
+      State.get_and_update_cluster_metadata(state, fn cluster_metadata ->
+        ClusterMetadata.get_and_update_broker(cluster_metadata, node_id, fn broker ->
+          {nil, %{broker | pid: nil}}
+        end)
+      end)
+
+    updated_state
   end
 
   # checks for a connection to the given node; returns the pid if it is already
