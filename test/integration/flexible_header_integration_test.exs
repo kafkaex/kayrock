@@ -271,15 +271,37 @@ defmodule Kayrock.Integration.FlexibleHeaderIntegrationTest do
       node_id = coordinator_response.node_id
 
       # Join group (use V5 which is non-flexible)
+      # V4+ requires two-step join (KIP-394): first with empty member_id to get
+      # assigned member_id (error 79 = MEMBER_ID_REQUIRED), then retry with it
       join_request =
         join_group_request(%{group_id: group_id, topics: [topic_name]}, 5)
 
       {:ok, join_response} =
         with_retry(
           fn -> Kayrock.client_call(client_pid, join_request, node_id) end,
-          max_retries: 20,
-          delay_ms: 1_000
+          accept_errors: [79]
         )
+
+      # Handle MEMBER_ID_REQUIRED (KIP-394) for V4+
+      join_response =
+        if join_response.error_code == 79 do
+          assigned_member_id = join_response.member_id
+
+          retry_request =
+            join_group_request(
+              %{group_id: group_id, topics: [topic_name], member_id: assigned_member_id},
+              5
+            )
+
+          {:ok, resp} =
+            with_retry(fn ->
+              Kayrock.client_call(client_pid, retry_request, node_id)
+            end)
+
+          resp
+        else
+          join_response
+        end
 
       assert join_response.error_code == 0
       generation_id = join_response.generation_id

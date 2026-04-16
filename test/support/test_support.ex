@@ -166,6 +166,8 @@ defmodule Kayrock.TestSupport do
 
   # Transient errors that indicate "try again later"
   @transient_errors [
+    # COORDINATOR_LOAD_IN_PROGRESS
+    14,
     # COORDINATOR_NOT_AVAILABLE
     15,
     # NOT_COORDINATOR
@@ -173,9 +175,7 @@ defmodule Kayrock.TestSupport do
     # UNKNOWN_MEMBER_ID (often transient during rebalance)
     25,
     # REBALANCE_IN_PROGRESS
-    27,
-    # COORDINATOR_LOAD_IN_PROGRESS
-    79
+    27
   ]
 
   defp do_with_retry(0, _fun, result, _delay_ms, _accept_errors), do: result
