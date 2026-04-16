@@ -89,7 +89,6 @@ defmodule Kayrock.Integration.ListOffsetsTest do
         # Should be 3 (offset of next message to be written)
         assert latest_offset == 3
       end
-
     end
   end
 

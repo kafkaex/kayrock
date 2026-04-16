@@ -60,7 +60,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
       assert is_list(response.resources),
              "V0 resources should be a list"
-
     end
 
     # V1: adds resource_pattern_type_filter
@@ -88,7 +87,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
       assert is_list(response.resources),
              "V1 resources should be a list"
-
     end
 
     @tag api: :describe_acls

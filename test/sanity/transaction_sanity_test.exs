@@ -433,7 +433,6 @@ defmodule Kayrock.Sanity.TransactionSanityTest do
         end_txn(client, 0, txn_id, producer_id, producer_epoch, false, node_id)
       end
     end
-
   end
 
   # ---------------------------------------------------------------------------
@@ -509,7 +508,6 @@ defmodule Kayrock.Sanity.TransactionSanityTest do
         assert response.throttle_time_ms >= 0
       end
     end
-
   end
 
   # ---------------------------------------------------------------------------
@@ -615,7 +613,6 @@ defmodule Kayrock.Sanity.TransactionSanityTest do
         end_txn(client, 0, txn_id, producer_id, producer_epoch, true, node_id)
       end
     end
-
 
     @tag api: :txn_offset_commit
     test "V2 adds committed_leader_epoch in partition entry", %{kafka: kafka, topic: topic} do
