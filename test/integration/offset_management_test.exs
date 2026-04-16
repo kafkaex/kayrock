@@ -187,40 +187,11 @@ defmodule Kayrock.Integration.OffsetManagementTest do
       topic_name = create_topic(client_pid, api_version)
       group_id = "test-group-gen-#{unique_string()}"
 
-      # Find coordinator
-      coordinator_request = find_coordinator_request(group_id, api_version)
-
-      {:ok, coordinator_response} =
-        with_retry(fn ->
-          Kayrock.client_call(client_pid, coordinator_request, 1)
-        end)
-
-      node_id = coordinator_response.node_id
-
-      # Join group to get generation_id and member_id
-      join_request =
-        join_group_request(%{group_id: group_id, topics: [topic_name]}, api_version)
-
-      {:ok, join_response} =
-        with_retry(fn ->
-          Kayrock.client_call(client_pid, join_request, node_id)
-        end)
-
-      assert join_response.error_code == 0
-      generation_id = join_response.generation_id
-      member_id = join_response.member_id
-
-      # Must sync group before committing offsets
-      sync_request =
-        sync_group_request(
-          group_id,
-          member_id,
-          [%{member_id: member_id, topic: topic_name, partitions: [0]}],
-          api_version
+      {node_id, generation_id, member_id} =
+        join_and_sync_group(client_pid, group_id, topic_name,
+          api_version: api_version,
+          partitions: [0]
         )
-
-      {:ok, sync_response} = Kayrock.client_call(client_pid, sync_request, node_id)
-      assert sync_response.error_code == 0
 
       # Commit offset with generation and member info
       commit_request =

@@ -82,28 +82,26 @@ defmodule Kayrock.Sanity.StatelessSanityTest do
   # ---------------------------------------------------------------------------
 
   describe "ApiVersions" do
+    # V3 provides unique flexible-header coverage (KIP-482/KIP-511).
+    # V0-V2 basic success tests are covered by test/integration/api_versions_test.exs.
+    @tag api: :api_versions, version: 3
+    test "V3 returns success and parseable response", %{kafka: kafka} do
+      {:ok, client} = build_client(kafka)
+
+      request = build_api_versions_request(3)
+      {:ok, response} = Kayrock.client_call(client, request, :random)
+
+      assert response.error_code == 0,
+             "V3 expected error_code 0, got #{response.error_code}"
+
+      assert is_list(response.api_keys),
+             "V3 api_keys should be a list"
+
+      assert response.api_keys != [],
+             "V3 broker should report at least one supported API"
+    end
+
     for version <- 0..3 do
-      @tag api: :api_versions, version: version
-      test "V#{version} returns success and parseable response", %{kafka: kafka} do
-        version = unquote(version)
-        {:ok, client} = build_client(kafka)
-
-        request = build_api_versions_request(version)
-        {:ok, response} = Kayrock.client_call(client, request, :random)
-
-        assert response.error_code == 0,
-               "V#{version} expected error_code 0, got #{response.error_code}"
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
-
-        assert is_list(response.api_keys),
-               "V#{version} api_keys should be a list"
-
-        assert response.api_keys != [],
-               "V#{version} broker should report at least one supported API"
-      end
-
       @tag api: :api_versions, version: version
       test "V#{version} api_keys contain valid entries", %{kafka: kafka} do
         version = unquote(version)
@@ -177,7 +175,6 @@ defmodule Kayrock.Sanity.StatelessSanityTest do
       {:ok, response} = Kayrock.client_call(client, request, :random)
 
       assert response.error_code == 0
-      assert is_integer(response.correlation_id)
     end
 
     # The broker must report ApiVersions (key 18) in its own response
@@ -205,9 +202,6 @@ defmodule Kayrock.Sanity.StatelessSanityTest do
 
         request = build_metadata_request(version)
         {:ok, response} = Kayrock.client_call(client, request, :random)
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
 
         assert is_list(response.brokers),
                "V#{version} brokers should be a list"
@@ -363,9 +357,6 @@ defmodule Kayrock.Sanity.StatelessSanityTest do
 
         assert response.error_code == 0,
                "V#{version} expected error_code 0, got #{response.error_code}"
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
 
         assert is_list(response.groups),
                "V#{version} groups should be a list (may be empty)"

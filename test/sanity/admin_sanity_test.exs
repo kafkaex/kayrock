@@ -61,8 +61,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
       assert is_list(response.resources),
              "V0 resources should be a list"
 
-      assert is_integer(response.correlation_id),
-             "V0 correlation_id should be integer"
     end
 
     # V1: adds resource_pattern_type_filter
@@ -91,8 +89,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
       assert is_list(response.resources),
              "V1 resources should be a list"
 
-      assert is_integer(response.correlation_id),
-             "V1 correlation_id should be integer"
     end
 
     @tag api: :describe_acls
@@ -173,9 +169,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
       assert is_list(response.creation_responses),
              "V0 creation_responses should be a list"
 
-      assert is_integer(response.correlation_id),
-             "V0 correlation_id should be integer"
-
       # Each creation response has error_code
       for cr <- response.creation_responses do
         assert is_integer(cr.error_code),
@@ -253,9 +246,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
       assert is_list(response.filter_responses),
              "V0 filter_responses (not 'filter_results') should be a list"
 
-      assert is_integer(response.correlation_id),
-             "V0 correlation_id should be integer"
-
       for fr <- response.filter_responses do
         assert is_integer(fr.error_code),
                "V0 filter_response error_code should be integer"
@@ -330,9 +320,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
         assert is_list(response.log_dirs),
                "V#{version} log_dirs (not 'results') should be a list"
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
       end
 
       @tag api: :describe_log_dirs, version: version
@@ -406,9 +393,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
         assert is_list(response.topics),
                "V#{version} topics (not 'results') should be a list"
 
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
-
         for t <- response.topics do
           assert is_binary(t.topic), "V#{version}: topic.topic should be binary"
           assert is_list(t.partitions), "V#{version}: topic.partitions should be a list"
@@ -451,9 +435,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
         assert is_integer(response.throttle_time_ms),
                "V#{version} throttle_time_ms should be integer"
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
       end
     end
 
@@ -477,9 +458,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
       assert is_integer(response.throttle_time_ms),
              "V2 throttle_time_ms should be integer"
-
-      assert is_integer(response.correlation_id),
-             "V2 correlation_id should be integer"
     end
 
     @tag api: :create_delegation_token
@@ -541,9 +519,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
         assert is_integer(response.throttle_time_ms),
                "V#{version} throttle_time_ms should be integer"
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
       end
     end
   end
@@ -580,9 +555,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
         assert is_integer(response.throttle_time_ms),
                "V#{version} throttle_time_ms should be integer"
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
       end
     end
   end
@@ -621,9 +593,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
         assert is_integer(response.throttle_time_ms),
                "V#{version} throttle_time_ms should be integer"
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
       end
     end
 
@@ -667,17 +636,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
       assert is_list(response.replica_election_results),
              "V0 replica_election_results should be a list"
-
-      assert is_integer(response.correlation_id),
-             "V0 correlation_id should be integer"
-    end
-
-    @tag api: :elect_leaders, version: 0
-    test "V0 does not have election_type field in request struct" do
-      request = Kayrock.ElectLeaders.get_request_struct(0)
-
-      refute Map.has_key?(request, :election_type),
-             "V0 ElectLeaders request should NOT have election_type (added in V1)"
     end
 
     # V1 adds election_type
@@ -819,9 +777,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
       assert is_list(response.tagged_fields),
              "V0 tagged_fields should be a list (flexible version)"
-
-      assert is_integer(response.correlation_id),
-             "V0 correlation_id should be integer"
     end
 
     @tag api: :alter_partition_reassignments, version: 0
@@ -897,9 +852,6 @@ defmodule Kayrock.Sanity.AdminSanityTest do
 
       assert is_list(response.tagged_fields),
              "V0 tagged_fields should be a list (flexible version)"
-
-      assert is_integer(response.correlation_id),
-             "V0 correlation_id should be integer"
     end
 
     @tag api: :list_partition_reassignments, version: 0

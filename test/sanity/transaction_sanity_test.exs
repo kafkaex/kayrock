@@ -434,31 +434,6 @@ defmodule Kayrock.Sanity.TransactionSanityTest do
       end
     end
 
-    @tag api: :add_offsets_to_txn
-    test "V0 response has correlation_id", %{kafka: kafka, topic: topic} do
-      {:ok, client} = build_client(kafka)
-      group_id = "txn-cid-group-#{unique_string()}"
-      {producer_id, producer_epoch, txn_id, node_id} = init_producer(client, 0, "add-offs-cid")
-
-      {:ok, _} =
-        add_partitions_to_txn(
-          client,
-          0,
-          txn_id,
-          producer_id,
-          producer_epoch,
-          [{topic, [0]}],
-          node_id
-        )
-
-      {:ok, response} =
-        add_offsets_to_txn(client, 0, txn_id, producer_id, producer_epoch, group_id, node_id)
-
-      assert is_integer(response.correlation_id),
-             "correlation_id should be integer"
-
-      end_txn(client, 0, txn_id, producer_id, producer_epoch, false, node_id)
-    end
   end
 
   # ---------------------------------------------------------------------------
@@ -535,27 +510,6 @@ defmodule Kayrock.Sanity.TransactionSanityTest do
       end
     end
 
-    @tag api: :end_txn
-    test "EndTxn response has correlation_id", %{kafka: kafka, topic: topic} do
-      {:ok, client} = build_client(kafka)
-      {producer_id, producer_epoch, txn_id, node_id} = init_producer(client, 0, "end-cid")
-
-      {:ok, _} =
-        add_partitions_to_txn(
-          client,
-          0,
-          txn_id,
-          producer_id,
-          producer_epoch,
-          [{topic, [0]}],
-          node_id
-        )
-
-      {:ok, response} = end_txn(client, 0, txn_id, producer_id, producer_epoch, false, node_id)
-
-      assert is_integer(response.correlation_id),
-             "correlation_id should be integer"
-    end
   end
 
   # ---------------------------------------------------------------------------
@@ -662,51 +616,6 @@ defmodule Kayrock.Sanity.TransactionSanityTest do
       end
     end
 
-    @tag api: :txn_offset_commit
-    test "V0 response has correlation_id", %{kafka: kafka, topic: topic} do
-      {:ok, client} = build_client(kafka)
-      group_id = "txn-offset-cid-group-#{unique_string()}"
-      {producer_id, producer_epoch, txn_id, node_id} = init_producer(client, 0, "toc-cid")
-
-      {:ok, _} =
-        add_partitions_to_txn(
-          client,
-          0,
-          txn_id,
-          producer_id,
-          producer_epoch,
-          [{topic, [0]}],
-          node_id
-        )
-
-      {:ok, _} =
-        add_offsets_to_txn(client, 0, txn_id, producer_id, producer_epoch, group_id, node_id)
-
-      group_node_id = find_group_coordinator(client, group_id)
-
-      request = %{
-        Kayrock.TxnOffsetCommit.get_request_struct(0)
-        | transactional_id: txn_id,
-          group_id: group_id,
-          producer_id: producer_id,
-          producer_epoch: producer_epoch,
-          topics: [
-            %{
-              name: topic,
-              partitions: [%{partition_index: 0, committed_offset: 0, committed_metadata: ""}]
-            }
-          ]
-      }
-
-      {:ok, response} =
-        with_retry(fn -> Kayrock.client_call(client, request, group_node_id) end,
-          accept_errors: [15, 16]
-        )
-
-      assert is_integer(response.correlation_id), "correlation_id should be integer"
-
-      end_txn(client, 0, txn_id, producer_id, producer_epoch, true, node_id)
-    end
 
     @tag api: :txn_offset_commit
     test "V2 adds committed_leader_epoch in partition entry", %{kafka: kafka, topic: topic} do

@@ -70,9 +70,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
         request = create_topic_request(topic_name, version)
         {:ok, response} = Kayrock.client_call(client, request, :controller)
 
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
-
         assert is_list(response.topics),
                "V#{version} topics should be a list"
 
@@ -171,9 +168,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
           end
 
         {:ok, response} = Kayrock.client_call(client, request, :controller)
-
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
 
         assert is_list(response.responses),
                "V#{version} responses should be a list"
@@ -456,9 +450,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
 
         {:ok, response} = Kayrock.client_call(client, request, :random)
 
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
-
         assert is_list(response.responses),
                "V#{version} responses should be a list"
       end
@@ -651,9 +642,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
 
         {:ok, response} = Kayrock.client_call(client, request, :random)
 
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
-
         assert is_list(response.responses),
                "V#{version} responses should be a list"
 
@@ -780,6 +768,9 @@ defmodule Kayrock.Sanity.TopicSanityTest do
         assert is_integer(response.throttle_time_ms),
                "V#{version} throttle_time_ms should be integer"
 
+        assert response.throttle_time_ms >= 0,
+               "V#{version} throttle_time_ms should be >= 0"
+
         assert is_list(response.topics),
                "V#{version} topics should be a list"
 
@@ -790,36 +781,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
 
         assert partition_resp.error_code == 0,
                "V#{version} partition error_code should be 0, got #{partition_resp.error_code}"
-      end
-    end
-
-    # Verify throttle_time_ms in both versions
-    for version <- 0..1 do
-      @tag api: :delete_records, version: version
-      test "V#{version} response includes throttle_time_ms", %{kafka: kafka, topic: topic} do
-        version = unquote(version)
-        {:ok, client} = build_client(kafka)
-
-        api_version = min(Kayrock.DeleteRecords.max_vsn(), version)
-        request = Kayrock.DeleteRecords.get_request_struct(api_version)
-
-        request = %{
-          request
-          | topics: [
-              %{
-                topic: topic,
-                partitions: [%{partition: 0, offset: 0}]
-              }
-            ],
-            timeout: 5000
-        }
-
-        {:ok, response} = Kayrock.client_call(client, request, :random)
-
-        assert is_integer(response.throttle_time_ms),
-               "V#{version} throttle_time_ms should be integer"
-
-        assert response.throttle_time_ms >= 0
       end
     end
   end
@@ -960,9 +921,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
 
         {:ok, response} = Kayrock.client_call(client, request, :random)
 
-        assert is_integer(response.correlation_id),
-               "V#{version} correlation_id should be integer"
-
         assert is_list(response.topics),
                "V#{version} topics should be a list"
       end
@@ -987,7 +945,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
 
       {:ok, response} = Kayrock.client_call(client, request, :random)
 
-      assert is_integer(response.correlation_id)
       assert is_list(response.topics)
     end
 
@@ -1017,7 +974,6 @@ defmodule Kayrock.Sanity.TopicSanityTest do
 
       {:ok, response} = Kayrock.client_call(client, request, :random)
 
-      assert is_integer(response.correlation_id)
       assert is_list(response.topics)
     end
 

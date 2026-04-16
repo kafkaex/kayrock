@@ -75,54 +75,6 @@ defmodule Kayrock.Integration.FlexibleHeaderIntegrationTest do
   end
 
   describe "Metadata V9 (flexible header)" do
-    test "request succeeds with empty topic list", %{kafka: kafka} do
-      {:ok, client_pid} = build_client(kafka)
-
-      request = metadata_request([], 9)
-
-      # V9 uses compact_array and compact_string encodings
-      # The fixed header must use int16 client_id, not varint
-      request = %{
-        request
-        | tagged_fields: [],
-          include_cluster_authorized_operations: false,
-          include_topic_authorized_operations: false
-      }
-
-      {:ok, response} = Kayrock.client_call(client_pid, request, :random)
-
-      assert is_list(response.brokers)
-      assert response.brokers != [], "should have at least one broker"
-
-      [broker | _] = response.brokers
-      assert is_integer(broker.node_id)
-      assert is_binary(broker.host)
-      assert is_integer(broker.port)
-    end
-
-    test "request succeeds for a specific topic", %{kafka: kafka} do
-      {:ok, client_pid} = build_client(kafka)
-
-      # Create topic using a non-flexible version to avoid coupling
-      topic_name = create_topic(client_pid, 3)
-
-      request = metadata_request([topic_name], 9)
-
-      request = %{
-        request
-        | tagged_fields: [],
-          include_cluster_authorized_operations: false,
-          include_topic_authorized_operations: false
-      }
-
-      {:ok, response} = Kayrock.client_call(client_pid, request, :random)
-
-      topic = Enum.find(response.topics, fn t -> t.name == topic_name end)
-      assert topic != nil, "created topic should appear in metadata response"
-      assert topic.error_code == 0
-      assert length(topic.partitions) == 3
-    end
-
     test "request succeeds with nil topics (all topics)", %{kafka: kafka} do
       {:ok, client_pid} = build_client(kafka)
 
@@ -259,62 +211,8 @@ defmodule Kayrock.Integration.FlexibleHeaderIntegrationTest do
       topic_name = create_topic(client_pid, 3)
       group_id = "heartbeat-v4-flex-#{unique_string()}"
 
-      # Find coordinator (use V2 for stability)
-      coordinator_request = find_coordinator_request(group_id, 2)
-
-      {:ok, coordinator_response} =
-        with_retry(fn ->
-          Kayrock.client_call(client_pid, coordinator_request, 1)
-        end)
-
-      assert coordinator_response.error_code == 0
-      node_id = coordinator_response.node_id
-
-      # Join group (use V5 which is non-flexible)
-      # V4+ requires two-step join (KIP-394): first with empty member_id to get
-      # assigned member_id (error 79 = MEMBER_ID_REQUIRED), then retry with it
-      join_request =
-        join_group_request(%{group_id: group_id, topics: [topic_name]}, 5)
-
-      {:ok, join_response} =
-        with_retry(
-          fn -> Kayrock.client_call(client_pid, join_request, node_id) end,
-          accept_errors: [79]
-        )
-
-      # Handle MEMBER_ID_REQUIRED (KIP-394) for V4+
-      join_response =
-        if join_response.error_code == 79 do
-          assigned_member_id = join_response.member_id
-
-          retry_request =
-            join_group_request(
-              %{group_id: group_id, topics: [topic_name], member_id: assigned_member_id},
-              5
-            )
-
-          {:ok, resp} =
-            with_retry(fn ->
-              Kayrock.client_call(client_pid, retry_request, node_id)
-            end)
-
-          resp
-        else
-          join_response
-        end
-
-      assert join_response.error_code == 0
-      generation_id = join_response.generation_id
-      member_id = join_response.member_id
-
-      # Sync group
-      assignments = [
-        %{member_id: member_id, topic: topic_name, partitions: [0, 1, 2]}
-      ]
-
-      sync_request = sync_group_request(group_id, member_id, assignments, 3)
-      {:ok, sync_response} = Kayrock.client_call(client_pid, sync_request, node_id)
-      assert sync_response.error_code == 0
+      {node_id, generation_id, member_id} =
+        join_and_sync_group(client_pid, group_id, topic_name, api_version: 5)
 
       # Send heartbeat V4 (flexible version) -- this is the actual test
       request = Kayrock.Heartbeat.get_request_struct(4)

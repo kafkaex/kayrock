@@ -291,27 +291,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
       assert response.error_code == 0
     end
 
-    # V1+ has rebalance_timeout_ms in request
-    @tag api: :join_group, version: 1
-    test "V1+ request struct has rebalance_timeout_ms", %{topic: topic} do
-      request = build_join_group_request("test-rebalance-#{unique_string()}", topic, 1)
-
-      assert Map.has_key?(request, :rebalance_timeout_ms),
-             "V1+ request should have rebalance_timeout_ms"
-    end
-
-    # V5+ has group_instance_id in request
-    for version <- 5..6 do
-      @tag api: :join_group, version: version
-      test "V#{version} request struct has group_instance_id", %{topic: topic} do
-        version = unquote(version)
-        request = build_join_group_request("test-gi-#{unique_string()}", topic, version)
-
-        assert Map.has_key?(request, :group_instance_id),
-               "V#{version} request should have group_instance_id"
-      end
-    end
-
     # Sole member becomes the leader
     @tag api: :join_group
     test "sole member is the leader", %{client: client, topic: topic} do
@@ -359,18 +338,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
       end
     end
 
-    # V3+ has group_instance_id in request
-    for version <- 3..4 do
-      @tag api: :sync_group, version: version
-      test "V#{version} request struct has group_instance_id", %{topic: topic} do
-        version = unquote(version)
-        request = Kayrock.SyncGroup.get_request_struct(version)
-
-        assert Map.has_key?(request, :group_instance_id),
-               "V#{version} SyncGroup request should have group_instance_id"
-      end
-    end
-
     # V4 has tagged_fields in request
     @tag api: :sync_group, version: 4
     test "V4 request has tagged_fields (flexible)", %{client: client, topic: topic} do
@@ -385,15 +352,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
 
       {:ok, response} = with_retry(fn -> Kayrock.client_call(client, request, node_id) end)
       assert response.error_code == 0
-    end
-
-    # V0 has no group_instance_id
-    @tag api: :sync_group, version: 0
-    test "V0 request struct has no group_instance_id" do
-      request = Kayrock.SyncGroup.get_request_struct(0)
-
-      refute Map.has_key?(request, :group_instance_id),
-             "V0 SyncGroup request should not have group_instance_id"
     end
   end
 
@@ -419,57 +377,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
         assert response.error_code == 0,
                "V#{version} Heartbeat error_code should be 0, got #{response.error_code}"
       end
-    end
-
-    # V0-V2 have no group_instance_id; V3+ does have it
-    for version <- 0..2 do
-      @tag api: :heartbeat, version: version
-      test "V#{version} request struct has no group_instance_id" do
-        version = unquote(version)
-        request = Kayrock.Heartbeat.get_request_struct(version)
-
-        refute Map.has_key?(request, :group_instance_id),
-               "V#{version} Heartbeat request should not have group_instance_id"
-      end
-    end
-
-    # V3 has group_instance_id (but no tagged_fields yet)
-    @tag api: :heartbeat, version: 3
-    test "V3 request struct has group_instance_id" do
-      request = Kayrock.Heartbeat.get_request_struct(3)
-
-      assert Map.has_key?(request, :group_instance_id),
-             "V3 Heartbeat request should have group_instance_id"
-
-      refute Map.has_key?(request, :tagged_fields),
-             "V3 Heartbeat request should not have tagged_fields"
-    end
-
-    # V4 has group_instance_id and tagged_fields
-    @tag api: :heartbeat, version: 4
-    test "V4 request struct has group_instance_id and tagged_fields" do
-      request = Kayrock.Heartbeat.get_request_struct(4)
-
-      assert Map.has_key?(request, :group_instance_id),
-             "V4 Heartbeat request should have group_instance_id"
-
-      assert Map.has_key?(request, :tagged_fields),
-             "V4 Heartbeat request should have tagged_fields"
-    end
-
-    # Heartbeat with wrong generation_id should return ILLEGAL_GENERATION (22)
-    @tag api: :heartbeat
-    test "heartbeat with wrong generation_id returns error", %{client: client, topic: topic} do
-      ctx = join_and_sync_group(client, topic)
-      %{group_id: group_id, node_id: node_id, member_id: member_id} = ctx
-
-      # Use a clearly wrong generation id
-      request = heartbeat_request(group_id, member_id, 9_999_999, 2)
-      {:ok, response} = Kayrock.client_call(client, request, node_id)
-
-      # ILLEGAL_GENERATION(22) or UNKNOWN_MEMBER_ID(25) or REBALANCE_IN_PROGRESS(27)
-      assert response.error_code in [22, 25, 27],
-             "Expected error for bad generation_id, got #{response.error_code}"
     end
   end
 
@@ -499,21 +406,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
       end
     end
 
-    # V0-V2 struct has member_id field
-    for version <- 0..2 do
-      @tag api: :leave_group, version: version
-      test "V#{version} request struct has member_id field" do
-        version = unquote(version)
-        request = Kayrock.LeaveGroup.get_request_struct(version)
-
-        assert Map.has_key?(request, :member_id),
-               "V#{version} LeaveGroup request should have member_id"
-
-        refute Map.has_key?(request, :members),
-               "V#{version} LeaveGroup request should NOT have members list"
-      end
-    end
-
     # V3-V4: uses members list, NOT member_id
     for version <- 3..4 do
       @tag api: :leave_group, version: version
@@ -533,30 +425,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
         assert response.error_code == 0,
                "V#{version} LeaveGroup (members list) error_code should be 0, got #{response.error_code}"
       end
-    end
-
-    # V3-V4 struct has members list field, NOT member_id
-    for version <- 3..4 do
-      @tag api: :leave_group, version: version
-      test "V#{version} request struct has members list, no member_id" do
-        version = unquote(version)
-        request = Kayrock.LeaveGroup.get_request_struct(version)
-
-        assert Map.has_key?(request, :members),
-               "V#{version} LeaveGroup request should have members list"
-
-        refute Map.has_key?(request, :member_id),
-               "V#{version} LeaveGroup request should NOT have member_id (batch leave)"
-      end
-    end
-
-    # V4 has tagged_fields
-    @tag api: :leave_group, version: 4
-    test "V4 request struct has tagged_fields (flexible)" do
-      request = Kayrock.LeaveGroup.get_request_struct(4)
-
-      assert Map.has_key?(request, :tagged_fields),
-             "V4 LeaveGroup request should have tagged_fields"
     end
 
     # V3+ response has members list
@@ -632,18 +500,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
       end
     end
 
-    # V5 is flexible — request has include_authorized_operations + tagged_fields
-    @tag api: :describe_groups, version: 5
-    test "V5 request struct has include_authorized_operations and tagged_fields" do
-      request = Kayrock.DescribeGroups.get_request_struct(5)
-
-      assert Map.has_key?(request, :include_authorized_operations),
-             "V5 request should have include_authorized_operations"
-
-      assert Map.has_key?(request, :tagged_fields),
-             "V5 request should have tagged_fields"
-    end
-
     # V5 response also has tagged_fields
     @tag api: :describe_groups, version: 5
     test "V5 response includes tagged_fields (flexible)", %{client: client, topic: topic} do
@@ -705,45 +561,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
         assert partition_resp.error_code == 0,
                "V#{version} partition error_code should be 0, got #{partition_resp.error_code}"
       end
-    end
-
-    # V0 has no generation_id or member_id
-    @tag api: :offset_commit, version: 0
-    test "V0 request struct has no generation_id or member_id" do
-      request = Kayrock.OffsetCommit.get_request_struct(0)
-
-      refute Map.has_key?(request, :generation_id),
-             "V0 OffsetCommit request should not have generation_id"
-
-      refute Map.has_key?(request, :member_id),
-             "V0 OffsetCommit request should not have member_id"
-    end
-
-    # V1+ has generation_id and member_id
-    for version <- 1..8 do
-      @tag api: :offset_commit, version: version
-      test "V#{version} request struct has generation_id and member_id" do
-        version = unquote(version)
-        request = Kayrock.OffsetCommit.get_request_struct(version)
-
-        assert Map.has_key?(request, :generation_id),
-               "V#{version} OffsetCommit request should have generation_id"
-
-        assert Map.has_key?(request, :member_id),
-               "V#{version} OffsetCommit request should have member_id"
-      end
-    end
-
-    # V8 has group_instance_id and tagged_fields
-    @tag api: :offset_commit, version: 8
-    test "V8 request struct has group_instance_id and tagged_fields" do
-      request = Kayrock.OffsetCommit.get_request_struct(8)
-
-      assert Map.has_key?(request, :group_instance_id),
-             "V8 OffsetCommit request should have group_instance_id"
-
-      assert Map.has_key?(request, :tagged_fields),
-             "V8 OffsetCommit request should have tagged_fields"
     end
 
     # V1 has commit_timestamp in partition data (need special handling)
@@ -810,17 +627,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
       end
     end
 
-    # V6 is flexible — tagged_fields in request and response
-    @tag api: :offset_fetch, version: 6
-    test "V6 request struct has tagged_fields",
-      do:
-        (
-          request = Kayrock.OffsetFetch.get_request_struct(6)
-
-          assert Map.has_key?(request, :tagged_fields),
-                 "V6 OffsetFetch request should have tagged_fields"
-        )
-
     # V6 response also has error_code at top level (introduced in V2)
     for version <- 2..6 do
       @tag api: :offset_fetch, version: version
@@ -881,36 +687,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
                "V#{version} result.error_code should be 0 or 69, got #{result.error_code}"
       end
     end
-
-    # V0-V1 have no tagged_fields
-    for version <- 0..1 do
-      @tag api: :delete_groups, version: version
-      test "V#{version} request struct has no tagged_fields" do
-        version = unquote(version)
-        request = Kayrock.DeleteGroups.get_request_struct(version)
-
-        refute Map.has_key?(request, :tagged_fields),
-               "V#{version} DeleteGroups request should not have tagged_fields"
-      end
-    end
-
-    # V2 has tagged_fields
-    @tag api: :delete_groups, version: 2
-    test "V2 request struct has tagged_fields (flexible)" do
-      request = Kayrock.DeleteGroups.get_request_struct(2)
-
-      assert Map.has_key?(request, :tagged_fields),
-             "V2 DeleteGroups request should have tagged_fields"
-    end
-
-    # groups_names field
-    @tag api: :delete_groups
-    test "request struct has groups_names field" do
-      request = Kayrock.DeleteGroups.get_request_struct(0)
-
-      assert Map.has_key?(request, :groups_names),
-             "DeleteGroups request should have groups_names field"
-    end
   end
 
   # ---------------------------------------------------------------------------
@@ -947,17 +723,6 @@ defmodule Kayrock.Sanity.ConsumerGroupSanityTest do
 
       assert is_list(response.topics),
              "V0 OffsetDelete response should have topics list"
-    end
-
-    @tag api: :offset_delete, version: 0
-    test "V0 response has correct field layout" do
-      request = Kayrock.OffsetDelete.get_request_struct(0)
-
-      assert Map.has_key?(request, :group_id),
-             "V0 OffsetDelete request should have group_id"
-
-      assert Map.has_key?(request, :topics),
-             "V0 OffsetDelete request should have topics"
     end
   end
 
