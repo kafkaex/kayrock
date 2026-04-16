@@ -16,7 +16,8 @@ defmodule Kayrock.MixProject do
         "coveralls.html": :test,
         "test.unit": :test,
         "test.integration": :test,
-        "test.chaos": :test
+        "test.chaos": :test,
+        "test.sanity": :test
       ],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -93,9 +94,10 @@ defmodule Kayrock.MixProject do
 
   defp aliases do
     [
-      "test.unit": "test --exclude integration --exclude chaos",
+      "test.unit": "test --exclude integration --exclude chaos --exclude sanity",
       "test.integration": "test --only integration",
-      "test.chaos": "test --only chaos"
+      "test.chaos": "test --only chaos",
+      "test.sanity": "test --only sanity"
     ]
   end
 end

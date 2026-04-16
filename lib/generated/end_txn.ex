@@ -77,8 +77,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V0.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:string, Map.fetch!(struct, :transactional_id)),
           serialize(:int64, Map.fetch!(struct, :producer_id)),
@@ -175,8 +178,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V1.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:string, Map.fetch!(struct, :transactional_id)),
           serialize(:int64, Map.fetch!(struct, :producer_id)),

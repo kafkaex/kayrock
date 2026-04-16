@@ -132,6 +132,7 @@ defmodule Kayrock.Test.Factories.CreateDelegationTokenFactory do
     }
 
     # Captured from actual serialization
+    # Fixed: client_id uses int16-prefixed nullable_string (not compact varint)
     expected_binary = <<
       0,
       38,

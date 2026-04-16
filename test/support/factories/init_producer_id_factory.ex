@@ -111,11 +111,11 @@ defmodule Kayrock.Test.Factories.InitProducerIdFactory do
       0,
       0,
       2,
-      # client_id
+      # client_id (int16-prefixed nullable_string)
       0,
       4,
       "test"::binary,
-      # header tagged_fields (empty)
+      # header tag_buffer
       0,
       # transactional_id (compact nullable string, length + 1 = 6)
       6,

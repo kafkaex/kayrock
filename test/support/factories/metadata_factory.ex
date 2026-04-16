@@ -397,12 +397,11 @@ defmodule Kayrock.Test.Factories.MetadataFactory do
       0,
       0,
       9,
-      # client_id length (7)
+      # client_id (int16-prefixed nullable_string)
       0,
       7,
-      # client_id
       "kayrock"::binary,
-      # flexible version header marker
+      # flexible version header tag_buffer
       0,
       # topics compact_array (empty = 0+1)
       1,

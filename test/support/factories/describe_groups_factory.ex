@@ -244,11 +244,11 @@ defmodule Kayrock.Test.Factories.DescribeGroupsFactory do
       0,
       0,
       5,
-      # client_id
+      # client_id (int16-prefixed nullable_string)
       0,
       4,
       "test"::binary,
-      # flexible header tagged_fields
+      # flexible header tag_buffer
       0,
       # groups compact array (length+1 = 2)
       2,
