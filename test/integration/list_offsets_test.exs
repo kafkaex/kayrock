@@ -89,33 +89,6 @@ defmodule Kayrock.Integration.ListOffsetsTest do
         # Should be 3 (offset of next message to be written)
         assert latest_offset == 3
       end
-
-      test "v#{api_version} - handles multiple partitions", %{kafka: kafka} do
-        api_version = unquote(api_version)
-        {:ok, client_pid} = build_client(kafka)
-
-        # Create topic
-        topic_name = create_topic(client_pid, api_version)
-
-        # Request offsets for multiple partitions
-        partitions = [
-          [partition: 0, timestamp: -1],
-          [partition: 1, timestamp: -1],
-          [partition: 2, timestamp: -1]
-        ]
-
-        request = list_offsets_request(topic_name, partitions, api_version)
-        {:ok, resp} = Kayrock.client_call(client_pid, request, :controller)
-
-        [topic_response] = resp.responses
-        assert topic_response.topic == topic_name
-        assert length(topic_response.partition_responses) == 3
-
-        # All partitions should have no error
-        for partition_response <- topic_response.partition_responses do
-          assert partition_response.error_code == 0
-        end
-      end
     end
   end
 

@@ -96,8 +96,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V0.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -248,8 +251,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V1.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -400,8 +406,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V2.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -556,8 +565,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V3.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -717,8 +729,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V4.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -888,8 +903,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V5.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -1060,8 +1078,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V6.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -1272,8 +1293,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V7.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -1523,8 +1547,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V8.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -1780,8 +1807,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V9.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -2039,8 +2069,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V10.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),
@@ -2302,8 +2335,11 @@ The schema of this API is
     @spec serialize(t()) :: iodata
     def serialize(%V11.Request{} = struct) do
       [
-        <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-          byte_size(struct.client_id)::16, struct.client_id::binary>>,
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
         [
           serialize(:int32, Map.fetch!(struct, :replica_id)),
           serialize(:int32, Map.fetch!(struct, :max_wait_time)),

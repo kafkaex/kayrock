@@ -107,11 +107,11 @@ defmodule Kayrock.HeartbeatTest do
         0,
         0,
         4,
-        # client_id
+        # client_id (int16-prefixed nullable_string)
         0,
         4,
         "test"::binary,
-        # flexible header marker (tagged fields)
+        # flexible header tag_buffer
         0,
         # group_id (compact string: length+1 = 6)
         6,

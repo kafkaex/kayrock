@@ -125,12 +125,11 @@ defmodule Kayrock.Test.Factories.ApiVersionsFactory do
       0,
       0,
       3,
-      # client_id length
+      # client_id (int16-prefixed nullable_string, NOT compact)
       0,
       15,
-      # client_id
       "kayrock-capture"::binary,
-      # flexible header marker
+      # flexible header tag_buffer
       0,
       # client_software_name (compact string: length+1)
       8,
@@ -287,8 +286,58 @@ defmodule Kayrock.Test.Factories.ApiVersionsFactory do
   end
 
   def response_data(3) do
-    # V3 response not yet supported by Kafka 7.4.0
-    raise "V3 response format not yet captured from broker - broker returns UNSUPPORTED_VERSION"
+    # ApiVersionsResponse V3 uses response header v0 (KIP-511: no tag_buffer)
+    # but the body uses flexible encoding (compact arrays, tagged fields)
+    binary = <<
+      # correlation_id (response header v0 — no tag_buffer!)
+      0,
+      0,
+      0,
+      3,
+      # error_code
+      0,
+      0,
+      # api_keys compact_array: varint(count+1) = 3 (2 entries)
+      3,
+      # Entry 1: Produce api_key=0, min=0, max=9
+      0,
+      0,
+      0,
+      0,
+      0,
+      9,
+      # entry tagged_fields (empty)
+      0,
+      # Entry 2: Fetch api_key=1, min=0, max=13
+      0,
+      1,
+      0,
+      0,
+      0,
+      13,
+      # entry tagged_fields (empty)
+      0,
+      # throttle_time_ms (0)
+      0,
+      0,
+      0,
+      0,
+      # response body tagged_fields (empty)
+      0
+    >>
+
+    expected_struct = %Kayrock.ApiVersions.V3.Response{
+      correlation_id: 3,
+      error_code: 0,
+      throttle_time_ms: 0,
+      api_keys: [
+        %{api_key: 0, min_version: 0, max_version: 9, tagged_fields: []},
+        %{api_key: 1, min_version: 0, max_version: 13, tagged_fields: []}
+      ],
+      tagged_fields: []
+    }
+
+    {binary, expected_struct}
   end
 
   # ============================================
@@ -523,10 +572,10 @@ defmodule Kayrock.Test.Factories.ApiVersionsFactory do
       0,
       0,
       0,
-      # client_id length (0)
+      # client_id (int16-prefixed nullable_string: length 0 for empty string)
       0,
       0,
-      # flexible header marker
+      # flexible header tag_buffer
       0,
       # empty compact_string (0+1)
       1,

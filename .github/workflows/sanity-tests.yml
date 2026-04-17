@@ -1,0 +1,74 @@
+name: Sanity Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sanity-tests:
+    name: Sanity Tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+
+    env:
+      MIX_ENV: test
+      ENABLE_TESTCONTAINERS: "true"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Elixir & Erlang
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.18"
+          otp-version: "27.2"
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-27.2-1.18-${{ hashFiles('**/mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mix-27.2-1.18-
+
+      - name: Install dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+          mix deps.compile
+
+      - name: Check Docker availability
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Pull Docker images
+        run: |
+          docker pull confluentinc/cp-kafka:7.4.3
+
+      - name: Run Sanity Tests
+        id: test-run
+        continue-on-error: true
+        run: mix test.sanity
+
+      - name: Retry failed tests (1st retry)
+        id: retry-1
+        if: steps.test-run.outcome == 'failure'
+        continue-on-error: true
+        run: mix test --only sanity --failed
+
+      - name: Retry failed tests (2nd retry)
+        if: steps.retry-1.outcome == 'failure'
+        run: mix test --only sanity --failed

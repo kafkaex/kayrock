@@ -331,32 +331,41 @@ defmodule Kayrock.Generate do
         @doc "Serialize a message to binary data for transfer to a Kafka broker"
         @spec serialize(t()) :: iodata
         def serialize(%unquote(modname){} = struct) do
-          unquote(
-            if is_flexible do
-              # Flexible version header (KIP-482)
-              # Note: client_id still uses standard nullable string, not compact!
-              quote do
-                [
-                  <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-                    byte_size(struct.client_id)::16, struct.client_id::binary>>,
-                  # TAG_BUFFER for request header (flexible versions only)
-                  <<0>>,
-                  unquote(field_serializers)
-                ]
-              end
-            else
-              # Standard (non-flexible) header
-              quote do
-                [
-                  <<api_key()::16, api_vsn()::16, struct.correlation_id::32,
-                    byte_size(struct.client_id)::16, struct.client_id::binary>>,
-                  unquote(field_serializers)
-                ]
-              end
-            end
-          )
+          unquote(serialize_request_body(is_flexible, field_serializers))
         end
       end
+    end
+  end
+
+  # Generates the body of a request serialize/1 function.
+  # client_id always uses int16-prefixed nullable_string in ALL header versions
+  # (RequestHeader.json: ClientId "flexibleVersions": "none").
+  # The only difference between header v1 (non-flexible) and v2 (flexible) is
+  # the trailing <<0>> tag_buffer byte.
+  defp serialize_request_body(true = _is_flexible, field_serializers) do
+    quote do
+      [
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
+        <<0>>,
+        unquote(field_serializers)
+      ]
+    end
+  end
+
+  defp serialize_request_body(false, field_serializers) do
+    quote do
+      [
+        <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
+        case struct.client_id do
+          nil -> <<-1::16-signed>>
+          id -> <<byte_size(id)::16, id::binary>>
+        end,
+        unquote(field_serializers)
+      ]
     end
   end
 
@@ -521,32 +530,50 @@ defmodule Kayrock.Generate do
         @spec deserialize(binary) :: {t(), binary}
         def deserialize(data) do
           unquote(
-            if is_flexible do
-              # Flexible version response header (KIP-482): correlation_id + TAG_BUFFER
-              quote do
-                <<correlation_id::32-signed, rest::binary>> = data
-                # Read and discard the tagged fields from the response header
-                {_tagged_fields, rest} = deserialize_tagged_fields(rest)
+            cond do
+              is_flexible and api == :api_versions ->
+                # KIP-511: ApiVersionsResponse ALWAYS uses response header v0
+                # (just correlation_id, no tag_buffer), even for V3+ which is
+                # technically a flexible version.  This lets old clients that
+                # don't understand flexible headers still negotiate versions.
+                quote do
+                  <<correlation_id::32-signed, rest::binary>> = data
 
-                deserialize_field(
-                  :root,
-                  unquote(first_field_name),
-                  %__MODULE__{correlation_id: correlation_id},
-                  rest
-                )
-              end
-            else
-              # Standard (non-flexible) response header: just correlation_id
-              quote do
-                <<correlation_id::32-signed, rest::binary>> = data
+                  deserialize_field(
+                    :root,
+                    unquote(first_field_name),
+                    %__MODULE__{correlation_id: correlation_id},
+                    rest
+                  )
+                end
 
-                deserialize_field(
-                  :root,
-                  unquote(first_field_name),
-                  %__MODULE__{correlation_id: correlation_id},
-                  rest
-                )
-              end
+              is_flexible ->
+                # Flexible version response header (KIP-482): correlation_id + TAG_BUFFER
+                quote do
+                  <<correlation_id::32-signed, rest::binary>> = data
+                  # Read and discard the tagged fields from the response header
+                  {_tagged_fields, rest} = deserialize_tagged_fields(rest)
+
+                  deserialize_field(
+                    :root,
+                    unquote(first_field_name),
+                    %__MODULE__{correlation_id: correlation_id},
+                    rest
+                  )
+                end
+
+              true ->
+                # Standard (non-flexible) response header: just correlation_id
+                quote do
+                  <<correlation_id::32-signed, rest::binary>> = data
+
+                  deserialize_field(
+                    :root,
+                    unquote(first_field_name),
+                    %__MODULE__{correlation_id: correlation_id},
+                    rest
+                  )
+                end
             end
           )
         end

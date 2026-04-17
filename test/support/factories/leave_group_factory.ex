@@ -213,11 +213,11 @@ defmodule Kayrock.Test.Factories.LeaveGroupFactory do
       0,
       0,
       4,
-      # client_id
+      # client_id (int16-prefixed nullable_string)
       0,
       4,
       "test"::binary,
-      # flexible header marker
+      # flexible header tag_buffer
       0,
       # group_id (compact string: length+1)
       6,

@@ -143,8 +143,8 @@ defmodule Kayrock.LeaveGroupTest do
       }
 
       serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
-      # After header, client_id, flexible marker: compact string "abc" = length+1 then bytes
-      # group_id starts at position: 2+2+4+2+4+1 = 15
+      # After header: api_key(2) + api_version(2) + correlation_id(4) +
+      # int16-prefixed client_id (2 prefix + "test"=4 = 6) + tag_buffer(1) = 15
       <<_header::15-binary, group_id_length, "abc", _rest::binary>> = serialized
       # length("abc") + 1
       assert group_id_length == 4

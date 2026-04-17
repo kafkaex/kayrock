@@ -412,12 +412,11 @@ defmodule Kayrock.Test.Factories.CreateTopicsFactory do
       0,
       0,
       5,
-      # client_id length
+      # client_id (int16-prefixed nullable_string)
       0,
       4,
-      # client_id
       "test"::binary,
-      # flexible header marker (tagged fields)
+      # flexible header tag_buffer
       0,
       # topics compact array (length + 1 = 2)
       2,

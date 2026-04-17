@@ -30,8 +30,15 @@ defmodule Kayrock.IntegrationHelpers do
   - `wait_for_topic/3` - Wait for topic to be ready (future enhancement)
   """
 
-  import Kayrock.TestSupport, only: [unique_string: 0]
-  import Kayrock.RequestFactory, only: [create_topic_request: 2]
+  import Kayrock.TestSupport, only: [unique_string: 0, with_retry: 1, with_retry: 2]
+
+  import Kayrock.RequestFactory,
+    only: [
+      create_topic_request: 2,
+      find_coordinator_request: 2,
+      join_group_request: 2,
+      sync_group_request: 4
+    ]
 
   alias Testcontainers.Container
 
@@ -190,5 +197,91 @@ defmodule Kayrock.IntegrationHelpers do
         Process.sleep(100)
         wait_for_topic(client_pid, topic_name, retries - 1)
     end
+  end
+
+  @doc """
+  Joins and syncs a consumer group, returning the coordinator info needed for
+  subsequent API calls (heartbeat, offset commit, etc.).
+
+  Handles the full lifecycle: FindCoordinator -> JoinGroup -> SyncGroup.
+  For JoinGroup V4+ (KIP-394), automatically handles the two-step join protocol
+  where the broker returns MEMBER_ID_REQUIRED (error 79) on the first attempt.
+
+  ## Parameters
+
+    - `client_pid` - The Kayrock client process ID
+    - `group_id` - Consumer group ID
+    - `topic_name` - Topic name for the group subscription
+    - `opts` - Optional keyword list:
+      - `:api_version` - Version to use for all APIs (default: 2). Each API is
+        capped to its own max_vsn automatically.
+      - `:partitions` - Partition list for assignment (default: [0, 1, 2])
+
+  ## Returns
+
+    `{node_id, generation_id, member_id}`
+
+  ## Example
+
+      {node_id, generation_id, member_id} =
+        join_and_sync_group(client_pid, "my-group", topic_name)
+  """
+  def join_and_sync_group(client_pid, group_id, topic_name, opts \\ []) do
+    api_version = Keyword.get(opts, :api_version, 2)
+    partitions = Keyword.get(opts, :partitions, [0, 1, 2])
+
+    # Find coordinator
+    coordinator_request = find_coordinator_request(group_id, min(api_version, 2))
+
+    {:ok, coordinator_response} =
+      with_retry(fn ->
+        Kayrock.client_call(client_pid, coordinator_request, 1)
+      end)
+
+    node_id = coordinator_response.node_id
+
+    # Join group
+    join_version = min(api_version, 5)
+    join_request = join_group_request(%{group_id: group_id, topics: [topic_name]}, join_version)
+
+    {:ok, join_response} =
+      with_retry(
+        fn -> Kayrock.client_call(client_pid, join_request, node_id) end,
+        accept_errors: [79]
+      )
+
+    # Handle MEMBER_ID_REQUIRED (KIP-394) for JoinGroup V4+
+    join_response =
+      if join_response.error_code == 79 do
+        retry_request =
+          join_group_request(
+            %{group_id: group_id, topics: [topic_name], member_id: join_response.member_id},
+            join_version
+          )
+
+        {:ok, resp} =
+          with_retry(fn ->
+            Kayrock.client_call(client_pid, retry_request, node_id)
+          end)
+
+        resp
+      else
+        join_response
+      end
+
+    generation_id = join_response.generation_id
+    member_id = join_response.member_id
+
+    # Sync group
+    assignments = [
+      %{member_id: member_id, topic: topic_name, partitions: partitions}
+    ]
+
+    sync_request =
+      sync_group_request(group_id, member_id, assignments, min(api_version, 3))
+
+    {:ok, _sync_response} = Kayrock.client_call(client_pid, sync_request, node_id)
+
+    {node_id, generation_id, member_id}
   end
 end

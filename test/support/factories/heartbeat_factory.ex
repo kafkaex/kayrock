@@ -220,7 +220,9 @@ defmodule Kayrock.Test.Factories.HeartbeatFactory do
       tagged_fields: []
     }
 
-    # V4 uses compact format
+    # V4 uses flexible format for body fields, but client_id in the header
+    # ALWAYS uses int16-prefixed nullable_string (RequestHeader.json:
+    # ClientId "flexibleVersions": "none"). Header v2 adds tag_buffer <<0>>.
     expected_binary = <<
       # api_key (12)
       0,
@@ -233,11 +235,11 @@ defmodule Kayrock.Test.Factories.HeartbeatFactory do
       0,
       0,
       4,
-      # client_id
+      # client_id (int16-prefixed nullable_string, NOT compact)
       0,
       4,
       "test"::binary,
-      # flexible header marker (tagged fields)
+      # flexible header tag_buffer
       0,
       # group_id (compact string: length+1 = 6)
       6,

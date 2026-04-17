@@ -108,11 +108,11 @@ defmodule Kayrock.Test.Factories.DeleteGroupsFactory do
       0,
       0,
       2,
-      # client_id
+      # client_id (int16-prefixed nullable_string)
       0,
       4,
       "test"::binary,
-      # header tagged_fields (empty)
+      # header tag_buffer
       0,
       # groups_names compact array (length + 1 = 2)
       2,

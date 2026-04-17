@@ -1,21 +1,22 @@
-# Configure ExUnit to exclude integration/chaos by default
-ExUnit.configure(exclude: [:integration, :chaos])
+# Configure ExUnit to exclude integration/chaos/sanity by default
+ExUnit.configure(exclude: [:integration, :chaos, :sanity])
 ExUnit.start()
 
-# Check if we need Testcontainers (integration or chaos tests requested)
-# Detects --only integration, --only chaos, --include integration, --include chaos
+# Check if we need Testcontainers (integration, chaos, or sanity tests requested)
+# Detects --only integration, --only chaos, --only sanity, --include integration, etc.
 needs_testcontainers? =
   System.get_env("ENABLE_TESTCONTAINERS") == "true" or
     Enum.any?(System.argv(), fn arg ->
       arg in ["--only", "--include"] or
         String.contains?(arg, "integration") or
-        String.contains?(arg, "chaos")
+        String.contains?(arg, "chaos") or
+        String.contains?(arg, "sanity")
     end) or
     System.argv()
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.any?(fn
-      ["--only", tag] -> tag in ["integration", "chaos"]
-      ["--include", tag] -> tag in ["integration", "chaos"]
+      ["--only", tag] -> tag in ["integration", "chaos", "sanity"]
+      ["--include", tag] -> tag in ["integration", "chaos", "sanity"]
       _ -> false
     end)
 

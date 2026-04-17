@@ -128,12 +128,11 @@ defmodule Kayrock.Test.Factories.ListGroupsFactory do
       0,
       0,
       3,
-      # client_id length
+      # client_id (int16-prefixed nullable_string)
       0,
       4,
-      # client_id
       "test"::binary,
-      # flexible header tagged_fields (0)
+      # flexible header tag_buffer
       0,
       # request tagged_fields
       0
