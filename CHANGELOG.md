@@ -42,7 +42,7 @@ First stable release of Kayrock.
 - **BREAKING:** Compression libraries are now optional dependencies
   - Add `{:snappyer, "~> 1.2"}` for Snappy compression
   - Add `{:lz4b, "~> 0.0.13"}` for LZ4 compression
-  - Add `{:ezstd, "~> 1.0"}` for Zstandard (OTP < 27)
+  - Add `{:ezstd, "~> 1.0"}` for Zstandard (OTP < 28)
 - **BREAKING:** Minimum Elixir version bumped to 1.14
 - **BREAKING:** Snappy compression now requires `snappyer` (the legacy `snappy` module is no longer supported)
 - Improved error messages for missing compression dependencies
@@ -62,7 +62,7 @@ First stable release of Kayrock.
        {:kayrock, "~> 1.0"},
        {:snappyer, "~> 1.2"},  # If using Snappy
        {:lz4b, "~> 0.0.13"},   # If using LZ4
-       {:ezstd, "~> 1.0"},     # If using Zstandard on OTP < 27
+       {:ezstd, "~> 1.0"},     # If using Zstandard on OTP < 28
      ]
    end
    ```
@@ -86,7 +86,7 @@ First stable release of Kayrock.
 ### Added
 - Zstandard compression support (#43)
 - LZ4 compression support (#38)
-- Native OTP 27+ Zstandard support with ezstd fallback
+- Native OTP 28+ Zstandard support with ezstd fallback
 - Consumer group integration tests (#33)
 
 ### Changed

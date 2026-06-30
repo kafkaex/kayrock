@@ -35,13 +35,13 @@ defmodule Kayrock.Compression.Zstd do
 
   defp do_compress(data, level) do
     if has_stdlib_zstd?() do
-      :zstd.compress(data, level)
+      data |> :zstd.compress(%{compressionLevel: level}) |> IO.iodata_to_binary()
     else
       try do
         :ezstd.compress(data, level)
       rescue
         UndefinedFunctionError ->
-          reraise "Zstd compression unavailable. Requires OTP 27+ or {:ezstd, \"~> 1.0\"}",
+          reraise "Zstd compression unavailable. Requires OTP 28+ or {:ezstd, \"~> 1.0\"}",
                   __STACKTRACE__
       end
     end
@@ -51,13 +51,13 @@ defmodule Kayrock.Compression.Zstd do
   @spec decompress(binary) :: binary
   def decompress(data) do
     if has_stdlib_zstd?() do
-      :zstd.decompress(data)
+      data |> :zstd.decompress() |> IO.iodata_to_binary()
     else
       try do
         :ezstd.decompress(data)
       rescue
         UndefinedFunctionError ->
-          reraise "Zstd compression unavailable. Requires OTP 27+ or {:ezstd, \"~> 1.0\"}",
+          reraise "Zstd compression unavailable. Requires OTP 28+ or {:ezstd, \"~> 1.0\"}",
                   __STACKTRACE__
       end
     end
