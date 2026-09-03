@@ -10,7 +10,6 @@ defmodule Kayrock.Compression.Zstd do
   @max_level 22
 
   @compile {:no_warn_undefined, [:zstd, :ezstd]}
-  @dialyzer {:nowarn_function, [do_compress: 2, decompress: 1]}
 
   @impl true
   def attr, do: @attr
@@ -35,7 +34,10 @@ defmodule Kayrock.Compression.Zstd do
 
   defp do_compress(data, level) do
     if has_stdlib_zstd?() do
-      :zstd.compress(data, level)
+      # OTP's zstd takes an options map keyed `compressionLevel` (an integer
+      # argument raises FunctionClauseError) and returns an iolist.
+      # https://www.erlang.org/doc/apps/stdlib/zstd.html#compress/2
+      data |> :zstd.compress(%{compressionLevel: level}) |> IO.iodata_to_binary()
     else
       try do
         :ezstd.compress(data, level)
@@ -51,7 +53,10 @@ defmodule Kayrock.Compression.Zstd do
   @spec decompress(binary) :: binary
   def decompress(data) do
     if has_stdlib_zstd?() do
-      :zstd.decompress(data)
+      # `decompress(iodata()) -> iodata()` — callers here pattern-match on a
+      # binary, and an iolist reaching the record decoder fails varint parsing.
+      # https://www.erlang.org/doc/apps/stdlib/zstd.html#decompress/1
+      data |> :zstd.decompress() |> IO.iodata_to_binary()
     else
       try do
         :ezstd.decompress(data)
@@ -64,6 +69,6 @@ defmodule Kayrock.Compression.Zstd do
   end
 
   defp has_stdlib_zstd? do
-    function_exported?(:zstd, :compress, 2)
+    Code.ensure_loaded?(:zstd) and function_exported?(:zstd, :compress, 2)
   end
 end
