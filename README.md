@@ -84,7 +84,7 @@ Kayrock supports four compression formats:
 | gzip | Yes | None |
 | snappy | No | `{:snappyer, "~> 1.2"}` |
 | lz4 | No | `{:lz4b, "~> 0.0.13"}` |
-| zstd | OTP 27+ | `{:ezstd, "~> 1.0"}` (for OTP < 27) |
+| zstd | OTP 28+ | `{:ezstd, "~> 1.0"}` (for OTP < 28) |
 
 ### Installing Compression Dependencies
 
@@ -98,7 +98,7 @@ def deps do
     # Add compression libraries as needed:
     {:snappyer, "~> 1.2"},     # For Snappy compression
     {:lz4b, "~> 0.0.13"},      # For LZ4 compression
-    {:ezstd, "~> 1.0"},        # For Zstandard (OTP < 27)
+    {:ezstd, "~> 1.0"},        # For Zstandard (OTP < 28)
   ]
 end
 ```
@@ -106,8 +106,8 @@ end
 ### Zstandard Support
 
 Zstandard compression is available via:
-1. **OTP 27+**: Native `:zstd` module (no dependency needed)
-2. **OTP < 27**: Add `{:ezstd, "~> 1.0"}` to your dependencies
+1. **OTP 28+**: Native `:zstd` module (no dependency needed)
+2. **OTP < 28**: Add `{:ezstd, "~> 1.0"}` to your dependencies
 
 ## Code Generation
 
