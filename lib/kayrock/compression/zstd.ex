@@ -10,6 +10,9 @@ defmodule Kayrock.Compression.Zstd do
   @max_level 22
 
   @compile {:no_warn_undefined, [:zstd, :ezstd]}
+  # :zstd is stdlib only from OTP 28; on 27 dialyzer's :unknown flag would error
+  # on it. Reported as an unnecessary skip when built on 28 — that is expected.
+  @dialyzer {:nowarn_function, [do_compress: 2, decompress: 1]}
 
   @impl true
   def attr, do: @attr
