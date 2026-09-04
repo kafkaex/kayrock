@@ -66,6 +66,7 @@ defmodule Kayrock.CompressionTest do
     setup do
       # this will try to load but not fail if it's not present pre-28
       Code.ensure_loaded(:zstd)
+      :ok
     end
 
     test "compress/decompress" do
