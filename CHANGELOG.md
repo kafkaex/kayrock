@@ -10,8 +10,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.1] - 2026-09-04
 
 ### Fixed
+- **Zstandard compression on OTP 28+**: Native `:zstd` module uses the correct
+  API (`:zstd.compress/2` with options map and `:zstd.decompress/1`) and wraps
+  results with `IO.iodata_to_binary/1` to ensure consistent binary output.
+  Previously the native OTP 27 API call failed at runtime on OTP 28.
 - Zstandard test setup: `Code.ensure_loaded(:zstd)` in the zstd describe block
   now correctly returns `:ok`, resolving ExUnit setup callback failures on OTP 28+.
+- Updated error messages and README to reflect that native Zstandard requires
+  OTP 28+ (not OTP 27+).
+
+### Changed
+- CI unit-test matrix now includes Elixir 1.19 / OTP 28.3.
 
 ## [1.0.0] - 2026-04-21
 
