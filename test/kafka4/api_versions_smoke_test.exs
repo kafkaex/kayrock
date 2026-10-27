@@ -63,6 +63,13 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | DescribeProducers (61)       | 0       | 0      |                       |
   | DescribeTransactions (65)    | 0       | 0      |                       |
   | ListTransactions (66)        | 0-2     | 0-2    |                       |
+  | ShareGroupHeartbeat (76)     | 1       | 1      |                       |
+  | ShareGroupDescribe (77)      | 1       | 1      |                       |
+  | ShareFetch (78)              | 1-2     | 1-2    |                       |
+  | ShareAcknowledge (79)        | 1-2     | 1-2    |                       |
+  | DescribeShareGroupOffsets (90) | 0-1   | 0-1    |                       |
+  | AlterShareGroupOffsets (91)  | 0       | 0      |                       |
+  | DeleteShareGroupOffsets (92) | 0       | 0      |                       |
 
   Produce v0-v2 are a special case: Kafka 4.x still advertises them but
   does not answer them (KIP-896 keeps them advertised only for old-client
