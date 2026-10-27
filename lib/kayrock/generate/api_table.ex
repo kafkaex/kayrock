@@ -102,7 +102,12 @@ defmodule Kayrock.Generate.ApiTable do
     share_acknowledge: 2,
     describe_share_group_offsets: 1,
     alter_share_group_offsets: 0,
-    delete_share_group_offsets: 0
+    delete_share_group_offsets: 0,
+    get_telemetry_subscriptions: 0,
+    push_telemetry: 0,
+    streams_group_heartbeat: 1,
+    streams_group_describe: 1,
+    streams_group_topology_description_update: 0
   ]
 
   # The version ranges defined by kafka_protocol 4.3.x's :kpro_schema.  These
