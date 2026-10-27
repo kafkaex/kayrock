@@ -288,7 +288,7 @@ defmodule Kayrock.Generate do
 
     struct_types =
       Enum.reduce(schema, [], fn {k, v}, acc ->
-        acc ++ [{k, describe_type(api, k, v)}]
+        acc ++ [{k, describe_field_type(api, k, v)}]
       end) ++
         [
           correlation_id:
@@ -408,6 +408,17 @@ defmodule Kayrock.Generate do
       ]
     end
   end
+
+  # Type of a top-level struct field.  A (non-nullable) struct field defaults
+  # to nil in the generated struct (see default_val/1), so its type admits
+  # nil; every other field is typed by describe_type/3.
+  defp describe_field_type(api, field, schema) when is_list(schema) do
+    quote do
+      nil | unquote(describe_type(api, field, schema))
+    end
+  end
+
+  defp describe_field_type(api, field, type), do: describe_type(api, field, type)
 
   def describe_type(:sync_group, :assignment, :bytes) do
     quote do
@@ -546,7 +557,7 @@ defmodule Kayrock.Generate do
 
     struct_types =
       Enum.reduce(schema, [], fn {k, v}, acc ->
-        acc ++ [{k, describe_type(api, k, v)}]
+        acc ++ [{k, describe_field_type(api, k, v)}]
       end) ++
         [
           correlation_id:
@@ -555,7 +566,9 @@ defmodule Kayrock.Generate do
             end
         ]
 
-    {first_field_name, field_deserializers} = struct_field_deserializers(:root, schema)
+    {first_field_name, field_deserializers} =
+      struct_field_deserializers(:root, schema, duplicate_struct_names(schema))
+
     field_deserializers = List.flatten(field_deserializers)
 
     quote do
@@ -752,7 +765,7 @@ defmodule Kayrock.Generate do
 
   # deserializers for every field of a struct in `scope`; returns the name of
   # the first inline field and the deserializer clauses
-  defp struct_field_deserializers(scope, schema) do
+  defp struct_field_deserializers(scope, schema, dups) do
     tagged = named_tagged_fields(schema)
 
     {first_field_name, fields_with_next_field} =
@@ -761,10 +774,10 @@ defmodule Kayrock.Generate do
     deserializers =
       Enum.map(fields_with_next_field, fn
         {{:tagged_fields, :tagged_fields}, next} when tagged != [] ->
-          tagged_section_deserializer(scope, tagged, next)
+          tagged_section_deserializer(scope, tagged, next, dups)
 
         {field, next} ->
-          generate_field_deserializer(scope, field, next)
+          generate_field_deserializer(scope, field, next, dups)
       end)
 
     {first_field_name, deserializers}
@@ -773,12 +786,12 @@ defmodule Kayrock.Generate do
   # Decodes the tagged-field section: known tags are decoded into their named
   # fields (absent ones take their default), unknown tags are kept as raw
   # `{tag, binary}` pairs in `:tagged_fields`.
-  defp tagged_section_deserializer(scope, tagged, next_field_name) do
+  defp tagged_section_deserializer(scope, tagged, next_field_name, dups) do
     value_scope = {:tagged, scope}
 
     value_deserializers =
       Enum.map(tagged, fn {name, {:tagged_field, opts}} ->
-        generate_field_deserializer(value_scope, {name, Keyword.fetch!(opts, :type)}, nil)
+        generate_field_deserializer(value_scope, {name, Keyword.fetch!(opts, :type)}, nil, dups)
       end)
 
     defaults =
@@ -827,7 +840,56 @@ defmodule Kayrock.Generate do
     ]
   end
 
-  def generate_field_deserializer(scope, {:assignment, :compact_bytes}, next_field_name) do
+  ######################################################################
+  # NESTED STRUCT SCOPES
+  #
+  # A nested struct's fields are decoded by `deserialize_field/4` clauses
+  # keyed on a scope atom, normally the struct's field name.  When the same
+  # field name is used by more than one nested struct in a response (e.g.
+  # StreamsGroupDescribe v1 has `subtopologies` under both `topology` and
+  # `topology_description`, with different fields), those names are scoped
+  # by their path instead, so each struct gets its own clauses.  Schemas
+  # without such duplicates generate exactly the same code as before.
+
+  # field names used by more than one nested struct anywhere in `schema`
+  defp duplicate_struct_names(schema) do
+    schema
+    |> nested_struct_names()
+    |> Enum.frequencies()
+    |> Enum.filter(fn {_name, count} -> count > 1 end)
+    |> MapSet.new(fn {name, _count} -> name end)
+  end
+
+  defp nested_struct_names(schema) do
+    Enum.flat_map(schema, fn
+      {name, {:tagged_field, opts}} -> nested_struct_names([{name, Keyword.fetch!(opts, :type)}])
+      {name, type} -> struct_schema_names(name, type)
+    end)
+  end
+
+  defp struct_schema_names(name, {wrapper, el})
+       when wrapper in [:array, :compact_array, :nullable_struct],
+       do: struct_schema_names(name, el)
+
+  defp struct_schema_names(name, el) when is_list(el), do: [name | nested_struct_names(el)]
+  defp struct_schema_names(_name, _type), do: []
+
+  # the scope of the nested struct in `field_name`, inside `scope`
+  defp struct_scope(scope, field_name, dups) do
+    if MapSet.member?(dups, field_name) do
+      :"#{scope_path(scope)}.#{field_name}"
+    else
+      field_name
+    end
+  end
+
+  defp scope_path({:tagged, scope}), do: "#{scope_path(scope)}.tagged"
+  defp scope_path(scope) when is_atom(scope), do: Atom.to_string(scope)
+
+  @doc false
+  def generate_field_deserializer(scope, field, next_field_name, dups \\ MapSet.new())
+
+  def generate_field_deserializer(scope, {:assignment, :compact_bytes}, next_field_name, _dups) do
     quote do
       defp deserialize_field(unquote(scope), :assignment, acc, data) do
         {raw, rest} = Kayrock.Deserialize.deserialize(:compact_bytes, data)
@@ -843,7 +905,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_field_deserializer(scope, {field_name, type}, next_field_name)
+  def generate_field_deserializer(scope, {field_name, type}, next_field_name, _dups)
       when type in Kayrock.Deserialize.compact_primitive_types() do
     quote do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
@@ -859,7 +921,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_field_deserializer(scope, {:tagged_fields, :tagged_fields}, next_field_name) do
+  def generate_field_deserializer(scope, {:tagged_fields, :tagged_fields}, next_field_name, _dups) do
     quote do
       defp deserialize_field(unquote(scope), :tagged_fields, acc, data) do
         {val, rest} = Kayrock.Deserialize.deserialize_tagged_fields(data)
@@ -874,7 +936,12 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_field_deserializer(scope, {field_name, {:compact_array, type}}, next_field_name)
+  def generate_field_deserializer(
+        scope,
+        {field_name, {:compact_array, type}},
+        next_field_name,
+        _dups
+      )
       when type in Kayrock.Deserialize.compact_primitive_types() or
              type in Kayrock.Deserialize.fixed_width_types() do
     quote do
@@ -895,11 +962,14 @@ defmodule Kayrock.Generate do
   def generate_field_deserializer(
         scope,
         {field_name, {:compact_array, elements_schema}},
-        next_field_name
+        next_field_name,
+        dups
       )
       when is_list(elements_schema) do
+    child = struct_scope(scope, field_name, dups)
+
     {first_field_name, subfield_deserializers} =
-      struct_field_deserializers(field_name, elements_schema)
+      struct_field_deserializers(child, elements_schema, dups)
 
     [
       subfield_deserializers,
@@ -918,7 +988,7 @@ defmodule Kayrock.Generate do
               _ ->
                 Enum.reduce(1..(len_plus_one - 1), {[], rest}, fn _ix, {acc_inner, d} ->
                   {val, r} =
-                    deserialize_field(unquote(field_name), unquote(first_field_name), %{}, d)
+                    deserialize_field(unquote(child), unquote(first_field_name), %{}, d)
 
                   {[val | acc_inner], r}
                 end)
@@ -937,7 +1007,7 @@ defmodule Kayrock.Generate do
     ]
   end
 
-  def generate_field_deserializer(scope, {:assignment, :bytes}, next_field_name) do
+  def generate_field_deserializer(scope, {:assignment, :bytes}, next_field_name, _dups) do
     quote do
       defp deserialize_field(unquote(scope), :assignment, acc, data) do
         {val, rest} = Kayrock.MemberAssignment.deserialize(data)
@@ -952,7 +1022,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_field_deserializer(scope, {field_name, {:array, type}}, next_field_name)
+  def generate_field_deserializer(scope, {field_name, {:array, type}}, next_field_name, _dups)
       when type in Kayrock.Deserialize.primitive_types() do
     quote do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
@@ -968,9 +1038,16 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_field_deserializer(scope, {field_name, {:array, elements_schema}}, next_field_name) do
+  def generate_field_deserializer(
+        scope,
+        {field_name, {:array, elements_schema}},
+        next_field_name,
+        dups
+      ) do
+    child = struct_scope(scope, field_name, dups)
+
     {first_field_name, subfield_deserializers} =
-      struct_field_deserializers(field_name, elements_schema)
+      struct_field_deserializers(child, elements_schema, dups)
 
     [
       subfield_deserializers,
@@ -982,7 +1059,7 @@ defmodule Kayrock.Generate do
             if num_elements > 0 do
               Enum.reduce(1..num_elements, {[], rest}, fn _ix, {acc, d} ->
                 {val, r} =
-                  deserialize_field(unquote(field_name), unquote(first_field_name), %{}, d)
+                  deserialize_field(unquote(child), unquote(first_field_name), %{}, d)
 
                 {[val | acc], r}
               end)
@@ -1001,7 +1078,7 @@ defmodule Kayrock.Generate do
     ]
   end
 
-  def generate_field_deserializer(scope, {field_name, type}, next_field_name)
+  def generate_field_deserializer(scope, {field_name, type}, next_field_name, _dups)
       when type in Kayrock.Deserialize.primitive_types() do
     quote do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
@@ -1017,7 +1094,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_field_deserializer(scope, {field_name, :records}, next_field_name) do
+  def generate_field_deserializer(scope, {field_name, :records}, next_field_name, _dups) do
     quote do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
         <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
@@ -1034,7 +1111,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_field_deserializer(scope, {field_name, :compact_records}, next_field_name) do
+  def generate_field_deserializer(scope, {field_name, :compact_records}, next_field_name, _dups) do
     quote do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
         {len_plus_one, rest} = Kayrock.Deserialize.decode_unsigned_varint(data)
@@ -1064,11 +1141,14 @@ defmodule Kayrock.Generate do
   def generate_field_deserializer(
         scope,
         {field_name, {:nullable_struct, struct_schema}},
-        next_field_name
+        next_field_name,
+        dups
       )
       when is_list(struct_schema) do
+    child = struct_scope(scope, field_name, dups)
+
     {first_field_name, subfield_deserializers} =
-      struct_field_deserializers(field_name, struct_schema)
+      struct_field_deserializers(child, struct_schema, dups)
 
     [
       subfield_deserializers,
@@ -1080,7 +1160,7 @@ defmodule Kayrock.Generate do
                 {nil, rest}
 
               <<1::8-signed, rest::binary>> ->
-                deserialize_field(unquote(field_name), unquote(first_field_name), %{}, rest)
+                deserialize_field(unquote(child), unquote(first_field_name), %{}, rest)
             end
 
           deserialize_field(
@@ -1094,17 +1174,19 @@ defmodule Kayrock.Generate do
     ]
   end
 
-  def generate_field_deserializer(scope, {field_name, struct_schema}, next_field_name)
+  def generate_field_deserializer(scope, {field_name, struct_schema}, next_field_name, dups)
       when is_list(struct_schema) do
+    child = struct_scope(scope, field_name, dups)
+
     {first_field_name, subfield_deserializers} =
-      struct_field_deserializers(field_name, struct_schema)
+      struct_field_deserializers(child, struct_schema, dups)
 
     [
       subfield_deserializers,
       quote do
         defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
           {val, rest} =
-            deserialize_field(unquote(field_name), unquote(first_field_name), %{}, data)
+            deserialize_field(unquote(child), unquote(first_field_name), %{}, data)
 
           deserialize_field(
             unquote(scope),

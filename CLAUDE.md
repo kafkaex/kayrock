@@ -66,6 +66,8 @@ After `mix gen.kafka_protocol`, `git diff lib/generated` must not touch versions
 
 Beyond kpro's types the generator understands `:uuid` (16-byte binary; `nil` serializes as the zero UUID, which deserializes as `<<0::128>>`), `:uint16`, `:float64` (NaN/Infinity as raw 8-byte binary), `:compact_records` (flexible record sets) and `{:nullable_struct, schema}` (int8 -1/1 presence marker).
 
+Nested structs are decoded by `deserialize_field/4` clauses scoped by the struct's field name; when two nested structs in one response share a field name (e.g. StreamsGroupDescribe v1 `topology.subtopologies` / `topology_description.subtopologies`) they are scoped by path (`:"topology.subtopologies"`) instead. A required (non-nullable) top-level struct field defaults to `nil`, so its type is `nil | %{...}`.
+
 Known `kpro_schema` quirk kept for compatibility: Fetch v7-v11 `forgotten_topics_data[].partitions` is modelled as an array of structs (Kafka defines `[]int32`).
 
 ### Tagged fields (KIP-482)
