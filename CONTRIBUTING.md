@@ -30,7 +30,10 @@ mix dialyzer
 
 ## Code Generation
 
-Kayrock uses code generation from `kafka_protocol` schemas. The generated code is in `lib/generated/`.
+Kayrock generates its protocol modules from Apache Kafka's JSON message
+definitions (vendored in `priv/kafka_messages/<kafka-version>/`) and, for the
+versions it has always generated, from `kafka_protocol`'s `kpro_schema`. The
+generated code is in `lib/generated/`.
 
 **Important:** Do not edit files in `lib/generated/` manually.
 
@@ -40,9 +43,18 @@ To regenerate the protocol code:
 mix gen.kafka_protocol
 ```
 
-This is only needed when:
-- Updating the `kafka_protocol` dependency
-- Adding support for new Kafka protocol versions
+To add support for a newer version of an API (or a new API), raise its maximum
+version (or add it) in `lib/kayrock/generate/api_table.ex` and regenerate.
+Only versions that are stable in the vendored JSON specs are allowed.
+
+To vendor the JSON specs of a different Apache Kafka release:
+
+```bash
+mix kayrock.fetch_kafka_messages 4.4.0
+```
+
+After regenerating, `git diff lib/generated` should only contain the changes you
+intended; in particular, versions that were already generated must not change.
 
 ## Running Tests
 

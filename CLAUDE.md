@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Kayrock is an Elixir library for Kafka protocol serialization and deserialization. It generates Elixir structs from Kafka protocol schemas (via `kafka_protocol`'s `kpro_schema` module) and provides encoders/decoders for all Kafka API messages.
+Kayrock is an Elixir library for Kafka protocol serialization and deserialization. It generates Elixir structs from Kafka protocol schemas (Apache Kafka's JSON message definitions, plus `kafka_protocol`'s `kpro_schema` for the versions Kayrock has always generated) and provides encoders/decoders for all Kafka API messages.
 
 ## Build and Development Commands
 
@@ -39,8 +39,11 @@ mix format
 # Compile with warnings as errors
 mix compile --warnings-as-errors
 
-# Regenerate protocol code (only needed when updating kafka_protocol dep)
+# Regenerate protocol code (after changing the generator or ApiTable)
 mix gen.kafka_protocol
+
+# Vendor Apache Kafka's JSON message specs for a release tag
+mix kayrock.fetch_kafka_messages 4.4.0
 ```
 
 ## Architecture
@@ -48,9 +51,19 @@ mix gen.kafka_protocol
 ### Code Generation Pipeline
 
 1. `lib/mix/tasks/gen.kafka_protocol.ex` - Mix task that invokes code generation
-2. `lib/kayrock/generate.ex` - Core macro-based code generation logic
-3. Reads schemas from `:kpro_schema` (kafka_protocol dependency)
-4. Outputs generated modules to `lib/generated/`
+2. `lib/kayrock/generate/api_table.ex` - **The** allowlist of APIs and the max version generated for each. Raise a max here to add a version.
+3. `lib/kayrock/generate/schema_source.ex` - `kpro_schema`-shaped schema source. Versions `<= ApiTable.kpro_max_versions` come from `:kpro_schema` (so existing generated code stays byte-identical); higher versions come from the JSON specs. `validate!/0` runs before generation (rejects `latestVersionUnstable` versions, gaps, unknown APIs).
+4. `lib/kayrock/generate/json_spec.ex` - Translates Apache Kafka JSON message specs (`priv/kafka_messages/<version>/`, vendored by `mix kayrock.fetch_kafka_messages`) into kpro-shaped schemas: versions/nullableVersions/flexibleVersions, `[]T`, nested structs, `commonStructs`, compact encodings, header versions. `taggedVersions` fields are skipped (they stay in the raw `tagged_fields` bucket).
+5. `lib/kayrock/generate.ex` - Core macro-based code generation logic
+6. Outputs generated modules to `lib/generated/`
+
+After `mix gen.kafka_protocol`, `git diff lib/generated` must not touch versions that were already generated (kafka_ex pattern-matches on these structs).
+
+### Schema types
+
+Beyond kpro's types the generator understands `:uuid` (16-byte binary; `nil` serializes as the zero UUID, which deserializes as `<<0::128>>`), `:uint16`, `:float64` (NaN/Infinity as raw 8-byte binary), `:compact_records` (flexible record sets) and `{:nullable_struct, schema}` (int8 -1/1 presence marker).
+
+Known `kpro_schema` quirk kept for compatibility: Fetch v7-v11 `forgotten_topics_data[].partitions` is modelled as an array of structs (Kafka defines `[]int32`).
 
 ### Generated Module Structure
 
