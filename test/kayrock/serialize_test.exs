@@ -275,6 +275,62 @@ defmodule Kayrock.SerializeTest do
       # 2 tags, tag=0 size=1 data=<<1>>, tag=1 size=2 data=<<2,3>>
       assert IO.iodata_to_binary(result) == <<2, 0, 1, 1, 1, 2, 2, 3>>
     end
+
+    test "the raw bucket is written as given (no reordering)" do
+      result = Serialize.serialize_tagged_fields([{1, <<>>}, {0, <<>>}])
+      assert IO.iodata_to_binary(result) == <<2, 1, 0, 0, 0>>
+    end
+  end
+
+  describe "serialize_tagged_fields/2 (named tagged fields)" do
+    test "skips unset (nil) named fields" do
+      assert IO.iodata_to_binary(Serialize.serialize_tagged_fields([nil, nil], [])) == <<0>>
+      assert IO.iodata_to_binary(Serialize.serialize_tagged_fields([], nil)) == <<0>>
+    end
+
+    test "merges named and raw fields in ascending tag order" do
+      result = Serialize.serialize_tagged_fields([{5, <<5>>}, nil, {1, <<1>>}], [{3, <<3>>}])
+      assert IO.iodata_to_binary(result) == <<3, 1, 1, 1, 3, 1, 3, 5, 1, 5>>
+    end
+
+    test "multi-byte tags and sizes use unsigned varints" do
+      result = Serialize.serialize_tagged_fields([{128, :binary.copy(<<7>>, 130)}], [])
+      assert <<1, 0x80, 0x01, 0x82, 0x01, data::binary>> = IO.iodata_to_binary(result)
+      assert data == :binary.copy(<<7>>, 130)
+    end
+
+    test "raises when a raw tag duplicates a named field" do
+      assert_raise ArgumentError, ~r/\[2\]/, fn ->
+        Serialize.serialize_tagged_fields([{2, <<>>}], [{2, <<>>}])
+      end
+    end
+  end
+
+  describe "tagged_field_default?/3" do
+    test "nil is unset for non-nullable kinds" do
+      assert Serialize.tagged_field_default?(:value, nil, -1)
+      assert Serialize.tagged_field_default?(:boolean, nil, 1)
+    end
+
+    test "nil is a value for nullable kinds" do
+      assert Serialize.tagged_field_default?(:nullable, nil, nil)
+      refute Serialize.tagged_field_default?(:nullable, nil, "x")
+      refute Serialize.tagged_field_default?(:nullable, [], nil)
+    end
+
+    test "booleans compare true/false against the integer default" do
+      assert Serialize.tagged_field_default?(:boolean, false, 0)
+      assert Serialize.tagged_field_default?(:boolean, true, 1)
+      refute Serialize.tagged_field_default?(:boolean, true, 0)
+      assert Serialize.tagged_field_default?(:boolean, 0, 0)
+      refute Serialize.tagged_field_default?(:boolean, 1, 0)
+    end
+
+    test "other values compare by equality" do
+      assert Serialize.tagged_field_default?(:value, -1, -1)
+      refute Serialize.tagged_field_default?(:value, 0, -1)
+      assert Serialize.tagged_field_default?(:value, [], [])
+    end
   end
 
   describe "encode_unsigned_varint" do

@@ -36,7 +36,9 @@ defmodule Kayrock.Generate.JsonGeneratedCodeTest do
     def response_header_vsn(api, vsn), do: JsonSpec.response_header_version(spec(), api, vsn)
   end
 
-  @namespace "Kayrock.Generate.JsonGeneratedCodeTest.Gen"
+  alias Kayrock.Test.GeneratedCode
+
+  @namespace Kayrock.Generate.JsonGeneratedCodeTest.Gen
 
   setup_all do
     for api <- [
@@ -46,53 +48,15 @@ defmodule Kayrock.Generate.JsonGeneratedCodeTest do
           :describe_topic_partitions,
           :produce
         ] do
-      compile_json_only(api)
+      GeneratedCode.compile!(api, JsonOnlySchema, @namespace)
     end
 
     :ok
   end
 
-  # Generate code exactly as `mix gen.kafka_protocol` does (AST -> source),
-  # then move it into a test namespace and resolve api_key/0 through
-  # JsonOnlySchema instead of Kayrock.KafkaSchemaMetadata.
-  defp compile_json_only(api) do
-    root = "Kayrock.#{Macro.camelize("#{api}")}"
+  defp mod(api, vsn, kind), do: GeneratedCode.module(@namespace, api, vsn, kind)
 
-    source =
-      api
-      |> Kayrock.Generate.build_all(JsonOnlySchema)
-      # protocols are consolidated in test, so Kayrock.Request implementations
-      # for runtime-compiled structs would have no effect (and warn); drop them
-      |> Macro.prewalk(fn
-        {:__block__, meta, exprs} -> {:__block__, meta, Enum.reject(exprs, &defimpl?/1)}
-        other -> other
-      end)
-      |> Macro.to_string()
-      |> String.replace("defmodule #{root} do", "defmodule #{@namespace}.#{root} do")
-      |> String.replace(
-        "Kayrock.KafkaSchemaMetadata.api_key(",
-        "#{inspect(JsonOnlySchema)}.api_key("
-      )
-
-    Code.compile_string(source)
-  end
-
-  defp defimpl?({:defimpl, _, _}), do: true
-  defp defimpl?(_), do: false
-
-  defp mod(api, vsn, kind) do
-    Module.concat([@namespace, "Kayrock", Macro.camelize("#{api}"), "V#{vsn}", kind])
-  end
-
-  # serialize a request and return the body after the v2 request header
-  defp request_body(%module{} = request) do
-    <<key::16, vsn::16, 1::32, -1::16-signed, 0, body::binary>> =
-      IO.iodata_to_binary(module.serialize(%{request | correlation_id: 1, client_id: nil}))
-
-    assert key == module.api_key()
-    assert vsn == module.api_vsn()
-    body
-  end
+  defp request_body(request), do: GeneratedCode.request_body(request)
 
   test "generated modules expose the Kafka API key and version" do
     req = mod(:consumer_group_heartbeat, 1, Request)
