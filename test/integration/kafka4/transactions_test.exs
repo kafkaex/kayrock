@@ -306,8 +306,10 @@ defmodule Kayrock.Kafka4.TransactionsTest do
     }
 
     request = %{
-      Kayrock.Produce.get_request_struct(Kayrock.Produce.max_vsn())
-      | transactional_id: txn_id,
+      Kayrock.Produce.get_request_struct(8)
+      | # v3-v8 layout (`timeout`, topic_data by name); newer Produce versions are
+        # covered by the data-plane tests
+        transactional_id: txn_id,
         acks: -1,
         timeout: 10_000,
         topic_data: [%{topic: topic, data: [%{partition: partition, record_set: batch}]}]
