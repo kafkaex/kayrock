@@ -61,7 +61,8 @@ defmodule Kayrock.Integration.TopicManagementTest do
   end
 
   defp alter_topic_config(topic_name, api_version) do
-    api_version = min(Kayrock.AlterConfigs.max_vsn(), api_version)
+    # kpro-era field names; v2+ (Kafka JSON names) is covered by the kafka4 suite
+    api_version = min(1, api_version)
     request = Kayrock.AlterConfigs.get_request_struct(api_version)
     config = %{config_name: "cleanup.policy", config_value: "compact"}
 
@@ -73,7 +74,8 @@ defmodule Kayrock.Integration.TopicManagementTest do
   end
 
   defp describe_config(topic_name, api_version) do
-    api_version = min(Kayrock.DescribeConfigs.max_vsn(), api_version)
+    # kpro-era field names; v3+ (Kafka JSON names) is covered by the kafka4 suite
+    api_version = min(2, api_version)
     request = Kayrock.DescribeConfigs.get_request_struct(api_version)
 
     %{
