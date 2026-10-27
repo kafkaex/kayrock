@@ -463,7 +463,12 @@ defmodule Kayrock.Generate.JsonSpec do
   defp default_for(:uuid, nil, _nullable, _field), do: <<0::128>>
 
   defp default_for(type, raw, _nullable, _field)
-       when type in [:compact_string, :compact_nullable_string, :compact_bytes, :compact_nullable_bytes] do
+       when type in [
+              :compact_string,
+              :compact_nullable_string,
+              :compact_bytes,
+              :compact_nullable_bytes
+            ] do
     raw || ""
   end
 
