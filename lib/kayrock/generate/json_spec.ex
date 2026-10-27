@@ -367,10 +367,27 @@ defmodule Kayrock.Generate.JsonSpec do
         :error -> flexible
       end
 
-    {name, translate_type(field, Map.fetch!(field, "type"), vsn, flexible, field_flexible, nullable, common_structs)}
+    {name,
+     translate_type(
+       field,
+       Map.fetch!(field, "type"),
+       vsn,
+       flexible,
+       field_flexible,
+       nullable,
+       common_structs
+     )}
   end
 
-  defp translate_type(field, "[]" <> elem_type, vsn, flexible, field_flexible, _nullable, common_structs) do
+  defp translate_type(
+         field,
+         "[]" <> elem_type,
+         vsn,
+         flexible,
+         field_flexible,
+         _nullable,
+         common_structs
+       ) do
     elem =
       case Map.fetch(@primitive_types, elem_type) do
         {:ok, type} ->
@@ -381,7 +398,12 @@ defmodule Kayrock.Generate.JsonSpec do
           translate_type(field, elem_type, vsn, flexible, field_flexible, false, common_structs)
 
         :error ->
-          struct_schema(struct_fields!(field, elem_type, common_structs), vsn, flexible, common_structs)
+          struct_schema(
+            struct_fields!(field, elem_type, common_structs),
+            vsn,
+            flexible,
+            common_structs
+          )
       end
 
     if flexible, do: {:compact_array, elem}, else: {:array, elem}
@@ -415,7 +437,14 @@ defmodule Kayrock.Generate.JsonSpec do
         primitive
 
       :error ->
-        schema = struct_schema(struct_fields!(field, type, common_structs), vsn, flexible, common_structs)
+        schema =
+          struct_schema(
+            struct_fields!(field, type, common_structs),
+            vsn,
+            flexible,
+            common_structs
+          )
+
         if nullable, do: {:nullable_struct, schema}, else: schema
     end
   end

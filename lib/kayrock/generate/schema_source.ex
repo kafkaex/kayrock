@@ -113,8 +113,11 @@ defmodule Kayrock.Generate.SchemaSource do
         end)
 
     case errors do
-      [] -> :ok
-      _ -> raise ArgumentError, "Invalid Kayrock.Generate.ApiTable:\n  " <> Enum.join(errors, "\n  ")
+      [] ->
+        :ok
+
+      _ ->
+        raise ArgumentError, "Invalid Kayrock.Generate.ApiTable:\n  " <> Enum.join(errors, "\n  ")
     end
   end
 
