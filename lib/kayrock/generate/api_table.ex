@@ -36,9 +36,9 @@ defmodule Kayrock.Generate.ApiTable do
   #
   # {api, max version generated}
   @max_versions [
-    produce: 8,
-    fetch: 11,
-    list_offsets: 5,
+    produce: 13,
+    fetch: 18,
+    list_offsets: 11,
     metadata: 13,
     offset_commit: 10,
     offset_fetch: 10,
@@ -53,9 +53,9 @@ defmodule Kayrock.Generate.ApiTable do
     api_versions: 3,
     create_topics: 5,
     delete_topics: 4,
-    delete_records: 1,
+    delete_records: 2,
     init_producer_id: 2,
-    offset_for_leader_epoch: 3,
+    offset_for_leader_epoch: 4,
     add_partitions_to_txn: 1,
     add_offsets_to_txn: 1,
     end_txn: 1,
