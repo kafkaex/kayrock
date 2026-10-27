@@ -60,11 +60,14 @@ defmodule Kayrock.TestSupport do
   def api_version_range(:describe_delegation_token), do: 0..1
 
   # Transactions
-  def api_version_range(:init_producer_id), do: 0..2
-  def api_version_range(:add_partitions_to_txn), do: 0..1
-  def api_version_range(:add_offsets_to_txn), do: 0..1
-  def api_version_range(:end_txn), do: 0..1
-  def api_version_range(:txn_offset_commit), do: 0..2
+  def api_version_range(:init_producer_id), do: 0..5
+  def api_version_range(:add_partitions_to_txn), do: 0..3
+  def api_version_range(:add_offsets_to_txn), do: 0..4
+  def api_version_range(:end_txn), do: 0..5
+  def api_version_range(:txn_offset_commit), do: 0..6
+  def api_version_range(:describe_producers), do: 0..0
+  def api_version_range(:describe_transactions), do: 0..0
+  def api_version_range(:list_transactions), do: 0..2
   def api_version_range(:offset_delete), do: 0..0
 
   # Leader epoch
@@ -335,6 +338,9 @@ defmodule Kayrock.TestSupport do
   def api_key(:alter_partition_reassignments), do: 45
   def api_key(:list_partition_reassignments), do: 46
   def api_key(:offset_delete), do: 47
+  def api_key(:describe_producers), do: 61
+  def api_key(:describe_transactions), do: 65
+  def api_key(:list_transactions), do: 66
 
   @doc """
   Builds a minimal valid response binary for testing.

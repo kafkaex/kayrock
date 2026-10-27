@@ -33,12 +33,12 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | CreateTopics (19)            | 0-5     | 2-7    | 0-1                   |
   | DeleteTopics (20)            | 0-4     | 1-6    | 0                     |
   | DeleteRecords (21)           | 0-2     | 0-2    |                       |
-  | InitProducerId (22)          | 0-2     | 0-5    |                       |
+  | InitProducerId (22)          | 0-5     | 0-5    |                       |
   | OffsetForLeaderEpoch (23)    | 0-4     | 2-4    | 0-1                   |
-  | AddPartitionsToTxn (24)      | 0-1     | 0-5    |                       |
-  | AddOffsetsToTxn (25)         | 0-1     | 0-4    |                       |
-  | EndTxn (26)                  | 0-1     | 0-5    |                       |
-  | TxnOffsetCommit (28)         | 0-2     | 0-6    |                       |
+  | AddPartitionsToTxn (24)      | 0-3     | 0-5    |                       |
+  | AddOffsetsToTxn (25)         | 0-4     | 0-4    |                       |
+  | EndTxn (26)                  | 0-5     | 0-5    |                       |
+  | TxnOffsetCommit (28)         | 0-6     | 0-6    |                       |
   | DescribeAcls (29)            | 0-1     | 1-3    | 0                     |
   | CreateAcls (30)              | 0-1     | 1-3    | 0                     |
   | DeleteAcls (31)              | 0-1     | 1-3    | 0                     |
@@ -60,6 +60,9 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | OffsetDelete (47)            | 0       | 0      |                       |
   | ConsumerGroupHeartbeat (68)  | 0-1     | 0-1    |                       |
   | ConsumerGroupDescribe (69)   | 0-1     | 0-1    |                       |
+  | DescribeProducers (61)       | 0       | 0      |                       |
+  | DescribeTransactions (65)    | 0       | 0      |                       |
+  | ListTransactions (66)        | 0-2     | 0-2    |                       |
 
   Produce v0-v2 are a special case: Kafka 4.x still advertises them but
   does not answer them (KIP-896 keeps them advertised only for old-client

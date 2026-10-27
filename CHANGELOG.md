@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Produce v9-v13, Fetch v12-v18, ListOffsets v6-v11, DeleteRecords v2 and OffsetForLeaderEpoch v4 (flexible versions, topic IDs, `compact_records`). **Upgrade note:** `KafkaSchemaMetadata.version_range/1` now reports these higher maxima, so clients that cap negotiation by it (e.g. kafka_ex <= 1.1.x) must cap at the versions they implement before upgrading.
 - Topic/cluster admin: ApiVersions v4-5, CreateTopics v6-7, DeleteTopics v5-6 (delete by topic ID), CreatePartitions v2-3, AlterPartitionReassignments v1, DescribeLogDirs v2-5, AlterReplicaLogDirs v2, and new DescribeCluster v0-2, DescribeTopicPartitions v0, ListConfigResources v0-1, DescribeQuorum v0-2, UpdateFeatures v0-2, AddRaftVoter v0-1, RemoveRaftVoter v0, UnregisterBroker v0.
 - Configs/ACLs/security up to Kafka 4.4.0: DescribeConfigs v3-v4, AlterConfigs v2, Describe/Create/DeleteAcls v2-v3, SaslAuthenticate v2, CreateDelegationToken v3, Renew/ExpireDelegationToken v2, DescribeDelegationToken v2-v3, and new DescribeClientQuotas/AlterClientQuotas v0-v1, DescribeUserScramCredentials/AlterUserScramCredentials v0.
+- Transactions: InitProducerId v3-v5, AddPartitionsToTxn v2-v3, AddOffsetsToTxn v2-v4, EndTxn v2-v5, TxnOffsetCommit v3-v6, and the new DescribeProducers v0, DescribeTransactions v0 and ListTransactions v0-v2.
 
 ## [1.0.1] - 2026-09-04
 
