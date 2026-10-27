@@ -198,6 +198,46 @@ defmodule Kayrock.Serialize do
     ]
   end
 
+  @doc false
+  # Tagged-field section for a struct with named tagged fields (generated
+  # code).  `named` holds `{tag, binary}` for every named tagged field that
+  # differs from its default (and `nil` for the others); `raw` is the struct's
+  # `tagged_fields` bucket of unknown tags.  Fields are written in ascending
+  # tag order, as KIP-482 requires.
+  def serialize_tagged_fields(named, raw) when is_list(named) do
+    named = Enum.reject(named, &is_nil/1)
+    raw = raw || []
+
+    case Enum.filter(raw, fn {tag, _} -> List.keymember?(named, tag, 0) end) do
+      [] ->
+        serialize_tagged_fields(Enum.sort_by(named ++ raw, &elem(&1, 0)))
+
+      clashes ->
+        raise ArgumentError,
+              "tagged_fields contains tags #{inspect(Enum.map(clashes, &elem(&1, 0)))} " <>
+                "that are also named fields of this struct; set the named field instead"
+    end
+  end
+
+  @doc false
+  # Whether a named tagged field's value equals its default (and so is left
+  # off the wire).  `nil` always means "not set" except for nullable types,
+  # where it is a value like any other.
+  def tagged_field_default?(:nullable, value, default), do: value == default
+  def tagged_field_default?(_kind, nil, _default), do: true
+
+  def tagged_field_default?(:boolean, value, default) when is_boolean(value),
+    do: tagged_field_value(:boolean, default) == value
+
+  def tagged_field_default?(_kind, value, default), do: value == default
+
+  @doc false
+  # Booleans decode as 1 / 0, so a decoded tagged bool is accepted back as
+  # its integer form (`serialize(:boolean, 1)` would otherwise write false).
+  def tagged_field_value(:boolean, 1), do: true
+  def tagged_field_value(:boolean, 0), do: false
+  def tagged_field_value(_kind, value), do: value
+
   def encode_unsigned_varint(val) when val < 128, do: <<val>>
   def encode_unsigned_varint(val), do: encode_unsigned_varint_loop(val, [])
 

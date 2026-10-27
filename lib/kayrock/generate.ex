@@ -284,7 +284,7 @@ defmodule Kayrock.Generate do
         acc ++ [{k, default_val(v)}]
       end) ++ [correlation_id: nil, client_id: nil]
 
-    field_serializers = Enum.map(schema, &field_serializer(&1, :struct))
+    field_serializers = struct_field_serializers(schema, :struct)
 
     struct_types =
       Enum.reduce(schema, [], fn {k, v}, acc ->
@@ -504,6 +504,10 @@ defmodule Kayrock.Generate do
     end
   end
 
+  def describe_type(api, field, {:tagged_field, opts}) when is_list(opts) do
+    describe_type(api, field, Keyword.fetch!(opts, :type))
+  end
+
   def describe_type(_, _, :tagged_fields) do
     quote do
       [{non_neg_integer(), binary()}]
@@ -551,12 +555,8 @@ defmodule Kayrock.Generate do
             end
         ]
 
-    {first_field_name, fields_with_next_field} = build_field_zip(schema)
-
-    field_deserializers =
-      List.flatten(
-        Enum.map(fields_with_next_field, fn {s, n} -> generate_field_deserializer(:root, s, n) end)
-      )
+    {first_field_name, field_deserializers} = struct_field_deserializers(:root, schema)
+    field_deserializers = List.flatten(field_deserializers)
 
     quote do
       defmodule unquote(modname) do
@@ -661,6 +661,172 @@ defmodule Kayrock.Generate do
     {first_field_name, fields_with_next_field}
   end
 
+  ######################################################################
+  # NAMED TAGGED FIELDS (KIP-482)
+  #
+  # JSON-derived schemas describe a tagged field as
+  # `{name, {:tagged_field, [tag: tag, type: type, default: default]}}`
+  # (see Kayrock.Generate.JsonSpec).  Such fields are struct keys like any
+  # other, but on the wire they live in the struct's tagged-field section
+  # (`{:tagged_fields, :tagged_fields}`), not inline.  Structs without named
+  # tagged fields generate exactly the same code as before.
+
+  @doc false
+  def tagged_field?({_name, {:tagged_field, opts}}) when is_list(opts), do: true
+  def tagged_field?(_), do: false
+
+  defp named_tagged_fields(schema), do: Enum.filter(schema, &tagged_field?/1)
+
+  # serializers for every field of a struct, read from `varname`
+  defp struct_field_serializers(schema, varname) do
+    case named_tagged_fields(schema) do
+      [] ->
+        Enum.map(schema, &field_serializer(&1, varname))
+
+      tagged ->
+        schema
+        |> Enum.reject(&tagged_field?/1)
+        |> Enum.map(fn
+          {:tagged_fields, :tagged_fields} -> tagged_section_serializer(tagged, varname)
+          field -> field_serializer(field, varname)
+        end)
+    end
+  end
+
+  defp tagged_section_serializer(tagged, varname) do
+    var = Macro.var(varname, __MODULE__)
+
+    named =
+      Enum.map(tagged, fn {name, {:tagged_field, opts}} ->
+        tag = Keyword.fetch!(opts, :tag)
+        type = Keyword.fetch!(opts, :type)
+
+        kind = value_kind(type, opts)
+
+        quote do
+          with {:ok, value} <- Map.fetch(unquote(var), unquote(name)),
+               false <-
+                 Kayrock.Serialize.tagged_field_default?(
+                   unquote(kind),
+                   value,
+                   unquote(Keyword.fetch!(opts, :default))
+                 ) do
+            {unquote(tag),
+             IO.iodata_to_binary(unquote(tagged_value_serializer(name, type, kind)))}
+          else
+            _ -> nil
+          end
+        end
+      end)
+
+    quote do
+      Kayrock.Serialize.serialize_tagged_fields(
+        unquote(named),
+        Map.get(unquote(var), :tagged_fields, [])
+      )
+    end
+  end
+
+  # serializes `value` (bound by tagged_section_serializer/2) as `type`
+  defp tagged_value_serializer(_name, :boolean, :boolean) do
+    quote do
+      Kayrock.Serialize.serialize(:boolean, Kayrock.Serialize.tagged_field_value(:boolean, value))
+    end
+  end
+
+  defp tagged_value_serializer(name, type, _kind) do
+    quote do
+      tagged_value = %{unquote(name) => value}
+      unquote(field_serializer({name, type}, :tagged_value))
+    end
+  end
+
+  # how Kayrock.Serialize.tagged_field_default?/3 compares a value to the default
+  defp value_kind(type, opts) do
+    cond do
+      Keyword.get(opts, :nullable, false) -> :nullable
+      type == :boolean -> :boolean
+      true -> :value
+    end
+  end
+
+  # deserializers for every field of a struct in `scope`; returns the name of
+  # the first inline field and the deserializer clauses
+  defp struct_field_deserializers(scope, schema) do
+    tagged = named_tagged_fields(schema)
+
+    {first_field_name, fields_with_next_field} =
+      build_field_zip(Enum.reject(schema, &tagged_field?/1))
+
+    deserializers =
+      Enum.map(fields_with_next_field, fn
+        {{:tagged_fields, :tagged_fields}, next} when tagged != [] ->
+          tagged_section_deserializer(scope, tagged, next)
+
+        {field, next} ->
+          generate_field_deserializer(scope, field, next)
+      end)
+
+    {first_field_name, deserializers}
+  end
+
+  # Decodes the tagged-field section: known tags are decoded into their named
+  # fields (absent ones take their default), unknown tags are kept as raw
+  # `{tag, binary}` pairs in `:tagged_fields`.
+  defp tagged_section_deserializer(scope, tagged, next_field_name) do
+    value_scope = {:tagged, scope}
+
+    value_deserializers =
+      Enum.map(tagged, fn {name, {:tagged_field, opts}} ->
+        generate_field_deserializer(value_scope, {name, Keyword.fetch!(opts, :type)}, nil)
+      end)
+
+    defaults =
+      Enum.map(tagged, fn {name, {:tagged_field, opts}} ->
+        {name, Keyword.fetch!(opts, :default)}
+      end)
+
+    decode_clauses =
+      Enum.flat_map(tagged, fn {name, {:tagged_field, opts}} ->
+        quote do
+          unquote(Keyword.fetch!(opts, :tag)) ->
+            {decoded, _} = deserialize_field(unquote(value_scope), unquote(name), %{}, bin)
+            {Map.put(acc, unquote(name), Map.fetch!(decoded, unquote(name))), unknown}
+        end
+      end) ++
+        quote do
+          _ -> {acc, [{tag, bin} | unknown]}
+        end
+
+    [
+      value_deserializers,
+      quote do
+        defp deserialize_field(unquote(scope), :tagged_fields, acc, data) do
+          {raw, rest} = Kayrock.Deserialize.deserialize_tagged_fields(data)
+
+          {acc, unknown} =
+            raw
+            |> Enum.sort_by(&elem(&1, 0))
+            |> Enum.reduce(
+              {Map.merge(acc, %{unquote_splicing(defaults)}), []},
+              fn {tag, bin}, {acc, unknown} ->
+                case tag do
+                  unquote(decode_clauses)
+                end
+              end
+            )
+
+          deserialize_field(
+            unquote(scope),
+            unquote(next_field_name),
+            Map.put(acc, :tagged_fields, Enum.reverse(unknown)),
+            rest
+          )
+        end
+      end
+    ]
+  end
+
   def generate_field_deserializer(scope, {:assignment, :compact_bytes}, next_field_name) do
     quote do
       defp deserialize_field(unquote(scope), :assignment, acc, data) do
@@ -732,12 +898,11 @@ defmodule Kayrock.Generate do
         next_field_name
       )
       when is_list(elements_schema) do
-    {first_field_name, fields_with_next_field} = build_field_zip(elements_schema)
+    {first_field_name, subfield_deserializers} =
+      struct_field_deserializers(field_name, elements_schema)
 
     [
-      Enum.map(fields_with_next_field, fn {f, n} ->
-        generate_field_deserializer(field_name, f, n)
-      end),
+      subfield_deserializers,
       quote do
         defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
           {len_plus_one, rest} = Kayrock.Deserialize.decode_unsigned_varint(data)
@@ -804,12 +969,11 @@ defmodule Kayrock.Generate do
   end
 
   def generate_field_deserializer(scope, {field_name, {:array, elements_schema}}, next_field_name) do
-    {first_field_name, fields_with_next_field} = build_field_zip(elements_schema)
+    {first_field_name, subfield_deserializers} =
+      struct_field_deserializers(field_name, elements_schema)
 
     [
-      Enum.map(fields_with_next_field, fn {f, n} ->
-        generate_field_deserializer(field_name, f, n)
-      end),
+      subfield_deserializers,
       quote do
         defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
           <<num_elements::32-signed, rest::binary>> = data
@@ -903,12 +1067,11 @@ defmodule Kayrock.Generate do
         next_field_name
       )
       when is_list(struct_schema) do
-    {first_field_name, fields_with_next_field} = build_field_zip(struct_schema)
+    {first_field_name, subfield_deserializers} =
+      struct_field_deserializers(field_name, struct_schema)
 
     [
-      Enum.map(fields_with_next_field, fn {f, n} ->
-        generate_field_deserializer(field_name, f, n)
-      end),
+      subfield_deserializers,
       quote do
         defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
           {val, rest} =
@@ -933,12 +1096,11 @@ defmodule Kayrock.Generate do
 
   def generate_field_deserializer(scope, {field_name, struct_schema}, next_field_name)
       when is_list(struct_schema) do
-    {first_field_name, fields_with_next_field} = build_field_zip(struct_schema)
+    {first_field_name, subfield_deserializers} =
+      struct_field_deserializers(field_name, struct_schema)
 
     [
-      Enum.map(fields_with_next_field, fn {f, n} ->
-        generate_field_deserializer(field_name, f, n)
-      end),
+      subfield_deserializers,
       quote do
         defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
           {val, rest} =
@@ -1078,7 +1240,7 @@ defmodule Kayrock.Generate do
   end
 
   defp field_serializer({name, {:array, el}}, varname) when is_list(el) do
-    subfield_serializers = Enum.map(el, &field_serializer(&1, :v))
+    subfield_serializers = struct_field_serializers(el, :v)
 
     quote do
       case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
@@ -1121,7 +1283,7 @@ defmodule Kayrock.Generate do
   end
 
   defp field_serializer({name, schema}, varname) when is_list(schema) do
-    subfield_serializers = Enum.map(schema, &field_serializer(&1, :v))
+    subfield_serializers = struct_field_serializers(schema, :v)
 
     quote do
       v = Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name))
@@ -1154,7 +1316,7 @@ defmodule Kayrock.Generate do
 
   # Nullable struct (JSON specs): int8 -1 = null, 1 = present, then the fields
   defp field_serializer({name, {:nullable_struct, schema}}, varname) when is_list(schema) do
-    subfield_serializers = Enum.map(schema, &field_serializer(&1, :v))
+    subfield_serializers = struct_field_serializers(schema, :v)
 
     quote do
       case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
@@ -1179,7 +1341,7 @@ defmodule Kayrock.Generate do
   end
 
   defp field_serializer({name, {:compact_array, el}}, varname) when is_list(el) do
-    subfield_serializers = Enum.map(el, &field_serializer(&1, :v))
+    subfield_serializers = struct_field_serializers(el, :v)
 
     quote do
       case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
@@ -1203,6 +1365,7 @@ defmodule Kayrock.Generate do
   defp default_val({:array, _}), do: []
   defp default_val({:compact_array, _}), do: []
   defp default_val(:tagged_fields), do: []
+  defp default_val({:tagged_field, opts}) when is_list(opts), do: Keyword.fetch!(opts, :default)
   defp default_val(:compact_string), do: ""
   defp default_val(:compact_bytes), do: ""
   defp default_val(_), do: nil

@@ -75,14 +75,43 @@ defmodule Kayrock.Generate.JsonSpecTest do
       end
     end
 
+    # :kpro_schema has no named tagged fields (they are carried in the raw
+    # tagged_fields bucket), so they are dropped from the JSON side before
+    # comparing.  Where the JSON specs define them is pinned separately below.
     test "schemas are identical where pinned", %{spec: spec} do
       for {api, versions} <- @identical, vsn <- versions do
-        assert JsonSpec.request_schema(spec, api, vsn) == :kpro_schema.req(api, vsn),
+        assert drop_tagged(JsonSpec.request_schema(spec, api, vsn)) == :kpro_schema.req(api, vsn),
                "#{api} v#{vsn} request"
 
-        assert JsonSpec.response_schema(spec, api, vsn) == :kpro_schema.rsp(api, vsn),
+        assert drop_tagged(JsonSpec.response_schema(spec, api, vsn)) ==
+                 :kpro_schema.rsp(api, vsn),
                "#{api} v#{vsn} response"
       end
+    end
+
+    test "the only named tagged fields in kpro-defined versions", %{spec: spec} do
+      found =
+        for api <- :kpro_schema.all_apis(),
+            {lo, hi} = :kpro_schema.vsn_range(api),
+            {json_lo, _} = JsonSpec.valid_versions(spec, api),
+            vsn <- max(lo, json_lo)..hi//1,
+            {dir, json} <- [
+              request: JsonSpec.request_schema(spec, api, vsn),
+              response: JsonSpec.response_schema(spec, api, vsn)
+            ],
+            path <- tagged_paths(json, []) do
+          {api, vsn, dir, path}
+        end
+
+      # Kayrock keeps generating these versions from :kpro_schema, so these
+      # stay in the raw tagged_fields bucket there (see Kayrock.Generate.ApiTable)
+      assert found == [
+               {:api_versions, 3, :response, [:supported_features]},
+               {:api_versions, 3, :response, [:finalized_features_epoch]},
+               {:api_versions, 3, :response, [:finalized_features]},
+               {:api_versions, 3, :response, [:zk_migration_ready]},
+               {:create_topics, 5, :response, [:topics, :topic_config_error_code]}
+             ]
     end
 
     test "wire types agree for every version both sources define", %{spec: spec} do
@@ -95,7 +124,7 @@ defmodule Kayrock.Generate.JsonSpecTest do
               {:request, :kpro_schema.req(api, vsn), JsonSpec.request_schema(spec, api, vsn)},
               {:response, :kpro_schema.rsp(api, vsn), JsonSpec.response_schema(spec, api, vsn)}
             ],
-            wire_types(normalize_kpro(api, vsn, dir, kpro)) != wire_types(json) do
+            wire_types(normalize_kpro(api, vsn, dir, kpro)) != wire_types(drop_tagged(json)) do
           {api, vsn, dir}
         end
 
@@ -160,6 +189,29 @@ defmodule Kayrock.Generate.JsonSpecTest do
     end)
   end
 
+  # remove named tagged fields (at any depth)
+  defp drop_tagged(schema) when is_list(schema) do
+    for {k, v} <- schema, not match?({:tagged_field, _}, v), do: {k, drop_tagged(v)}
+  end
+
+  defp drop_tagged({tag, inner}) when tag in [:array, :compact_array, :nullable_struct],
+    do: {tag, drop_tagged(inner)}
+
+  defp drop_tagged(type), do: type
+
+  # paths to every named tagged field in a schema
+  defp tagged_paths(schema, path) when is_list(schema) do
+    Enum.flat_map(schema, fn
+      {k, {:tagged_field, _}} -> [Enum.reverse([k | path])]
+      {k, v} -> tagged_paths(v, [k | path])
+    end)
+  end
+
+  defp tagged_paths({tag, inner}, path) when tag in [:array, :compact_array, :nullable_struct],
+    do: tagged_paths(inner, path)
+
+  defp tagged_paths(_type, _path), do: []
+
   # strip field names, leaving the wire layout
   defp wire_types(schema) when is_list(schema),
     do: Enum.map(schema, fn {_k, v} -> wire_types(v) end)
@@ -209,12 +261,171 @@ defmodule Kayrock.Generate.JsonSpecTest do
              )
     end
 
-    test "taggedVersions fields are left to the tagged_fields bucket", %{spec: spec} do
-      # ApiVersions v3 SupportedFeatures etc. are tagged
+    test "taggedVersions fields become named tagged fields, sorted by tag", %{spec: spec} do
       schema = JsonSpec.response_schema(spec, :api_versions, 3)
-      refute Keyword.has_key?(schema, :supported_features)
-      refute Keyword.has_key?(schema, :finalized_features_epoch)
-      assert List.last(schema) == {:tagged_fields, :tagged_fields}
+
+      assert [
+               error_code: :int16,
+               api_keys: {:compact_array, _},
+               throttle_time_ms: :int32,
+               supported_features: {:tagged_field, supported},
+               finalized_features_epoch:
+                 {:tagged_field, [tag: 1, type: :int64, default: -1, nullable: false]},
+               finalized_features: {:tagged_field, [{:tag, 2} | _]},
+               zk_migration_ready:
+                 {:tagged_field, [tag: 3, type: :boolean, default: 0, nullable: false]},
+               tagged_fields: :tagged_fields
+             ] = schema
+
+      assert supported == [
+               tag: 0,
+               type:
+                 {:compact_array,
+                  [
+                    name: :compact_string,
+                    min_version: :int16,
+                    max_version: :int16,
+                    tagged_fields: :tagged_fields
+                  ]},
+               default: [],
+               nullable: false
+             ]
+    end
+
+    test "tagged fields are always compact and are not inline", %{spec: spec} do
+      # Fetch v12 request: ClusterId is a nullable tagged string, tag 0
+      schema = JsonSpec.request_schema(spec, :fetch, 12)
+
+      assert schema[:cluster_id] ==
+               {:tagged_field,
+                [tag: 0, type: :compact_nullable_string, default: nil, nullable: true]}
+
+      # declared first in the JSON, but tagged fields go after the inline ones
+      assert [{:replica_id, :int32} | _] = schema
+      assert [{:cluster_id, _}, {:tagged_fields, :tagged_fields}] = Enum.take(schema, -2)
+    end
+
+    test "nested struct tagged fields", %{spec: spec} do
+      # Fetch v12 response partitions carry three tagged structs
+      schema = JsonSpec.response_schema(spec, :fetch, 12)
+      {:compact_array, topic} = schema[:responses]
+      {:compact_array, partition} = topic[:partitions]
+
+      assert {:tagged_field, [tag: 0, type: diverging, default: nil, nullable: false]} =
+               partition[:diverging_epoch]
+
+      assert diverging == [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields]
+      assert {:tagged_field, [{:tag, 1} | _]} = partition[:current_leader]
+      assert {:tagged_field, [{:tag, 2} | _]} = partition[:snapshot_id]
+
+      assert [:current_leader, :diverging_epoch, :snapshot_id] --
+               Keyword.keys(Enum.take(partition, -4)) == []
+    end
+
+    test "struct-typed tagged field inside a struct tagged field", %{spec: spec} do
+      # Fetch v15 request: ReplicaState is a tagged struct (tag 1)
+      schema = JsonSpec.request_schema(spec, :fetch, 15)
+
+      assert {:tagged_field,
+              [
+                tag: 1,
+                type: [replica_id: :int32, replica_epoch: :int64, tagged_fields: :tagged_fields],
+                default: nil,
+                nullable: false
+              ]} = schema[:replica_state]
+
+      refute Keyword.has_key?(schema, :replica_id)
+    end
+
+    test "defaults: hex and large integers, nullable arrays, null strings", %{spec: spec} do
+      # FetchRequest v18 Partitions.HighWatermark default 9223372036854775807
+      {:compact_array, topic} = JsonSpec.request_schema(spec, :fetch, 18)[:topics]
+      {:compact_array, partition} = topic[:partitions]
+
+      assert {:tagged_field,
+              [tag: 1, type: :int64, default: 9_223_372_036_854_775_807, nullable: false]} =
+               partition[:high_watermark]
+
+      assert {:tagged_field, [tag: 0, type: :uuid, default: <<0::128>>, nullable: false]} =
+               partition[:replica_directory_id]
+
+      # BrokerHeartbeatRequest v2 CordonedLogDirs: nullable []uuid, default null
+      schema = JsonSpec.request_schema(spec, :broker_heartbeat, 2)
+
+      assert schema[:cordoned_log_dirs] ==
+               {:tagged_field,
+                [tag: 1, type: {:compact_array, :uuid}, default: nil, nullable: true]}
+
+      assert schema[:offline_log_dirs] ==
+               {:tagged_field,
+                [tag: 0, type: {:compact_array, :uuid}, default: [], nullable: false]}
+    end
+
+    test "tagged_default/3 parses Kafka default literals" do
+      field = fn default -> %{"name" => "F", "versions" => "0+", "default" => default} end
+
+      assert JsonSpec.tagged_default(field.("0x7fffffff"), :int32, 0) == 0x7FFFFFFF
+      assert JsonSpec.tagged_default(field.("-0x10"), :int32, 0) == -16
+      assert JsonSpec.tagged_default(field.("-2147483648"), :int32, 0) == -2_147_483_648
+      assert JsonSpec.tagged_default(field.(-1), :int32, 0) == -1
+      assert JsonSpec.tagged_default(field.(nil), :int16, 0) == 0
+      assert JsonSpec.tagged_default(field.("true"), :boolean, 0) == 1
+      assert JsonSpec.tagged_default(field.(nil), :boolean, 0) == 0
+      assert JsonSpec.tagged_default(field.("1.5"), :float64, 0) == 1.5
+      assert JsonSpec.tagged_default(field.(nil), :float64, 0) == 0.0
+      assert JsonSpec.tagged_default(field.(nil), :compact_string, 0) == ""
+      assert JsonSpec.tagged_default(field.("abc"), :compact_string, 0) == "abc"
+      assert JsonSpec.tagged_default(field.(nil), :uuid, 0) == <<0::128>>
+      assert JsonSpec.tagged_default(field.(nil), {:compact_array, :int32}, 0) == []
+      assert JsonSpec.tagged_default(field.(nil), [a: :int8], 0) == nil
+
+      nullable = Map.put(field.("null"), "nullableVersions", "0+")
+      assert JsonSpec.tagged_default(nullable, :compact_nullable_string, 0) == nil
+
+      assert_raise ArgumentError, ~r/not nullable/, fn ->
+        JsonSpec.tagged_default(field.("null"), :compact_string, 0)
+      end
+
+      assert_raise ArgumentError, ~r/Invalid integer default/, fn ->
+        JsonSpec.tagged_default(field.("abc"), :int32, 0)
+      end
+    end
+
+    test "tagged fields are rejected in non-flexible versions and must have unique tags" do
+      message = fn fields ->
+        JsonSpec.parse!(
+          Jason.encode!(%{
+            name: "TestRequest",
+            type: "request",
+            apiKey: 9999,
+            validVersions: "0-1",
+            flexibleVersions: "1+",
+            fields: fields
+          })
+        )
+      end
+
+      tagged = fn name, tag ->
+        %{name: name, type: "int32", versions: "0+", taggedVersions: "0+", tag: tag}
+      end
+
+      assert_raise ArgumentError, ~r/non-flexible version 0/, fn ->
+        JsonSpec.message_schema(message.([tagged.("A", 0)]), 0)
+      end
+
+      assert_raise ArgumentError, ~r/Duplicate tags/, fn ->
+        JsonSpec.message_schema(message.([tagged.("A", 0), tagged.("B", 0)]), 1)
+      end
+
+      assert_raise ArgumentError, ~r/no valid "tag"/, fn ->
+        JsonSpec.message_schema(message.([Map.delete(tagged.("A", 0), :tag)]), 1)
+      end
+
+      assert JsonSpec.message_schema(message.([tagged.("B", 5), tagged.("A", 2)]), 1) == [
+               a: {:tagged_field, [tag: 2, type: :int32, default: 0, nullable: false]},
+               b: {:tagged_field, [tag: 5, type: :int32, default: 0, nullable: false]},
+               tagged_fields: :tagged_fields
+             ]
     end
 
     test "commonStructs are resolved, primitive arrays stay primitive", %{spec: spec} do
