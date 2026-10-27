@@ -54,12 +54,12 @@ defmodule Kayrock.Generate.ApiTable do
     create_topics: 7,
     delete_topics: 6,
     delete_records: 2,
-    init_producer_id: 2,
+    init_producer_id: 5,
     offset_for_leader_epoch: 4,
-    add_partitions_to_txn: 1,
-    add_offsets_to_txn: 1,
-    end_txn: 1,
-    txn_offset_commit: 2,
+    add_partitions_to_txn: 3,
+    add_offsets_to_txn: 4,
+    end_txn: 5,
+    txn_offset_commit: 6,
     describe_acls: 3,
     create_acls: 3,
     delete_acls: 3,
@@ -92,7 +92,10 @@ defmodule Kayrock.Generate.ApiTable do
     describe_client_quotas: 1,
     alter_client_quotas: 1,
     describe_user_scram_credentials: 0,
-    alter_user_scram_credentials: 0
+    alter_user_scram_credentials: 0,
+    describe_producers: 0,
+    describe_transactions: 0,
+    list_transactions: 2
   ]
 
   # The version ranges defined by kafka_protocol 4.3.x's :kpro_schema.  These
