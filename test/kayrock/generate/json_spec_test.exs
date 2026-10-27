@@ -53,10 +53,14 @@ defmodule Kayrock.Generate.JsonSpecTest do
   }
 
   describe "cross-check against :kpro_schema" do
-    test "every API in the table is defined by both sources", %{spec: spec} do
+    test "every API in the table is defined by the JSON specs, kpro-sourced ones by both",
+         %{spec: spec} do
       for api <- ApiTable.apis() do
         assert Map.has_key?(spec.apis, api), "#{api} missing from JSON specs"
-        assert :kpro_schema.vsn_range(api) != false, "#{api} missing from :kpro_schema"
+
+        if ApiTable.kpro_max_version(api) != nil do
+          assert :kpro_schema.vsn_range(api) != false, "#{api} missing from :kpro_schema"
+        end
       end
     end
 
