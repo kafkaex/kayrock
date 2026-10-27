@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Unknown tags still round-trip through `tagged_fields`. Versions sourced from
   `kpro_schema` (everything generated today) are unchanged: their tagged
   fields stay in the raw `tagged_fields` bucket.
+- KIP-848 consumer group protocol: ConsumerGroupHeartbeat v0-v1 and ConsumerGroupDescribe v0-v1 (new), Metadata v10-v13, OffsetCommit v9-v10, OffsetFetch v7-v10 and FindCoordinator v4-v6.
 
 ## [1.0.1] - 2026-09-04
 
