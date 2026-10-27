@@ -146,6 +146,91 @@ defmodule Kayrock.Test.Factories.ApiVersionsFactory do
     {request, expected_binary}
   end
 
+  # v4 has the same request schema as v3 (KAFKA-17011 only changed the
+  # response semantics).
+  def request_data(4) do
+    request = %Kayrock.ApiVersions.V4.Request{
+      correlation_id: 4,
+      client_id: "kayrock-capture",
+      client_software_name: "kayrock",
+      client_software_version: "1.0.0"
+    }
+
+    expected_binary = <<
+      # api_key (18), api_version (4), correlation_id (4)
+      0,
+      18,
+      0,
+      4,
+      0,
+      0,
+      0,
+      4,
+      # client_id (int16-prefixed nullable_string, NOT compact)
+      0,
+      15,
+      "kayrock-capture"::binary,
+      # flexible header tag_buffer
+      0,
+      # client_software_name / client_software_version (compact strings)
+      8,
+      "kayrock"::binary,
+      6,
+      "1.0.0"::binary,
+      # tagged_fields count
+      0
+    >>
+
+    {request, expected_binary}
+  end
+
+  # v5 adds the nullable ClusterId and NodeId (KIP-1242).
+  def request_data(5) do
+    request = %Kayrock.ApiVersions.V5.Request{
+      correlation_id: 5,
+      client_id: "kayrock-capture",
+      client_software_name: "kayrock",
+      client_software_version: "1.0.0",
+      cluster_id: "c1",
+      node_id: 1
+    }
+
+    expected_binary = <<
+      # api_key (18), api_version (5), correlation_id (5)
+      0,
+      18,
+      0,
+      5,
+      0,
+      0,
+      0,
+      5,
+      # client_id
+      0,
+      15,
+      "kayrock-capture"::binary,
+      # flexible header tag_buffer
+      0,
+      # client_software_name / client_software_version
+      8,
+      "kayrock"::binary,
+      6,
+      "1.0.0"::binary,
+      # cluster_id (compact nullable string)
+      3,
+      "c1"::binary,
+      # node_id
+      0,
+      0,
+      0,
+      1,
+      # tagged_fields count
+      0
+    >>
+
+    {request, expected_binary}
+  end
+
   @doc """
   Returns response test data for the specified version.
 
@@ -336,6 +421,31 @@ defmodule Kayrock.Test.Factories.ApiVersionsFactory do
       ],
       tagged_fields: []
     }
+
+    {binary, expected_struct}
+  end
+
+  # v4/v5 share v3's body; being JSON-derived they also expose the named
+  # tagged fields (absent here, so they take their defaults).
+  def response_data(version) when version in [4, 5] do
+    binary =
+      <<0, 0, 0, version, 0, 0, 3, 0, 0, 0, 0, 0, 9, 0, 0, 1, 0, 0, 0, 13, 0, 0, 0, 0, 0, 0>>
+
+    expected_struct =
+      struct(Module.concat([Kayrock.ApiVersions, :"V#{version}", Response]),
+        correlation_id: version,
+        error_code: 0,
+        throttle_time_ms: 0,
+        api_keys: [
+          %{api_key: 0, min_version: 0, max_version: 9, tagged_fields: []},
+          %{api_key: 1, min_version: 0, max_version: 13, tagged_fields: []}
+        ],
+        supported_features: [],
+        finalized_features_epoch: -1,
+        finalized_features: [],
+        zk_migration_ready: 0,
+        tagged_fields: []
+      )
 
     {binary, expected_struct}
   end
