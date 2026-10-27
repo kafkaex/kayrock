@@ -95,7 +95,14 @@ defmodule Kayrock.Generate.ApiTable do
     alter_user_scram_credentials: 0,
     describe_producers: 0,
     describe_transactions: 0,
-    list_transactions: 2
+    list_transactions: 2,
+    share_group_heartbeat: 1,
+    share_group_describe: 1,
+    share_fetch: 2,
+    share_acknowledge: 2,
+    describe_share_group_offsets: 1,
+    alter_share_group_offsets: 0,
+    delete_share_group_offsets: 0
   ]
 
   # The version ranges defined by kafka_protocol 4.3.x's :kpro_schema.  These
