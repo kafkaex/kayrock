@@ -81,7 +81,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:join_group) do
-    {0, 6}
+    {0, 9}
   end
 
   def version_range(:heartbeat) do
@@ -89,19 +89,19 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:leave_group) do
-    {0, 4}
-  end
-
-  def version_range(:sync_group) do
-    {0, 4}
-  end
-
-  def version_range(:describe_groups) do
     {0, 5}
   end
 
+  def version_range(:sync_group) do
+    {0, 5}
+  end
+
+  def version_range(:describe_groups) do
+    {0, 6}
+  end
+
   def version_range(:list_groups) do
-    {0, 3}
+    {0, 5}
   end
 
   def version_range(:sasl_handshake) do
@@ -201,7 +201,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:delete_groups) do
-    {0, 2}
+    {0, 3}
   end
 
   def version_range(:elect_leaders) do
@@ -1601,6 +1601,53 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:join_group, 7) do
+    [
+      group_id: :compact_string,
+      session_timeout_ms: :int32,
+      rebalance_timeout_ms: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      protocol_type: :compact_string,
+      protocols:
+        {:compact_array,
+         name: :compact_string, metadata: :compact_bytes, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:join_group, 8) do
+    [
+      group_id: :compact_string,
+      session_timeout_ms: :int32,
+      rebalance_timeout_ms: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      protocol_type: :compact_string,
+      protocols:
+        {:compact_array,
+         name: :compact_string, metadata: :compact_bytes, tagged_fields: :tagged_fields},
+      reason: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:join_group, 9) do
+    [
+      group_id: :compact_string,
+      session_timeout_ms: :int32,
+      rebalance_timeout_ms: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      protocol_type: :compact_string,
+      protocols:
+        {:compact_array,
+         name: :compact_string, metadata: :compact_bytes, tagged_fields: :tagged_fields},
+      reason: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:heartbeat, 0) do
     [group_id: :string, generation_id: :int32, member_id: :string]
   end
@@ -1663,6 +1710,19 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:leave_group, 5) do
+    [
+      group_id: :compact_string,
+      members:
+        {:compact_array,
+         member_id: :compact_string,
+         group_instance_id: :compact_nullable_string,
+         reason: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:sync_group, 0) do
     [
       group_id: :string,
@@ -1713,6 +1773,21 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:sync_group, 5) do
+    [
+      group_id: :compact_string,
+      generation_id: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      protocol_type: :compact_nullable_string,
+      protocol_name: :compact_nullable_string,
+      assignments:
+        {:compact_array,
+         member_id: :compact_string, assignment: :compact_bytes, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:describe_groups, 0) do
     [groups: {:array, :string}]
   end
@@ -1741,6 +1816,14 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:describe_groups, 6) do
+    [
+      groups: {:compact_array, :compact_string},
+      include_authorized_operations: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:list_groups, 0) do
     []
   end
@@ -1755,6 +1838,18 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
   def request_schema(:list_groups, 3) do
     [tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:list_groups, 4) do
+    [states_filter: {:compact_array, :compact_string}, tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:list_groups, 5) do
+    [
+      states_filter: {:compact_array, :compact_string},
+      types_filter: {:compact_array, :compact_string},
+      tagged_fields: :tagged_fields
+    ]
   end
 
   def request_schema(:sasl_handshake, 0) do
@@ -2292,6 +2387,10 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def request_schema(:delete_groups, 2) do
+    [groups_names: {:compact_array, :compact_string}, tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:delete_groups, 3) do
     [groups_names: {:compact_array, :compact_string}, tagged_fields: :tagged_fields]
   end
 
@@ -3698,6 +3797,64 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:join_group, 7) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      generation_id: :int32,
+      protocol_type: :compact_nullable_string,
+      protocol_name: :compact_nullable_string,
+      leader: :compact_string,
+      member_id: :compact_string,
+      members:
+        {:compact_array,
+         member_id: :compact_string,
+         group_instance_id: :compact_nullable_string,
+         metadata: :compact_bytes,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:join_group, 8) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      generation_id: :int32,
+      protocol_type: :compact_nullable_string,
+      protocol_name: :compact_nullable_string,
+      leader: :compact_string,
+      member_id: :compact_string,
+      members:
+        {:compact_array,
+         member_id: :compact_string,
+         group_instance_id: :compact_nullable_string,
+         metadata: :compact_bytes,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:join_group, 9) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      generation_id: :int32,
+      protocol_type: :compact_nullable_string,
+      protocol_name: :compact_nullable_string,
+      leader: :compact_string,
+      skip_assignment: :boolean,
+      member_id: :compact_string,
+      members:
+        {:compact_array,
+         member_id: :compact_string,
+         group_instance_id: :compact_nullable_string,
+         metadata: :compact_bytes,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:heartbeat, 0) do
     [error_code: :int16]
   end
@@ -3753,6 +3910,20 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:leave_group, 5) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      members:
+        {:compact_array,
+         member_id: :compact_string,
+         group_instance_id: :compact_nullable_string,
+         error_code: :int16,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:sync_group, 0) do
     [error_code: :int16, assignment: :bytes]
   end
@@ -3773,6 +3944,17 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [
       throttle_time_ms: :int32,
       error_code: :int16,
+      assignment: :compact_bytes,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:sync_group, 5) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      protocol_type: :compact_nullable_string,
+      protocol_name: :compact_nullable_string,
       assignment: :compact_bytes,
       tagged_fields: :tagged_fields
     ]
@@ -3905,6 +4087,32 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:describe_groups, 6) do
+    [
+      throttle_time_ms: :int32,
+      groups:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         group_id: :compact_string,
+         group_state: :compact_string,
+         protocol_type: :compact_string,
+         protocol_data: :compact_string,
+         members:
+           {:compact_array,
+            member_id: :compact_string,
+            group_instance_id: :compact_nullable_string,
+            client_id: :compact_string,
+            client_host: :compact_string,
+            member_metadata: :compact_bytes,
+            member_assignment: :compact_bytes,
+            tagged_fields: :tagged_fields},
+         authorized_operations: :int32,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:list_groups, 0) do
     [error_code: :int16, groups: {:array, group_id: :string, protocol_type: :string}]
   end
@@ -3932,6 +4140,35 @@ defmodule Kayrock.KafkaSchemaMetadata do
       groups:
         {:compact_array,
          group_id: :compact_string, protocol_type: :compact_string, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_groups, 4) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      groups:
+        {:compact_array,
+         group_id: :compact_string,
+         protocol_type: :compact_string,
+         group_state: :compact_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_groups, 5) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      groups:
+        {:compact_array,
+         group_id: :compact_string,
+         protocol_type: :compact_string,
+         group_state: :compact_string,
+         group_type: :compact_string,
+         tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
   end
@@ -4544,6 +4781,19 @@ defmodule Kayrock.KafkaSchemaMetadata do
       results:
         {:compact_array,
          group_id: :compact_string, error_code: :int16, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:delete_groups, 3) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         group_id: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
   end
