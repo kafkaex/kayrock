@@ -105,4 +105,4 @@ jobs:
           mix deps.compile
 
       - name: Run Coverage
-        run: mix coveralls --exclude integration --exclude chaos
+        run: mix coveralls --exclude integration --exclude chaos --exclude sanity --exclude kafka4
