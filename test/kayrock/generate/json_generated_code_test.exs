@@ -293,19 +293,21 @@ defmodule Kayrock.Generate.JsonGeneratedCodeTest do
     end
   end
 
-  test "JSON-only test APIs are not part of the generated table" do
+  test "test-generated modules live in a test-only namespace, apart from lib/generated" do
     spec = JsonSpec.load!(ApiTable.spec_dir())
 
     for api <- [
           :consumer_group_heartbeat,
           :describe_client_quotas,
           :broker_registration,
-          :describe_topic_partitions
+          :describe_topic_partitions,
+          :produce
         ] do
       assert Map.has_key?(spec.apis, api)
-      refute api in ApiTable.apis()
+      {_min, max} = JsonOnlySchema.vsn_range(api)
+      module = mod(api, max, Request)
+      assert String.starts_with?(inspect(module), inspect(@namespace) <> ".")
+      assert Code.ensure_loaded?(module)
     end
-
-    assert ApiTable.max_version(:produce) < 9
   end
 end
