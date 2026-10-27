@@ -8,7 +8,8 @@ defmodule Mix.Tasks.Kayrock.FetchKafkaMessages do
   The files come from
   `https://github.com/apache/kafka/tree/<tag>/clients/src/main/resources/common/message`.
   Only the request, response and header specs are copied (plus the upstream
-  `README.md` describing the format and the project `NOTICE`), unmodified, so
+  `README.md` describing the format, the project `NOTICE` and `Errors.java`,
+  the canonical error-code list that `Kayrock.ErrorCode` is tested against), unmodified, so
   that their Apache License headers are preserved. A `PROVENANCE.md` file
   records the tag and the exact upstream commit.
 
@@ -30,6 +31,7 @@ defmodule Mix.Tasks.Kayrock.FetchKafkaMessages do
 
   @default_repo "https://github.com/apache/kafka.git"
   @message_path "clients/src/main/resources/common/message"
+  @errors_path "clients/src/main/java/org/apache/kafka/common/protocol/Errors.java"
 
   @impl Mix.Task
   def run(args) do
@@ -61,7 +63,17 @@ defmodule Mix.Tasks.Kayrock.FetchKafkaMessages do
         tmp
       ])
 
-      git!(["-C", tmp, "sparse-checkout", "set", @message_path])
+      git!([
+        "-C",
+        tmp,
+        "sparse-checkout",
+        "set",
+        "--no-cone",
+        @message_path,
+        @errors_path,
+        "/NOTICE"
+      ])
+
       {sha, 0} = System.cmd("git", ["-C", tmp, "rev-parse", "HEAD"])
 
       source = Path.join(tmp, @message_path)
@@ -77,6 +89,7 @@ defmodule Mix.Tasks.Kayrock.FetchKafkaMessages do
 
       Enum.each(files, &File.cp!(Path.join(source, &1), Path.join(dest, &1)))
       File.cp!(Path.join(tmp, "NOTICE"), Path.join(dest, "NOTICE"))
+      File.cp!(Path.join(tmp, @errors_path), Path.join(dest, "Errors.java"))
       File.write!(Path.join(dest, "PROVENANCE.md"), provenance(tag, repo, String.trim(sha)))
 
       Mix.shell().info("Vendored #{length(files)} files from #{repo} #{tag} into #{dest}")
@@ -112,6 +125,8 @@ defmodule Mix.Tasks.Kayrock.FetchKafkaMessages do
     - Path: `#{@message_path}`
     - Files: every `*Request.json`, `*Response.json` and `*Header.json`, plus the
       upstream `README.md` describing the format.
+    - `Errors.java`: `#{@errors_path}`, the canonical error-code list that
+      `Kayrock.ErrorCode` is tested against.
 
     Regenerate with:
 

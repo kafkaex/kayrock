@@ -269,16 +269,40 @@ defmodule Kayrock.ErrorCodeTest do
       end
     end
 
-    test "codes beyond 119 return :unknown" do
+    test "codes beyond 136 return :unknown" do
       import ExUnit.CaptureLog
 
       assert capture_log(fn ->
-               assert :unknown = ErrorCode.code_to_atom(120)
+               assert :unknown = ErrorCode.code_to_atom(137)
              end) =~ "Unknown error code"
 
       assert capture_log(fn ->
                assert :unknown = ErrorCode.code_to_atom(150)
              end) =~ "Unknown error code"
+    end
+  end
+
+  describe "parity with Apache Kafka" do
+    # Errors.java is vendored next to the JSON message specs by
+    # `mix kayrock.fetch_kafka_messages`, so bumping the Kafka version
+    # re-checks this table.
+    @errors_java Path.join(Kayrock.Generate.ApiTable.spec_dir(), "Errors.java")
+
+    test "every Kafka error code maps to its Errors.java name, both ways" do
+      matches = Regex.scan(~r/^\s+([A-Z_0-9]+)\((-?\d+),/m, File.read!(@errors_java))
+      kafka = Map.new(matches, fn [_, name, code] -> {String.to_integer(code), name} end)
+
+      assert map_size(kafka) > 100
+
+      for {code, name} <- kafka do
+        atom = ErrorCode.code_to_atom(code)
+        # kpro spells a handful of base codes differently (e.g.
+        # :not_leader_for_partition for NOT_LEADER_OR_FOLLOWER); those names are
+        # long-standing public API, so only codes above kpro's range must match.
+        if code > 71, do: assert(atom == String.to_atom(String.downcase(name)), "code #{code}")
+        assert atom != :unknown, "code #{code} (#{name}) is unknown to Kayrock.ErrorCode"
+        assert ErrorCode.atom_to_code(atom) == code, "atom #{atom} does not round-trip"
+      end
     end
   end
 end

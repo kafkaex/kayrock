@@ -10,6 +10,8 @@ of each file and `NOTICE`).
 - Path: `clients/src/main/resources/common/message`
 - Files: every `*Request.json`, `*Response.json` and `*Header.json`, plus the
   upstream `README.md` describing the format.
+- `Errors.java`: `clients/src/main/java/org/apache/kafka/common/protocol/Errors.java`, the canonical error-code list that
+  `Kayrock.ErrorCode` is tested against.
 
 Regenerate with:
 
