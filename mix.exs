@@ -65,6 +65,7 @@ defmodule Kayrock.MixProject do
       {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.30", only: [:dev], runtime: false},
       {:excoveralls, "~> 0.18", only: :test},
+      {:jason, "~> 1.4", only: [:dev, :test]},
       {:kafka_protocol, "~> 4.3.1", only: [:dev, :test]},
       {:testcontainers, "~> 1.14", only: [:dev, :test], runtime: false},
       {:usage_rules, "~> 0.1", only: [:dev], runtime: false}

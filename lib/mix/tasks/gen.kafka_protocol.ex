@@ -1,14 +1,25 @@
 defmodule Mix.Tasks.Gen.KafkaProtocol do
   @moduledoc """
-  Mix task to generate the .ex files for each of the kafka protocol messages
+  Mix task to generate the .ex files for each of the kafka protocol messages.
+
+  APIs and versions are selected by `Kayrock.Generate.ApiTable`; schemas are
+  provided by `Kayrock.Generate.SchemaSource` (`:kpro_schema` for versions
+  Kayrock has always generated, the vendored Apache Kafka JSON specs for
+  newer versions).
+
+  This task is only meant to be run when developing Kayrock.
   """
 
   use Mix.Task
 
   require Logger
 
+  alias Kayrock.Generate.SchemaSource
+
   @shortdoc "Generates code for the protocol"
   def run(_) do
+    Mix.Task.run("compile")
+
     case Code.ensure_compiled(:kpro_schema) do
       {:module, _} ->
         :ok
@@ -22,18 +33,20 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
         exit({:shutdown, 1})
     end
 
+    SchemaSource.validate!()
+
     output_dir = "lib/generated"
 
     File.rm_rf!(output_dir)
     File.mkdir_p!(output_dir)
 
-    ast = Kayrock.Generate.generate_schema_metadata(:kpro_schema)
+    ast = Kayrock.Generate.generate_schema_metadata(SchemaSource)
     write_ast(ast, Path.join(output_dir, "kafka_schema_metadata.ex"))
 
-    for api <- all_apis(:kpro_schema) do
+    for api <- SchemaSource.all_apis() do
       Logger.info("Generating modules for #{api}")
 
-      ast = Kayrock.Generate.build_all(api, :kpro_schema)
+      ast = Kayrock.Generate.build_all(api, SchemaSource)
 
       write_ast(ast, Path.join(output_dir, "#{api}.ex"))
     end
@@ -44,11 +57,5 @@ defmodule Mix.Tasks.Gen.KafkaProtocol do
   defp write_ast(ast, path) do
     code = Macro.to_string(ast)
     File.write!(path, code)
-  end
-
-  # this slight indirection avoids a compiler warning in user modules that don't
-  # have `:kpro_schema`.
-  defp all_apis(module) do
-    module.all_apis()
   end
 end

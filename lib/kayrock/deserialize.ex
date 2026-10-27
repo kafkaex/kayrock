@@ -11,6 +11,9 @@ defmodule Kayrock.Deserialize do
         :int16,
         :int32,
         :int64,
+        :uint16,
+        :float64,
+        :uuid,
         :string,
         :nullable_string,
         :bytes,
@@ -32,6 +35,16 @@ defmodule Kayrock.Deserialize do
     end
   end
 
+  @doc """
+  Fixed-width primitive types (no length prefix), valid as array elements in
+  both standard and compact (flexible) arrays
+  """
+  defmacro fixed_width_types do
+    quote do
+      [:boolean, :int8, :int16, :int32, :int64, :uint16, :float64, :uuid]
+    end
+  end
+
   defmacro all_primitive_types do
     quote do
       [
@@ -40,6 +53,9 @@ defmodule Kayrock.Deserialize do
         :int16,
         :int32,
         :int64,
+        :uint16,
+        :float64,
+        :uuid,
         :string,
         :nullable_string,
         :bytes,
@@ -59,6 +75,16 @@ defmodule Kayrock.Deserialize do
   def deserialize(:int16, <<val::16-signed, rest::binary>>), do: {val, rest}
   def deserialize(:int32, <<val::32-signed, rest::binary>>), do: {val, rest}
   def deserialize(:int64, <<val::64-signed, rest::binary>>), do: {val, rest}
+
+  def deserialize(:uint16, <<val::16-unsigned, rest::binary>>), do: {val, rest}
+
+  # IEEE 754 binary64, big-endian.  NaN and +/-Infinity cannot be represented
+  # as BEAM floats, so those are returned as their raw 8-byte binary.
+  def deserialize(:float64, <<val::64-float, rest::binary>>), do: {val, rest}
+  def deserialize(:float64, <<raw::binary-size(8), rest::binary>>), do: {raw, rest}
+
+  # UUIDs are returned as 16 raw bytes; Kafka's zero (null) UUID is <<0::128>>
+  def deserialize(:uuid, <<val::binary-size(16), rest::binary>>), do: {val, rest}
 
   def deserialize(:string, <<len::16-signed, val::size(len)-binary, rest::binary>>),
     do: {val, rest}

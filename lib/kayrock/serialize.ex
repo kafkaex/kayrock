@@ -11,6 +11,9 @@ defmodule Kayrock.Serialize do
         :int16,
         :int32,
         :int64,
+        :uint16,
+        :float64,
+        :uuid,
         :string,
         :nullable_string,
         :bytes,
@@ -32,6 +35,16 @@ defmodule Kayrock.Serialize do
     end
   end
 
+  @doc """
+  Fixed-width primitive types (no length prefix), valid as array elements in
+  both standard and compact (flexible) arrays
+  """
+  defmacro fixed_width_types do
+    quote do
+      [:boolean, :int8, :int16, :int32, :int64, :uint16, :float64, :uuid]
+    end
+  end
+
   defmacro all_primitive_types do
     quote do
       [
@@ -40,6 +53,9 @@ defmodule Kayrock.Serialize do
         :int16,
         :int32,
         :int64,
+        :uint16,
+        :float64,
+        :uuid,
         :string,
         :nullable_string,
         :bytes,
@@ -60,6 +76,31 @@ defmodule Kayrock.Serialize do
   def serialize(:int16, val), do: <<val::16-signed>>
   def serialize(:int32, val), do: <<val::32-signed>>
   def serialize(:int64, val), do: <<val::64-signed>>
+
+  def serialize(:uint16, val) when is_integer(val) and val >= 0 and val <= 0xFFFF,
+    do: <<val::16-unsigned>>
+
+  def serialize(:uint16, val) do
+    raise ArgumentError, "uint16 value must be an integer in 0..65535, got: #{inspect(val)}"
+  end
+
+  # IEEE 754 binary64, big-endian.  Integers are accepted and widened.
+  def serialize(:float64, val) when is_float(val), do: <<val::64-float>>
+  def serialize(:float64, val) when is_integer(val), do: <<val * 1.0::64-float>>
+
+  # Kafka's NaN / Infinity cannot be represented by BEAM floats; pass them as
+  # their raw 8-byte IEEE 754 encoding instead.
+  def serialize(:float64, <<_::64>> = raw), do: raw
+
+  # UUIDs are 16 raw bytes.  `nil` is Kafka's zero (null) UUID.
+  def serialize(:uuid, nil), do: <<0::128>>
+  def serialize(:uuid, <<_::128>> = val), do: val
+
+  def serialize(:uuid, val) do
+    raise ArgumentError,
+          "uuid value must be a 16-byte binary (or nil for the zero UUID), got: #{inspect(val)}"
+  end
+
   def serialize(:string, val), do: [<<byte_size(val)::16-signed>>, val]
   def serialize(:nullable_string, nil), do: <<-1::16-signed>>
   def serialize(:nullable_string, val), do: [<<byte_size(val)::16-signed>>, val]
@@ -102,7 +143,26 @@ defmodule Kayrock.Serialize do
   end
 
   def serialize(:unsigned_varint, val), do: encode_unsigned_varint(val)
+
   def serialize(:varint, val), do: Varint.LEB128.encode(Varint.Zigzag.encode(val))
+
+  @doc false
+  # Compact (flexible-version) record sets: an unsigned-varint length+1 prefix
+  # (0 = null) followed by the record set bytes.  The record set (a
+  # `Kayrock.RecordBatch` or `Kayrock.MessageSet`) is encoded with
+  # `Kayrock.Request.serialize/1`, which emits an int32 length prefix that is
+  # replaced here.
+  def serialize_compact_records(nil), do: encode_unsigned_varint(0)
+
+  def serialize_compact_records(records) do
+    <<size::32-signed, data::binary>> = IO.iodata_to_binary(Kayrock.Request.serialize(records))
+
+    if size == -1 do
+      encode_unsigned_varint(0)
+    else
+      [encode_unsigned_varint(size + 1), data]
+    end
+  end
 
   # Standard array serialization
   def serialize_array(_type, nil), do: <<-1::32-signed>>
