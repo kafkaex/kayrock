@@ -133,6 +133,8 @@ Which APIs are generated, and up to which version, is decided by one table:
 newer version of an API means raising its maximum there and running
 `mix gen.kafka_protocol`. The task validates the table first and refuses
 versions that are marked `latestVersionUnstable` in the JSON specs.
+`mix gen.kafka_protocol --check` (run in CI) fails if regenerating would change
+anything in `lib/generated`.
 
 ## Relationship to Other Libraries
 

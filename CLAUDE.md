@@ -57,7 +57,7 @@ mix kayrock.fetch_kafka_messages 4.4.0
 5. `lib/kayrock/generate.ex` - Core macro-based code generation logic
 6. Outputs generated modules to `lib/generated/`
 
-After `mix gen.kafka_protocol`, `git diff lib/generated` must not touch versions that were already generated (kafka_ex pattern-matches on these structs).
+After `mix gen.kafka_protocol`, `git diff lib/generated` must not touch versions that were already generated (kafka_ex pattern-matches on these structs). `mix gen.kafka_protocol --check` verifies the checked-in code matches the generator (CI enforces it).
 
 ### Schema types
 

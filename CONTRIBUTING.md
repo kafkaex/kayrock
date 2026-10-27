@@ -43,6 +43,10 @@ To regenerate the protocol code:
 mix gen.kafka_protocol
 ```
 
+CI runs `mix gen.kafka_protocol --check`, which regenerates into a temporary
+directory and fails if the result differs from the checked-in `lib/generated`.
+Run it locally before pushing generator changes.
+
 To add support for a newer version of an API (or a new API), raise its maximum
 version (or add it) in `lib/kayrock/generate/api_table.ex` and regenerate.
 Only versions that are stable in the vendored JSON specs are allowed.
