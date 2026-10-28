@@ -90,6 +90,15 @@ defmodule Kayrock.TestSupport do
   def api_version_range(:add_raft_voter), do: 0..1
   def api_version_range(:remove_raft_voter), do: 0..0
 
+  # Share groups (KIP-932)
+  def api_version_range(:share_group_heartbeat), do: 1..1
+  def api_version_range(:share_group_describe), do: 1..1
+  def api_version_range(:share_fetch), do: 1..2
+  def api_version_range(:share_acknowledge), do: 1..2
+  def api_version_range(:describe_share_group_offsets), do: 0..1
+  def api_version_range(:alter_share_group_offsets), do: 0..0
+  def api_version_range(:delete_share_group_offsets), do: 0..0
+
   @doc """
   Returns a unique string for use in tests.
   """

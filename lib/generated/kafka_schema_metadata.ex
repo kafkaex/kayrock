@@ -63,7 +63,14 @@ defmodule Kayrock.KafkaSchemaMetadata do
       :alter_user_scram_credentials,
       :describe_producers,
       :describe_transactions,
-      :list_transactions
+      :list_transactions,
+      :share_group_heartbeat,
+      :share_group_describe,
+      :share_fetch,
+      :share_acknowledge,
+      :describe_share_group_offsets,
+      :alter_share_group_offsets,
+      :delete_share_group_offsets
     ]
   end
 
@@ -305,6 +312,34 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
   def version_range(:list_transactions) do
     {0, 2}
+  end
+
+  def version_range(:share_group_heartbeat) do
+    {1, 1}
+  end
+
+  def version_range(:share_group_describe) do
+    {1, 1}
+  end
+
+  def version_range(:share_fetch) do
+    {1, 2}
+  end
+
+  def version_range(:share_acknowledge) do
+    {1, 2}
+  end
+
+  def version_range(:describe_share_group_offsets) do
+    {0, 1}
+  end
+
+  def version_range(:alter_share_group_offsets) do
+    {0, 0}
+  end
+
+  def version_range(:delete_share_group_offsets) do
+    {0, 0}
   end
 
   (
@@ -904,6 +939,76 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
     def api_key(66) do
       :list_transactions
+    end
+  )
+
+  (
+    def api_key(:share_group_heartbeat) do
+      76
+    end
+
+    def api_key(76) do
+      :share_group_heartbeat
+    end
+  )
+
+  (
+    def api_key(:share_group_describe) do
+      77
+    end
+
+    def api_key(77) do
+      :share_group_describe
+    end
+  )
+
+  (
+    def api_key(:share_fetch) do
+      78
+    end
+
+    def api_key(78) do
+      :share_fetch
+    end
+  )
+
+  (
+    def api_key(:share_acknowledge) do
+      79
+    end
+
+    def api_key(79) do
+      :share_acknowledge
+    end
+  )
+
+  (
+    def api_key(:describe_share_group_offsets) do
+      90
+    end
+
+    def api_key(90) do
+      :describe_share_group_offsets
+    end
+  )
+
+  (
+    def api_key(:alter_share_group_offsets) do
+      91
+    end
+
+    def api_key(91) do
+      :alter_share_group_offsets
+    end
+  )
+
+  (
+    def api_key(:delete_share_group_offsets) do
+      92
+    end
+
+    def api_key(92) do
+      :delete_share_group_offsets
     end
   )
 
@@ -4077,6 +4182,188 @@ defmodule Kayrock.KafkaSchemaMetadata do
       producer_id_filters: {:compact_array, :int64},
       duration_filter: :int64,
       transactional_id_pattern: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:share_group_heartbeat, 1) do
+    [
+      group_id: :compact_string,
+      member_id: :compact_string,
+      member_epoch: :int32,
+      rack_id: :compact_nullable_string,
+      subscribed_topic_names: {:compact_array, :compact_string},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:share_group_describe, 1) do
+    [
+      group_ids: {:compact_array, :compact_string},
+      include_authorized_operations: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:share_fetch, 1) do
+    [
+      group_id: :compact_nullable_string,
+      member_id: :compact_nullable_string,
+      share_session_epoch: :int32,
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      max_records: :int32,
+      batch_size: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            acknowledgement_batches:
+              {:compact_array,
+               first_offset: :int64,
+               last_offset: :int64,
+               acknowledge_types: {:compact_array, :int8},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:share_fetch, 2) do
+    [
+      group_id: :compact_nullable_string,
+      member_id: :compact_nullable_string,
+      share_session_epoch: :int32,
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      max_records: :int32,
+      batch_size: :int32,
+      share_acquire_mode: :int8,
+      is_renew_ack: :boolean,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            acknowledgement_batches:
+              {:compact_array,
+               first_offset: :int64,
+               last_offset: :int64,
+               acknowledge_types: {:compact_array, :int8},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:share_acknowledge, 1) do
+    [
+      group_id: :compact_nullable_string,
+      member_id: :compact_nullable_string,
+      share_session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            acknowledgement_batches:
+              {:compact_array,
+               first_offset: :int64,
+               last_offset: :int64,
+               acknowledge_types: {:compact_array, :int8},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:share_acknowledge, 2) do
+    [
+      group_id: :compact_nullable_string,
+      member_id: :compact_nullable_string,
+      share_session_epoch: :int32,
+      is_renew_ack: :boolean,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            acknowledgement_batches:
+              {:compact_array,
+               first_offset: :int64,
+               last_offset: :int64,
+               acknowledge_types: {:compact_array, :int8},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_share_group_offsets, 0) do
+    [
+      groups:
+        {:compact_array,
+         group_id: :compact_string,
+         topics:
+           {:compact_array,
+            topic_name: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_share_group_offsets, 1) do
+    [
+      groups:
+        {:compact_array,
+         group_id: :compact_string,
+         topics:
+           {:compact_array,
+            topic_name: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:alter_share_group_offsets, 0) do
+    [
+      group_id: :compact_string,
+      topics:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32, start_offset: :int64, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:delete_share_group_offsets, 0) do
+    [
+      group_id: :compact_string,
+      topics: {:compact_array, topic_name: :compact_string, tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
   end
@@ -8475,6 +8762,294 @@ defmodule Kayrock.KafkaSchemaMetadata do
          transactional_id: :compact_string,
          producer_id: :int64,
          transaction_state: :compact_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:share_group_heartbeat, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      member_id: :compact_nullable_string,
+      member_epoch: :int32,
+      heartbeat_interval_ms: :int32,
+      assignment:
+        {:nullable_struct,
+         topic_partitions:
+           {:compact_array,
+            topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:share_group_describe, 1) do
+    [
+      throttle_time_ms: :int32,
+      groups:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         group_id: :compact_string,
+         group_state: :compact_string,
+         group_epoch: :int32,
+         assignment_epoch: :int32,
+         assignor_name: :compact_string,
+         members:
+           {:compact_array,
+            member_id: :compact_string,
+            rack_id: :compact_nullable_string,
+            member_epoch: :int32,
+            client_id: :compact_string,
+            client_host: :compact_string,
+            subscribed_topic_names: {:compact_array, :compact_string},
+            assignment: [
+              topic_partitions:
+                {:compact_array,
+                 topic_id: :uuid,
+                 topic_name: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              tagged_fields: :tagged_fields
+            ],
+            tagged_fields: :tagged_fields},
+         authorized_operations: :int32,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:share_fetch, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      acquisition_lock_timeout_ms: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            acknowledge_error_code: :int16,
+            acknowledge_error_message: :compact_nullable_string,
+            current_leader: [
+              leader_id: :int32,
+              leader_epoch: :int32,
+              tagged_fields: :tagged_fields
+            ],
+            records: :compact_records,
+            acquired_records:
+              {:compact_array,
+               first_offset: :int64,
+               last_offset: :int64,
+               delivery_count: :int16,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      node_endpoints:
+        {:compact_array,
+         node_id: :int32,
+         host: :compact_string,
+         port: :int32,
+         rack: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:share_fetch, 2) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      acquisition_lock_timeout_ms: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            acknowledge_error_code: :int16,
+            acknowledge_error_message: :compact_nullable_string,
+            current_leader: [
+              leader_id: :int32,
+              leader_epoch: :int32,
+              tagged_fields: :tagged_fields
+            ],
+            records: :compact_records,
+            acquired_records:
+              {:compact_array,
+               first_offset: :int64,
+               last_offset: :int64,
+               delivery_count: :int16,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      node_endpoints:
+        {:compact_array,
+         node_id: :int32,
+         host: :compact_string,
+         port: :int32,
+         rack: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:share_acknowledge, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            current_leader: [
+              leader_id: :int32,
+              leader_epoch: :int32,
+              tagged_fields: :tagged_fields
+            ],
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      node_endpoints:
+        {:compact_array,
+         node_id: :int32,
+         host: :compact_string,
+         port: :int32,
+         rack: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:share_acknowledge, 2) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      acquisition_lock_timeout_ms: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            current_leader: [
+              leader_id: :int32,
+              leader_epoch: :int32,
+              tagged_fields: :tagged_fields
+            ],
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      node_endpoints:
+        {:compact_array,
+         node_id: :int32,
+         host: :compact_string,
+         port: :int32,
+         rack: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_share_group_offsets, 0) do
+    [
+      throttle_time_ms: :int32,
+      groups:
+        {:compact_array,
+         group_id: :compact_string,
+         topics:
+           {:compact_array,
+            topic_name: :compact_string,
+            topic_id: :uuid,
+            partitions:
+              {:compact_array,
+               partition_index: :int32,
+               start_offset: :int64,
+               leader_epoch: :int32,
+               error_code: :int16,
+               error_message: :compact_nullable_string,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_share_group_offsets, 1) do
+    [
+      throttle_time_ms: :int32,
+      groups:
+        {:compact_array,
+         group_id: :compact_string,
+         topics:
+           {:compact_array,
+            topic_name: :compact_string,
+            topic_id: :uuid,
+            partitions:
+              {:compact_array,
+               partition_index: :int32,
+               start_offset: :int64,
+               leader_epoch: :int32,
+               lag: :int64,
+               error_code: :int16,
+               error_message: :compact_nullable_string,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:alter_share_group_offsets, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      responses:
+        {:compact_array,
+         topic_name: :compact_string,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:delete_share_group_offsets, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      responses:
+        {:compact_array,
+         topic_name: :compact_string,
+         topic_id: :uuid,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
          tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
