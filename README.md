@@ -116,18 +116,39 @@ in `lib/generated`. The generated code is checked into the repository to
 simplify usage. End users should not need to run the mix task unless they are
 doing development on Kayrock itself.
 
+Schemas come from two sources:
+
+- **Apache Kafka's JSON message definitions**, vendored (unmodified, with their
+  Apache License headers) under `priv/kafka_messages/<kafka-version>/` and
+  translated by `Kayrock.Generate.JsonSpec`. The pinned release is
+  Kafka 4.4.0; see `priv/kafka_messages/4.4.0/PROVENANCE.md`. Re-fetch (or fetch
+  another tag) with `mix kayrock.fetch_kafka_messages <tag>`.
+- **`kafka_protocol`'s `kpro_schema`** for every version Kayrock generated
+  before the JSON-driven generator existed, so those structs and their wire
+  encoding stay byte-for-byte identical. (Kafka 4.x also dropped many old
+  versions from its JSON files, per KIP-896.)
+
+Which APIs are generated, and up to which version, is decided by one table:
+`Kayrock.Generate.ApiTable` (`lib/kayrock/generate/api_table.ex`). Supporting a
+newer version of an API means raising its maximum there and running
+`mix gen.kafka_protocol`. The task validates the table first and refuses
+versions that are marked `latestVersionUnstable` in the JSON specs.
+`mix gen.kafka_protocol --check` (run in CI) fails if regenerating would change
+anything in `lib/generated`.
+
 ## Relationship to Other Libraries
 
-Kayrock uses only the `kpro_schema` module from `kafka_protocol`.
+Kayrock uses only the `kpro_schema` module from `kafka_protocol`, and only at
+code-generation time, for the API versions it has always generated. Newer
+versions are generated from Apache Kafka's own JSON message definitions.
 `kafka_protocol` provides quite a lot of functionality (especially when used as
 part of `brod`). This repo limits the integration surface because:
 
 1. `kafka_protocol` produces Erlang records whereas Kayrock provides Elixir structs
 2. `kafka_protocol` provides network-level implementation whereas Kayrock only
    provides serialization and deserialization
-3. `kpro_schema` is itself automatically generated from the Java source code of
-   Kafka, meaning that Kayrock could feasibly reproduce this without needing an
-   intermediate dependency
+3. `kpro_schema` is itself generated from Kafka's JSON message definitions,
+   which Kayrock now reads directly for newer versions
 
 ### Built-in Client (Development Only)
 

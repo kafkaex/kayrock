@@ -114,12 +114,45 @@ defmodule Kayrock.Generate do
   end
 
   # Helper to check if a version uses flexible format (KIP-482)
-  defp flexible_version?(api, vsn) do
-    min_flexible = :kpro_schema.min_flexible_vsn(api)
+  defp flexible_version?(api, vsn, schema_module) do
+    min_flexible = schema_module.min_flexible_vsn(api)
     vsn >= min_flexible
   catch
     # If the API doesn't have flexible versions, it will throw
     :error, _ -> false
+  end
+
+  # Request header version (RequestHeader.json): v2 for flexible versions,
+  # v1 otherwise.  Schema modules may override this via request_header_vsn/2
+  # (`Kayrock.Generate.SchemaSource` does, from the JSON specs).
+  defp request_header_version(api, vsn, schema_module) do
+    if exports?(schema_module, :request_header_vsn, 2) do
+      schema_module.request_header_vsn(api, vsn)
+    else
+      if flexible_version?(api, vsn, schema_module), do: 2, else: 1
+    end
+  end
+
+  defp exports?(module, fun, arity) do
+    Code.ensure_loaded?(module) and function_exported?(module, fun, arity)
+  end
+
+  # Response header version (ResponseHeader.json): v1 for flexible versions,
+  # v0 otherwise, except ApiVersions which always uses v0 (KIP-511).
+  defp response_header_version(api, vsn, schema_module) do
+    cond do
+      exports?(schema_module, :response_header_vsn, 2) ->
+        schema_module.response_header_vsn(api, vsn)
+
+      api == :api_versions ->
+        0
+
+      flexible_version?(api, vsn, schema_module) ->
+        1
+
+      true ->
+        0
+    end
   end
 
   def build_modules(api, schema_module, modname) do
@@ -213,7 +246,7 @@ defmodule Kayrock.Generate do
     request_module_name = modname(vsn, Request)
     response_module_name = modname(vsn, Response)
 
-    is_flexible = flexible_version?(api, vsn)
+    header_vsn = request_header_version(api, vsn, schema_module)
 
     struct =
       generate_request_struct(
@@ -222,7 +255,7 @@ defmodule Kayrock.Generate do
         request_module_name,
         response_module_name,
         schema,
-        is_flexible
+        header_vsn
       )
 
     serializer = generate_serializer(request_module_name)
@@ -234,9 +267,9 @@ defmodule Kayrock.Generate do
     schema = schema_module.rsp(api, vsn)
 
     response_module_name = modname(vsn, Response)
-    is_flexible = flexible_version?(api, vsn)
+    header_vsn = response_header_version(api, vsn, schema_module)
 
-    struct = generate_response_struct(api, vsn, response_module_name, schema, is_flexible)
+    struct = generate_response_struct(api, vsn, response_module_name, schema, header_vsn)
 
     List.flatten([struct])
   end
@@ -245,7 +278,7 @@ defmodule Kayrock.Generate do
     Module.concat(["V#{vsn}", suffix])
   end
 
-  def generate_request_struct(api, vsn, modname, response_modname, schema, is_flexible \\ false) do
+  def generate_request_struct(api, vsn, modname, response_modname, schema, header_vsn \\ 1) do
     fields =
       Enum.reduce(schema, [], fn {k, v}, acc ->
         acc ++ [{k, default_val(v)}]
@@ -331,7 +364,7 @@ defmodule Kayrock.Generate do
         @doc "Serialize a message to binary data for transfer to a Kafka broker"
         @spec serialize(t()) :: iodata
         def serialize(%unquote(modname){} = struct) do
-          unquote(serialize_request_body(is_flexible, field_serializers))
+          unquote(serialize_request_body(header_vsn, field_serializers))
         end
       end
     end
@@ -342,7 +375,14 @@ defmodule Kayrock.Generate do
   # (RequestHeader.json: ClientId "flexibleVersions": "none").
   # The only difference between header v1 (non-flexible) and v2 (flexible) is
   # the trailing <<0>> tag_buffer byte.
-  defp serialize_request_body(true = _is_flexible, field_serializers) do
+  # Backwards compatibility: callers used to pass is_flexible (a boolean)
+  defp serialize_request_body(true, field_serializers),
+    do: serialize_request_body(2, field_serializers)
+
+  defp serialize_request_body(false, field_serializers),
+    do: serialize_request_body(1, field_serializers)
+
+  defp serialize_request_body(2, field_serializers) do
     quote do
       [
         <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
@@ -356,7 +396,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  defp serialize_request_body(false, field_serializers) do
+  defp serialize_request_body(1, field_serializers) do
     quote do
       [
         <<api_key()::16, api_vsn()::16, struct.correlation_id::32>>,
@@ -424,6 +464,40 @@ defmodule Kayrock.Generate do
     end
   end
 
+  def describe_type(_, _, :uint16) do
+    quote do
+      nil | non_neg_integer()
+    end
+  end
+
+  # NaN / +-Infinity are carried as their raw 8-byte IEEE 754 encoding
+  def describe_type(_, _, :float64) do
+    quote do
+      nil | float() | <<_::64>>
+    end
+  end
+
+  # 16 raw bytes; nil serializes as the zero UUID
+  def describe_type(_, _, :uuid) do
+    quote do
+      nil | <<_::128>>
+    end
+  end
+
+  def describe_type(_, _, :compact_records) do
+    quote do
+      nil | Kayrock.MessageSet.t() | Kayrock.RecordBatch.t()
+    end
+  end
+
+  def describe_type(api, field, {:nullable_struct, schema}) when is_list(schema) do
+    inner = describe_type(api, field, schema)
+
+    quote do
+      nil | unquote(inner)
+    end
+  end
+
   def describe_type(_, _, t) when t in Kayrock.Serialize.compact_primitive_types() do
     quote do
       nil | binary()
@@ -460,7 +534,7 @@ defmodule Kayrock.Generate do
     end
   end
 
-  def generate_response_struct(api, vsn, modname, schema, is_flexible \\ false) do
+  def generate_response_struct(api, vsn, modname, schema, header_vsn \\ 0) do
     fields =
       Enum.reduce(schema, [], fn {k, v}, acc ->
         acc ++ [{k, default_val(v)}]
@@ -530,24 +604,15 @@ defmodule Kayrock.Generate do
         @spec deserialize(binary) :: {t(), binary}
         def deserialize(data) do
           unquote(
-            cond do
-              is_flexible and api == :api_versions ->
-                # KIP-511: ApiVersionsResponse ALWAYS uses response header v0
-                # (just correlation_id, no tag_buffer), even for V3+ which is
-                # technically a flexible version.  This lets old clients that
-                # don't understand flexible headers still negotiate versions.
-                quote do
-                  <<correlation_id::32-signed, rest::binary>> = data
-
-                  deserialize_field(
-                    :root,
-                    unquote(first_field_name),
-                    %__MODULE__{correlation_id: correlation_id},
-                    rest
-                  )
-                end
-
-              is_flexible ->
+            # Note: ApiVersionsResponse ALWAYS uses response header v0 (KIP-511),
+            # even for V3+ which is technically a flexible version.  This lets
+            # old clients that don't understand flexible headers still
+            # negotiate versions.  See response_header_version/3.
+            case header_vsn do
+              # (`true`/`false` accepted for backwards compatibility with the
+              # former is_flexible argument; `true` meant header v1 except for
+              # ApiVersions)
+              v when v == 1 or (v == true and api != :api_versions) ->
                 # Flexible version response header (KIP-482): correlation_id + TAG_BUFFER
                 quote do
                   <<correlation_id::32-signed, rest::binary>> = data
@@ -562,7 +627,7 @@ defmodule Kayrock.Generate do
                   )
                 end
 
-              true ->
+              v when v in [0, false, true] ->
                 # Standard (non-flexible) response header: just correlation_id
                 quote do
                   <<correlation_id::32-signed, rest::binary>> = data
@@ -645,7 +710,7 @@ defmodule Kayrock.Generate do
 
   def generate_field_deserializer(scope, {field_name, {:compact_array, type}}, next_field_name)
       when type in Kayrock.Deserialize.compact_primitive_types() or
-             type in [:boolean, :int8, :int16, :int32, :int64] do
+             type in Kayrock.Deserialize.fixed_width_types() do
     quote do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
         {val, rest} = Kayrock.Deserialize.deserialize_compact_array(unquote(type), data)
@@ -803,6 +868,67 @@ defmodule Kayrock.Generate do
         )
       end
     end
+  end
+
+  def generate_field_deserializer(scope, {field_name, :compact_records}, next_field_name) do
+    quote do
+      defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
+        {len_plus_one, rest} = Kayrock.Deserialize.decode_unsigned_varint(data)
+
+        {val, rest} =
+          case len_plus_one do
+            0 ->
+              {nil, rest}
+
+            n ->
+              msg_set_size = n - 1
+              <<msg_set_data::size(msg_set_size)-binary, rest::bits>> = rest
+              {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+          end
+
+        deserialize_field(
+          unquote(scope),
+          unquote(next_field_name),
+          Map.put(acc, unquote(field_name), val),
+          rest
+        )
+      end
+    end
+  end
+
+  # Nullable struct (JSON specs): int8 -1 = null, 1 = present, then the fields
+  def generate_field_deserializer(
+        scope,
+        {field_name, {:nullable_struct, struct_schema}},
+        next_field_name
+      )
+      when is_list(struct_schema) do
+    {first_field_name, fields_with_next_field} = build_field_zip(struct_schema)
+
+    [
+      Enum.map(fields_with_next_field, fn {f, n} ->
+        generate_field_deserializer(field_name, f, n)
+      end),
+      quote do
+        defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
+          {val, rest} =
+            case data do
+              <<-1::8-signed, rest::binary>> ->
+                {nil, rest}
+
+              <<1::8-signed, rest::binary>> ->
+                deserialize_field(unquote(field_name), unquote(first_field_name), %{}, rest)
+            end
+
+          deserialize_field(
+            unquote(scope),
+            unquote(next_field_name),
+            Map.put(acc, unquote(field_name), val),
+            rest
+          )
+        end
+      end
+    ]
   end
 
   def generate_field_deserializer(scope, {field_name, struct_schema}, next_field_name)
@@ -1018,9 +1144,32 @@ defmodule Kayrock.Generate do
     end
   end
 
+  defp field_serializer({name, :compact_records}, varname) do
+    quote do
+      Kayrock.Serialize.serialize_compact_records(
+        Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name))
+      )
+    end
+  end
+
+  # Nullable struct (JSON specs): int8 -1 = null, 1 = present, then the fields
+  defp field_serializer({name, {:nullable_struct, schema}}, varname) when is_list(schema) do
+    subfield_serializers = Enum.map(schema, &field_serializer(&1, :v))
+
+    quote do
+      case Map.fetch!(unquote(Macro.var(varname, __MODULE__)), unquote(name)) do
+        nil ->
+          <<-1::8-signed>>
+
+        v ->
+          [<<1::8-signed>>, unquote(subfield_serializers)]
+      end
+    end
+  end
+
   defp field_serializer({name, {:compact_array, type}}, varname)
        when type in Kayrock.Serialize.compact_primitive_types() or
-              type in [:boolean, :int8, :int16, :int32, :int64] do
+              type in Kayrock.Serialize.fixed_width_types() do
     quote do
       Kayrock.Serialize.serialize_compact_array(
         unquote(type),

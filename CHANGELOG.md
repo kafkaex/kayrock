@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Code generation from Apache Kafka's JSON message definitions (pinned to
+  Kafka 4.4.0, vendored under `priv/kafka_messages/4.4.0/`), with
+  `mix kayrock.fetch_kafka_messages <tag>` to re-fetch them.
+- `Kayrock.Generate.ApiTable`: a single allowlist of generated APIs and their
+  maximum versions. It currently matches the previous output exactly, so
+  `lib/generated` is unchanged.
+- New primitive types in `Kayrock.Serialize` / `Kayrock.Deserialize`: `:uuid`
+  (16-byte binary), `:uint16` and `:float64`, plus compact record set
+  serialization for flexible Produce/Fetch versions.
+
 ## [1.0.1] - 2026-09-04
 
 ### Fixed
