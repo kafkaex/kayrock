@@ -16,6 +16,7 @@ defmodule Kayrock.Kafka4.EndToEndTest do
   import Kayrock.RequestFactory
   import Kayrock.TestSupport, only: [unique_string: 0, with_retry: 1]
 
+  alias Kayrock.Generate.ApiTable
   alias Kayrock.RecordBatch
   alias Kayrock.RecordBatch.Record
   alias Kayrock.RecordBatch.RecordHeader
@@ -99,7 +100,9 @@ defmodule Kayrock.Kafka4.EndToEndTest do
 
   describe "produce and fetch" do
     # Produce v0-v2 are advertised by 4.x but rejected (legacy message format).
-    for version <- 3..Kayrock.Produce.max_vsn() do
+    # These helpers build kpro-shaped requests; the JSON-derived versions are
+    # covered by test/kafka4/produce_test.exs and fetch_test.exs.
+    for version <- 3..ApiTable.kpro_max_version(:produce) do
       test "Produce v#{version} / Fetch round trip with headers", %{kafka: kafka} do
         version = unquote(version)
         {:ok, client} = build_client(kafka)
@@ -125,14 +128,14 @@ defmodule Kayrock.Kafka4.EndToEndTest do
     end
 
     # Fetch v0-v3 are removed in 4.x.
-    for version <- 4..Kayrock.Fetch.max_vsn() do
+    for version <- 4..ApiTable.kpro_max_version(:fetch) do
       test "Fetch v#{version} from an offset", %{kafka: kafka} do
         version = unquote(version)
         {:ok, client} = build_client(kafka)
         topic = create_kafka4_topic(client, partitions: 1)
 
         records = for i <- 1..5, do: %Record{value: "m#{i}"}
-        assert produce(client, topic, records, Kayrock.Produce.max_vsn()) == 0
+        assert produce(client, topic, records, ApiTable.kpro_max_version(:produce)) == 0
 
         values =
           client
@@ -159,14 +162,15 @@ defmodule Kayrock.Kafka4.EndToEndTest do
   end
 
   describe "list offsets" do
-    # ListOffsets v0 is removed in 4.x.
-    for version <- 1..Kayrock.ListOffsets.max_vsn() do
+    # ListOffsets v0 is removed in 4.x. v6+ are covered by
+    # test/kafka4/list_offsets_test.exs.
+    for version <- 1..ApiTable.kpro_max_version(:list_offsets) do
       test "ListOffsets v#{version} earliest / latest", %{kafka: kafka} do
         version = unquote(version)
         {:ok, client} = build_client(kafka)
         topic = create_kafka4_topic(client, partitions: 1)
         records = [%Record{value: "a"}, %Record{value: "b"}]
-        assert produce(client, topic, records, Kayrock.Produce.max_vsn()) == 0
+        assert produce(client, topic, records, ApiTable.kpro_max_version(:produce)) == 0
 
         assert list_offset(client, topic, -2, version) == 0
         assert list_offset(client, topic, -1, version) == 2

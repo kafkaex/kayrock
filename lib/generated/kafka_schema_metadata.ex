@@ -53,15 +53,15 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:produce) do
-    {0, 8}
+    {0, 13}
   end
 
   def version_range(:fetch) do
-    {0, 11}
+    {0, 18}
   end
 
   def version_range(:list_offsets) do
-    {0, 5}
+    {0, 11}
   end
 
   def version_range(:metadata) do
@@ -121,7 +121,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:delete_records) do
-    {0, 1}
+    {0, 2}
   end
 
   def version_range(:init_producer_id) do
@@ -129,7 +129,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:offset_for_leader_epoch) do
-    {0, 3}
+    {0, 4}
   end
 
   def version_range(:add_partitions_to_txn) do
@@ -769,6 +769,86 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:produce, 9) do
+    [
+      transactional_id: :compact_nullable_string,
+      acks: :int16,
+      timeout_ms: :int32,
+      topic_data:
+        {:compact_array,
+         name: :compact_string,
+         partition_data:
+           {:compact_array,
+            index: :int32, records: :compact_records, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:produce, 10) do
+    [
+      transactional_id: :compact_nullable_string,
+      acks: :int16,
+      timeout_ms: :int32,
+      topic_data:
+        {:compact_array,
+         name: :compact_string,
+         partition_data:
+           {:compact_array,
+            index: :int32, records: :compact_records, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:produce, 11) do
+    [
+      transactional_id: :compact_nullable_string,
+      acks: :int16,
+      timeout_ms: :int32,
+      topic_data:
+        {:compact_array,
+         name: :compact_string,
+         partition_data:
+           {:compact_array,
+            index: :int32, records: :compact_records, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:produce, 12) do
+    [
+      transactional_id: :compact_nullable_string,
+      acks: :int16,
+      timeout_ms: :int32,
+      topic_data:
+        {:compact_array,
+         name: :compact_string,
+         partition_data:
+           {:compact_array,
+            index: :int32, records: :compact_records, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:produce, 13) do
+    [
+      transactional_id: :compact_nullable_string,
+      acks: :int16,
+      timeout_ms: :int32,
+      topic_data:
+        {:compact_array,
+         topic_id: :uuid,
+         partition_data:
+           {:compact_array,
+            index: :int32, records: :compact_records, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:fetch, 0) do
     [
       replica_id: :int32,
@@ -1032,6 +1112,261 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:fetch, 12) do
+    [
+      replica_id: :int32,
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      isolation_level: :int8,
+      session_id: :int32,
+      session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic: :compact_string,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            fetch_offset: :int64,
+            last_fetched_epoch: :int32,
+            log_start_offset: :int64,
+            partition_max_bytes: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      rack_id: :compact_string,
+      cluster_id:
+        {:tagged_field, tag: 0, type: :compact_nullable_string, default: nil, nullable: true},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:fetch, 13) do
+    [
+      replica_id: :int32,
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      isolation_level: :int8,
+      session_id: :int32,
+      session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            fetch_offset: :int64,
+            last_fetched_epoch: :int32,
+            log_start_offset: :int64,
+            partition_max_bytes: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      rack_id: :compact_string,
+      cluster_id:
+        {:tagged_field, tag: 0, type: :compact_nullable_string, default: nil, nullable: true},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:fetch, 14) do
+    [
+      replica_id: :int32,
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      isolation_level: :int8,
+      session_id: :int32,
+      session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            fetch_offset: :int64,
+            last_fetched_epoch: :int32,
+            log_start_offset: :int64,
+            partition_max_bytes: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      rack_id: :compact_string,
+      cluster_id:
+        {:tagged_field, tag: 0, type: :compact_nullable_string, default: nil, nullable: true},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:fetch, 15) do
+    [
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      isolation_level: :int8,
+      session_id: :int32,
+      session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            fetch_offset: :int64,
+            last_fetched_epoch: :int32,
+            log_start_offset: :int64,
+            partition_max_bytes: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      rack_id: :compact_string,
+      cluster_id:
+        {:tagged_field, tag: 0, type: :compact_nullable_string, default: nil, nullable: true},
+      replica_state:
+        {:tagged_field,
+         tag: 1,
+         type: [replica_id: :int32, replica_epoch: :int64, tagged_fields: :tagged_fields],
+         default: nil,
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:fetch, 16) do
+    [
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      isolation_level: :int8,
+      session_id: :int32,
+      session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            fetch_offset: :int64,
+            last_fetched_epoch: :int32,
+            log_start_offset: :int64,
+            partition_max_bytes: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      rack_id: :compact_string,
+      cluster_id:
+        {:tagged_field, tag: 0, type: :compact_nullable_string, default: nil, nullable: true},
+      replica_state:
+        {:tagged_field,
+         tag: 1,
+         type: [replica_id: :int32, replica_epoch: :int64, tagged_fields: :tagged_fields],
+         default: nil,
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:fetch, 17) do
+    [
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      isolation_level: :int8,
+      session_id: :int32,
+      session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            fetch_offset: :int64,
+            last_fetched_epoch: :int32,
+            log_start_offset: :int64,
+            partition_max_bytes: :int32,
+            replica_directory_id:
+              {:tagged_field,
+               tag: 0, type: :uuid, default: "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      rack_id: :compact_string,
+      cluster_id:
+        {:tagged_field, tag: 0, type: :compact_nullable_string, default: nil, nullable: true},
+      replica_state:
+        {:tagged_field,
+         tag: 1,
+         type: [replica_id: :int32, replica_epoch: :int64, tagged_fields: :tagged_fields],
+         default: nil,
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:fetch, 18) do
+    [
+      max_wait_ms: :int32,
+      min_bytes: :int32,
+      max_bytes: :int32,
+      isolation_level: :int8,
+      session_id: :int32,
+      session_epoch: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            fetch_offset: :int64,
+            last_fetched_epoch: :int32,
+            log_start_offset: :int64,
+            partition_max_bytes: :int32,
+            replica_directory_id:
+              {:tagged_field,
+               tag: 0, type: :uuid, default: "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0", nullable: false},
+            high_watermark:
+              {:tagged_field,
+               tag: 1, type: :int64, default: 9_223_372_036_854_775_807, nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      forgotten_topics_data:
+        {:compact_array,
+         topic_id: :uuid, partitions: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+      rack_id: :compact_string,
+      cluster_id:
+        {:tagged_field, tag: 0, type: :compact_nullable_string, default: nil, nullable: true},
+      replica_state:
+        {:tagged_field,
+         tag: 1,
+         type: [replica_id: :int32, replica_epoch: :int64, tagged_fields: :tagged_fields],
+         default: nil,
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:list_offsets, 0) do
     [
       replica_id: :int32,
@@ -1084,6 +1419,116 @@ defmodule Kayrock.KafkaSchemaMetadata do
         {:array,
          topic: :string,
          partitions: {:array, partition: :int32, current_leader_epoch: :int32, timestamp: :int64}}
+    ]
+  end
+
+  def request_schema(:list_offsets, 6) do
+    [
+      replica_id: :int32,
+      isolation_level: :int8,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            current_leader_epoch: :int32,
+            timestamp: :int64,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:list_offsets, 7) do
+    [
+      replica_id: :int32,
+      isolation_level: :int8,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            current_leader_epoch: :int32,
+            timestamp: :int64,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:list_offsets, 8) do
+    [
+      replica_id: :int32,
+      isolation_level: :int8,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            current_leader_epoch: :int32,
+            timestamp: :int64,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:list_offsets, 9) do
+    [
+      replica_id: :int32,
+      isolation_level: :int8,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            current_leader_epoch: :int32,
+            timestamp: :int64,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:list_offsets, 10) do
+    [
+      replica_id: :int32,
+      isolation_level: :int8,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            current_leader_epoch: :int32,
+            timestamp: :int64,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      timeout_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:list_offsets, 11) do
+    [
+      replica_id: :int32,
+      isolation_level: :int8,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            current_leader_epoch: :int32,
+            timestamp: :int64,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      timeout_ms: :int32,
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -2009,6 +2454,20 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:delete_records, 2) do
+    [
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32, offset: :int64, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      timeout_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:init_producer_id, 0) do
     [transactional_id: :nullable_string, transaction_timeout_ms: :int32]
   end
@@ -2057,6 +2516,23 @@ defmodule Kayrock.KafkaSchemaMetadata do
          topic: :string,
          partitions:
            {:array, partition: :int32, current_leader_epoch: :int32, leader_epoch: :int32}}
+    ]
+  end
+
+  def request_schema(:offset_for_leader_epoch, 4) do
+    [
+      replica_id: :int32,
+      topics:
+        {:compact_array,
+         topic: :compact_string,
+         partitions:
+           {:compact_array,
+            partition: :int32,
+            current_leader_epoch: :int32,
+            leader_epoch: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -2659,6 +3135,203 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:produce, 9) do
+    [
+      responses:
+        {:compact_array,
+         name: :compact_string,
+         partition_responses:
+           {:compact_array,
+            index: :int32,
+            error_code: :int16,
+            base_offset: :int64,
+            log_append_time_ms: :int64,
+            log_start_offset: :int64,
+            record_errors:
+              {:compact_array,
+               batch_index: :int32,
+               batch_index_error_message: :compact_nullable_string,
+               tagged_fields: :tagged_fields},
+            error_message: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:produce, 10) do
+    [
+      responses:
+        {:compact_array,
+         name: :compact_string,
+         partition_responses:
+           {:compact_array,
+            index: :int32,
+            error_code: :int16,
+            base_offset: :int64,
+            log_append_time_ms: :int64,
+            log_start_offset: :int64,
+            record_errors:
+              {:compact_array,
+               batch_index: :int32,
+               batch_index_error_message: :compact_nullable_string,
+               tagged_fields: :tagged_fields},
+            error_message: :compact_nullable_string,
+            current_leader:
+              {:tagged_field,
+               tag: 0,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      node_endpoints:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            node_id: :int32,
+            host: :compact_string,
+            port: :int32,
+            rack: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:produce, 11) do
+    [
+      responses:
+        {:compact_array,
+         name: :compact_string,
+         partition_responses:
+           {:compact_array,
+            index: :int32,
+            error_code: :int16,
+            base_offset: :int64,
+            log_append_time_ms: :int64,
+            log_start_offset: :int64,
+            record_errors:
+              {:compact_array,
+               batch_index: :int32,
+               batch_index_error_message: :compact_nullable_string,
+               tagged_fields: :tagged_fields},
+            error_message: :compact_nullable_string,
+            current_leader:
+              {:tagged_field,
+               tag: 0,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      node_endpoints:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            node_id: :int32,
+            host: :compact_string,
+            port: :int32,
+            rack: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:produce, 12) do
+    [
+      responses:
+        {:compact_array,
+         name: :compact_string,
+         partition_responses:
+           {:compact_array,
+            index: :int32,
+            error_code: :int16,
+            base_offset: :int64,
+            log_append_time_ms: :int64,
+            log_start_offset: :int64,
+            record_errors:
+              {:compact_array,
+               batch_index: :int32,
+               batch_index_error_message: :compact_nullable_string,
+               tagged_fields: :tagged_fields},
+            error_message: :compact_nullable_string,
+            current_leader:
+              {:tagged_field,
+               tag: 0,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      node_endpoints:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            node_id: :int32,
+            host: :compact_string,
+            port: :int32,
+            rack: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:produce, 13) do
+    [
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partition_responses:
+           {:compact_array,
+            index: :int32,
+            error_code: :int16,
+            base_offset: :int64,
+            log_append_time_ms: :int64,
+            log_start_offset: :int64,
+            record_errors:
+              {:compact_array,
+               batch_index: :int32,
+               batch_index_error_message: :compact_nullable_string,
+               tagged_fields: :tagged_fields},
+            error_message: :compact_nullable_string,
+            current_leader:
+              {:tagged_field,
+               tag: 0,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      node_endpoints:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            node_id: :int32,
+            host: :compact_string,
+            port: :int32,
+            rack: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:fetch, 0) do
     [
       responses:
@@ -2880,6 +3553,350 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:fetch, 12) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      session_id: :int32,
+      responses:
+        {:compact_array,
+         topic: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            high_watermark: :int64,
+            last_stable_offset: :int64,
+            log_start_offset: :int64,
+            aborted_transactions:
+              {:compact_array,
+               producer_id: :int64, first_offset: :int64, tagged_fields: :tagged_fields},
+            preferred_read_replica: :int32,
+            records: :compact_records,
+            diverging_epoch:
+              {:tagged_field,
+               tag: 0,
+               type: [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            current_leader:
+              {:tagged_field,
+               tag: 1,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            snapshot_id:
+              {:tagged_field,
+               tag: 2,
+               type: [end_offset: :int64, epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:fetch, 13) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      session_id: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            high_watermark: :int64,
+            last_stable_offset: :int64,
+            log_start_offset: :int64,
+            aborted_transactions:
+              {:compact_array,
+               producer_id: :int64, first_offset: :int64, tagged_fields: :tagged_fields},
+            preferred_read_replica: :int32,
+            records: :compact_records,
+            diverging_epoch:
+              {:tagged_field,
+               tag: 0,
+               type: [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            current_leader:
+              {:tagged_field,
+               tag: 1,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            snapshot_id:
+              {:tagged_field,
+               tag: 2,
+               type: [end_offset: :int64, epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:fetch, 14) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      session_id: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            high_watermark: :int64,
+            last_stable_offset: :int64,
+            log_start_offset: :int64,
+            aborted_transactions:
+              {:compact_array,
+               producer_id: :int64, first_offset: :int64, tagged_fields: :tagged_fields},
+            preferred_read_replica: :int32,
+            records: :compact_records,
+            diverging_epoch:
+              {:tagged_field,
+               tag: 0,
+               type: [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            current_leader:
+              {:tagged_field,
+               tag: 1,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            snapshot_id:
+              {:tagged_field,
+               tag: 2,
+               type: [end_offset: :int64, epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:fetch, 15) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      session_id: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            high_watermark: :int64,
+            last_stable_offset: :int64,
+            log_start_offset: :int64,
+            aborted_transactions:
+              {:compact_array,
+               producer_id: :int64, first_offset: :int64, tagged_fields: :tagged_fields},
+            preferred_read_replica: :int32,
+            records: :compact_records,
+            diverging_epoch:
+              {:tagged_field,
+               tag: 0,
+               type: [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            current_leader:
+              {:tagged_field,
+               tag: 1,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            snapshot_id:
+              {:tagged_field,
+               tag: 2,
+               type: [end_offset: :int64, epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:fetch, 16) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      session_id: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            high_watermark: :int64,
+            last_stable_offset: :int64,
+            log_start_offset: :int64,
+            aborted_transactions:
+              {:compact_array,
+               producer_id: :int64, first_offset: :int64, tagged_fields: :tagged_fields},
+            preferred_read_replica: :int32,
+            records: :compact_records,
+            diverging_epoch:
+              {:tagged_field,
+               tag: 0,
+               type: [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            current_leader:
+              {:tagged_field,
+               tag: 1,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            snapshot_id:
+              {:tagged_field,
+               tag: 2,
+               type: [end_offset: :int64, epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      node_endpoints:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            node_id: :int32,
+            host: :compact_string,
+            port: :int32,
+            rack: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:fetch, 17) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      session_id: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            high_watermark: :int64,
+            last_stable_offset: :int64,
+            log_start_offset: :int64,
+            aborted_transactions:
+              {:compact_array,
+               producer_id: :int64, first_offset: :int64, tagged_fields: :tagged_fields},
+            preferred_read_replica: :int32,
+            records: :compact_records,
+            diverging_epoch:
+              {:tagged_field,
+               tag: 0,
+               type: [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            current_leader:
+              {:tagged_field,
+               tag: 1,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            snapshot_id:
+              {:tagged_field,
+               tag: 2,
+               type: [end_offset: :int64, epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      node_endpoints:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            node_id: :int32,
+            host: :compact_string,
+            port: :int32,
+            rack: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:fetch, 18) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      session_id: :int32,
+      responses:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            high_watermark: :int64,
+            last_stable_offset: :int64,
+            log_start_offset: :int64,
+            aborted_transactions:
+              {:compact_array,
+               producer_id: :int64, first_offset: :int64, tagged_fields: :tagged_fields},
+            preferred_read_replica: :int32,
+            records: :compact_records,
+            diverging_epoch:
+              {:tagged_field,
+               tag: 0,
+               type: [epoch: :int32, end_offset: :int64, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            current_leader:
+              {:tagged_field,
+               tag: 1,
+               type: [leader_id: :int32, leader_epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            snapshot_id:
+              {:tagged_field,
+               tag: 2,
+               type: [end_offset: :int64, epoch: :int32, tagged_fields: :tagged_fields],
+               default: nil,
+               nullable: false},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      node_endpoints:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            node_id: :int32,
+            host: :compact_string,
+            port: :int32,
+            rack: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:list_offsets, 0) do
     [
       responses:
@@ -2951,6 +3968,120 @@ defmodule Kayrock.KafkaSchemaMetadata do
             timestamp: :int64,
             offset: :int64,
             leader_epoch: :int32}}
+    ]
+  end
+
+  def response_schema(:list_offsets, 6) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            timestamp: :int64,
+            offset: :int64,
+            leader_epoch: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_offsets, 7) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            timestamp: :int64,
+            offset: :int64,
+            leader_epoch: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_offsets, 8) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            timestamp: :int64,
+            offset: :int64,
+            leader_epoch: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_offsets, 9) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            timestamp: :int64,
+            offset: :int64,
+            leader_epoch: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_offsets, 10) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            timestamp: :int64,
+            offset: :int64,
+            leader_epoch: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_offsets, 11) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            timestamp: :int64,
+            offset: :int64,
+            leader_epoch: :int32,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -4312,6 +5443,23 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:delete_records, 2) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            low_watermark: :int64,
+            error_code: :int16,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:init_producer_id, 0) do
     [throttle_time_ms: :int32, error_code: :int16, producer_id: :int64, producer_epoch: :int16]
   end
@@ -4371,6 +5519,24 @@ defmodule Kayrock.KafkaSchemaMetadata do
          partitions:
            {:array,
             error_code: :int16, partition: :int32, leader_epoch: :int32, end_offset: :int64}}
+    ]
+  end
+
+  def response_schema(:offset_for_leader_epoch, 4) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         topic: :compact_string,
+         partitions:
+           {:compact_array,
+            error_code: :int16,
+            partition: :int32,
+            leader_epoch: :int32,
+            end_offset: :int64,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 

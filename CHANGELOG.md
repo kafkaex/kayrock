@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   fields stay in the raw `tagged_fields` bucket.
 - KIP-848 consumer group protocol: ConsumerGroupHeartbeat v0-v1 and ConsumerGroupDescribe v0-v1 (new), Metadata v10-v13, OffsetCommit v9-v10, OffsetFetch v7-v10 and FindCoordinator v4-v6.
 - Classic group APIs at their Kafka 4.4.0 maxima: JoinGroup v7-v9, LeaveGroup v5, SyncGroup v5, DescribeGroups v6, ListGroups v4-v5 (states/types filters), DeleteGroups v3.
+- Produce v9-v13, Fetch v12-v18, ListOffsets v6-v11, DeleteRecords v2 and OffsetForLeaderEpoch v4 (flexible versions, topic IDs, `compact_records`).
+- Produce v9-v13, Fetch v12-v18, ListOffsets v6-v11, DeleteRecords v2 and OffsetForLeaderEpoch v4 (flexible versions, topic IDs, `compact_records`). **Upgrade note:** `KafkaSchemaMetadata.version_range/1` now reports these higher maxima, so clients that cap negotiation by it (e.g. kafka_ex <= 1.1.x) must cap at the versions they implement before upgrading.
 
 ## [1.0.1] - 2026-09-04
 

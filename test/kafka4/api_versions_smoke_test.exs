@@ -15,9 +15,9 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
 
   | API (key)                    | Kayrock | Broker | Not accepted by 4.4.0 |
   |------------------------------|---------|--------|-----------------------|
-  | Produce (0)                  | 0-8     | 0-13   | (0-2 advertised but not answered) |
-  | Fetch (1)                    | 0-11    | 4-18   | 0-3                   |
-  | ListOffsets (2)              | 0-5     | 1-11   | 0                     |
+  | Produce (0)                  | 0-13    | 0-13   | (0-2 advertised but not answered) |
+  | Fetch (1)                    | 0-18    | 4-18   | 0-3                   |
+  | ListOffsets (2)              | 0-11    | 1-11   | 0                     |
   | Metadata (3)                 | 0-13    | 0-13   |                       |
   | OffsetCommit (8)             | 0-10    | 2-10   | 0-1                   |
   | OffsetFetch (9)              | 0-10    | 1-10   | 0                     |
@@ -32,9 +32,9 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | ApiVersions (18)             | 0-3     | 0-5    |                       |
   | CreateTopics (19)            | 0-5     | 2-7    | 0-1                   |
   | DeleteTopics (20)            | 0-4     | 1-6    | 0                     |
-  | DeleteRecords (21)           | 0-1     | 0-2    |                       |
+  | DeleteRecords (21)           | 0-2     | 0-2    |                       |
   | InitProducerId (22)          | 0-2     | 0-5    |                       |
-  | OffsetForLeaderEpoch (23)    | 0-3     | 2-4    | 0-1                   |
+  | OffsetForLeaderEpoch (23)    | 0-4     | 2-4    | 0-1                   |
   | AddPartitionsToTxn (24)      | 0-1     | 0-5    |                       |
   | AddOffsetsToTxn (25)         | 0-1     | 0-4    |                       |
   | EndTxn (26)                  | 0-1     | 0-5    |                       |
