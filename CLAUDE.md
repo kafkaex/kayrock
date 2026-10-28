@@ -29,6 +29,9 @@ mix test.integration
 # Run chaos tests (requires Docker + Toxiproxy)
 mix test.chaos
 
+# Run tests against a single-node KRaft Apache Kafka 4.4.0 broker (requires Docker)
+mix test.kafka4
+
 # Static analysis
 mix credo --strict
 mix dialyzer
@@ -99,6 +102,9 @@ Each API module also provides:
 - `test/support/binary_capture.ex` - Utility for capturing real Kafka request/response binaries
 - `test/support/factories/` - Request/response factories for each API
 - `test/kayrock/generated/` - Unit tests for each generated API module
+- `test/support/kafka4_container.ex` - Testcontainers builder for a single-node KRaft `apache/kafka:4.4.0` broker; `with_broker_config/2` (Kafka property overrides), `with_feature/3` (KRaft feature levels at format time, e.g. `share.version`), `with_release_version/2`
+- `test/support/kafka4_case.ex` / `kafka4_helpers.ex` - `use Kayrock.Kafka4Case` (optionally `container: config`) tags tests `:kafka4` and imports `build_client/1`, `create_kafka4_topic/2`, `connect_broker/1`, `broker_api_versions/1`, `broker_supports?/3`
+- `test/kafka4/` - the `:kafka4` suite (`mix test.kafka4`). `api_versions_smoke_test.exs` holds the list of generated versions a 4.4.0 broker no longer accepts (KIP-896); the broker sends no response at those versions (the connection is closed, which shows up as a recv timeout)
 
 ## Important Conventions
 

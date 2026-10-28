@@ -77,6 +77,20 @@ Integration tests require a Kafka cluster. We use [testcontainers](https://githu
 mix test.integration
 ```
 
+### Kafka 4.x Tests
+
+`mix test.kafka4` runs the `:kafka4` suite (`test/kafka4/`) against a
+single-node KRaft `apache/kafka:4.4.0` broker (`Kayrock.Kafka4Container`).
+The `:integration`, `:sanity` and `:chaos` suites keep using Confluent 7.4.
+Kafka 4.x removed many old protocol versions (KIP-896), and the broker does
+not answer requests at those versions. `test/kafka4/api_versions_smoke_test.exs`
+lists which generated versions 4.4.0 no longer accepts.
+
+```bash
+# Requires Docker to be running
+mix test.kafka4
+```
+
 ## Code Quality Requirements
 
 All contributions must pass:

@@ -1,8 +1,8 @@
-# Configure ExUnit to exclude integration/chaos/sanity by default
-ExUnit.configure(exclude: [:integration, :chaos, :sanity])
+# Configure ExUnit to exclude integration/chaos/sanity/kafka4 by default
+ExUnit.configure(exclude: [:integration, :chaos, :sanity, :kafka4])
 ExUnit.start()
 
-# Check if we need Testcontainers (integration, chaos, or sanity tests requested)
+# Check if we need Testcontainers (integration, chaos, sanity or kafka4 tests requested)
 # Detects --only integration, --only chaos, --only sanity, --include integration, etc.
 needs_testcontainers? =
   System.get_env("ENABLE_TESTCONTAINERS") == "true" or
@@ -10,13 +10,14 @@ needs_testcontainers? =
       arg in ["--only", "--include"] or
         String.contains?(arg, "integration") or
         String.contains?(arg, "chaos") or
-        String.contains?(arg, "sanity")
+        String.contains?(arg, "sanity") or
+        String.contains?(arg, "kafka4")
     end) or
     System.argv()
     |> Enum.chunk_every(2, 1, :discard)
     |> Enum.any?(fn
-      ["--only", tag] -> tag in ["integration", "chaos", "sanity"]
-      ["--include", tag] -> tag in ["integration", "chaos", "sanity"]
+      ["--only", tag] -> tag in ["integration", "chaos", "sanity", "kafka4"]
+      ["--include", tag] -> tag in ["integration", "chaos", "sanity", "kafka4"]
       _ -> false
     end)
 

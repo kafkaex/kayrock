@@ -17,7 +17,8 @@ defmodule Kayrock.MixProject do
         "test.unit": :test,
         "test.integration": :test,
         "test.chaos": :test,
-        "test.sanity": :test
+        "test.sanity": :test,
+        "test.kafka4": :test
       ],
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -95,10 +96,11 @@ defmodule Kayrock.MixProject do
 
   defp aliases do
     [
-      "test.unit": "test --exclude integration --exclude chaos --exclude sanity",
+      "test.unit": "test --exclude integration --exclude chaos --exclude sanity --exclude kafka4",
       "test.integration": "test --only integration",
       "test.chaos": "test --only chaos",
-      "test.sanity": "test --only sanity"
+      "test.sanity": "test --only sanity",
+      "test.kafka4": "test --only kafka4"
     ]
   end
 end
