@@ -60,7 +60,10 @@ defmodule Kayrock.KafkaSchemaMetadata do
       :describe_client_quotas,
       :alter_client_quotas,
       :describe_user_scram_credentials,
-      :alter_user_scram_credentials
+      :alter_user_scram_credentials,
+      :describe_producers,
+      :describe_transactions,
+      :list_transactions
     ]
   end
 
@@ -137,7 +140,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:init_producer_id) do
-    {0, 2}
+    {0, 5}
   end
 
   def version_range(:offset_for_leader_epoch) do
@@ -145,19 +148,19 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:add_partitions_to_txn) do
-    {0, 1}
+    {0, 3}
   end
 
   def version_range(:add_offsets_to_txn) do
-    {0, 1}
+    {0, 4}
   end
 
   def version_range(:end_txn) do
-    {0, 1}
+    {0, 5}
   end
 
   def version_range(:txn_offset_commit) do
-    {0, 2}
+    {0, 6}
   end
 
   def version_range(:describe_acls) do
@@ -290,6 +293,18 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
   def version_range(:alter_user_scram_credentials) do
     {0, 0}
+  end
+
+  def version_range(:describe_producers) do
+    {0, 0}
+  end
+
+  def version_range(:describe_transactions) do
+    {0, 0}
+  end
+
+  def version_range(:list_transactions) do
+    {0, 2}
   end
 
   (
@@ -859,6 +874,36 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
     def api_key(51) do
       :alter_user_scram_credentials
+    end
+  )
+
+  (
+    def api_key(:describe_producers) do
+      61
+    end
+
+    def api_key(61) do
+      :describe_producers
+    end
+  )
+
+  (
+    def api_key(:describe_transactions) do
+      65
+    end
+
+    def api_key(65) do
+      :describe_transactions
+    end
+  )
+
+  (
+    def api_key(:list_transactions) do
+      66
+    end
+
+    def api_key(66) do
+      :list_transactions
     end
   )
 
@@ -2744,6 +2789,36 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:init_producer_id, 3) do
+    [
+      transactional_id: :compact_nullable_string,
+      transaction_timeout_ms: :int32,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:init_producer_id, 4) do
+    [
+      transactional_id: :compact_nullable_string,
+      transaction_timeout_ms: :int32,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:init_producer_id, 5) do
+    [
+      transactional_id: :compact_nullable_string,
+      transaction_timeout_ms: :int32,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:offset_for_leader_epoch, 0) do
     [
       topics:
@@ -2814,12 +2889,59 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:add_partitions_to_txn, 2) do
+    [
+      v3_and_below_transactional_id: :string,
+      v3_and_below_producer_id: :int64,
+      v3_and_below_producer_epoch: :int16,
+      v3_and_below_topics: {:array, name: :string, partitions: {:array, :int32}}
+    ]
+  end
+
+  def request_schema(:add_partitions_to_txn, 3) do
+    [
+      v3_and_below_transactional_id: :compact_string,
+      v3_and_below_producer_id: :int64,
+      v3_and_below_producer_epoch: :int16,
+      v3_and_below_topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:add_offsets_to_txn, 0) do
     [transactional_id: :string, producer_id: :int64, producer_epoch: :int16, group_id: :string]
   end
 
   def request_schema(:add_offsets_to_txn, 1) do
     [transactional_id: :string, producer_id: :int64, producer_epoch: :int16, group_id: :string]
+  end
+
+  def request_schema(:add_offsets_to_txn, 2) do
+    [transactional_id: :string, producer_id: :int64, producer_epoch: :int16, group_id: :string]
+  end
+
+  def request_schema(:add_offsets_to_txn, 3) do
+    [
+      transactional_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      group_id: :compact_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:add_offsets_to_txn, 4) do
+    [
+      transactional_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      group_id: :compact_string,
+      tagged_fields: :tagged_fields
+    ]
   end
 
   def request_schema(:end_txn, 0) do
@@ -2837,6 +2959,40 @@ defmodule Kayrock.KafkaSchemaMetadata do
       producer_id: :int64,
       producer_epoch: :int16,
       transaction_result: :boolean
+    ]
+  end
+
+  def request_schema(:end_txn, 2) do
+    [transactional_id: :string, producer_id: :int64, producer_epoch: :int16, committed: :boolean]
+  end
+
+  def request_schema(:end_txn, 3) do
+    [
+      transactional_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      committed: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:end_txn, 4) do
+    [
+      transactional_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      committed: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:end_txn, 5) do
+    [
+      transactional_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      committed: :boolean,
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -2889,6 +3045,102 @@ defmodule Kayrock.KafkaSchemaMetadata do
             committed_offset: :int64,
             committed_leader_epoch: :int32,
             committed_metadata: :nullable_string}}
+    ]
+  end
+
+  def request_schema(:txn_offset_commit, 3) do
+    [
+      transactional_id: :compact_string,
+      group_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      generation_id_or_member_epoch: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            committed_offset: :int64,
+            committed_leader_epoch: :int32,
+            committed_metadata: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:txn_offset_commit, 4) do
+    [
+      transactional_id: :compact_string,
+      group_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      generation_id_or_member_epoch: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            committed_offset: :int64,
+            committed_leader_epoch: :int32,
+            committed_metadata: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:txn_offset_commit, 5) do
+    [
+      transactional_id: :compact_string,
+      group_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      generation_id_or_member_epoch: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            committed_offset: :int64,
+            committed_leader_epoch: :int32,
+            committed_metadata: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:txn_offset_commit, 6) do
+    [
+      transactional_id: :compact_string,
+      group_id: :compact_string,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      generation_id_or_member_epoch: :int32,
+      member_id: :compact_string,
+      group_instance_id: :compact_nullable_string,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            committed_offset: :int64,
+            committed_leader_epoch: :int32,
+            committed_metadata: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -3783,6 +4035,48 @@ defmodule Kayrock.KafkaSchemaMetadata do
          salt: :compact_bytes,
          salted_password: :compact_bytes,
          tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_producers, 0) do
+    [
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partition_indexes: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_transactions, 0) do
+    [transactional_ids: {:compact_array, :compact_string}, tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:list_transactions, 0) do
+    [
+      state_filters: {:compact_array, :compact_string},
+      producer_id_filters: {:compact_array, :int64},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:list_transactions, 1) do
+    [
+      state_filters: {:compact_array, :compact_string},
+      producer_id_filters: {:compact_array, :int64},
+      duration_filter: :int64,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:list_transactions, 2) do
+    [
+      state_filters: {:compact_array, :compact_string},
+      producer_id_filters: {:compact_array, :int64},
+      duration_filter: :int64,
+      transactional_id_pattern: :compact_nullable_string,
       tagged_fields: :tagged_fields
     ]
   end
@@ -6402,6 +6696,36 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:init_producer_id, 3) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:init_producer_id, 4) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:init_producer_id, 5) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:offset_for_leader_epoch, 0) do
     [
       topics:
@@ -6482,6 +6806,30 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:add_partitions_to_txn, 2) do
+    [
+      throttle_time_ms: :int32,
+      results_by_topic_v3_and_below:
+        {:array,
+         name: :string,
+         results_by_partition: {:array, partition_index: :int32, partition_error_code: :int16}}
+    ]
+  end
+
+  def response_schema(:add_partitions_to_txn, 3) do
+    [
+      throttle_time_ms: :int32,
+      results_by_topic_v3_and_below:
+        {:compact_array,
+         name: :compact_string,
+         results_by_partition:
+           {:compact_array,
+            partition_index: :int32, partition_error_code: :int16, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:add_offsets_to_txn, 0) do
     [throttle_time_ms: :int32, error_code: :int16]
   end
@@ -6490,12 +6838,46 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [throttle_time_ms: :int32, error_code: :int16]
   end
 
+  def response_schema(:add_offsets_to_txn, 2) do
+    [throttle_time_ms: :int32, error_code: :int16]
+  end
+
+  def response_schema(:add_offsets_to_txn, 3) do
+    [throttle_time_ms: :int32, error_code: :int16, tagged_fields: :tagged_fields]
+  end
+
+  def response_schema(:add_offsets_to_txn, 4) do
+    [throttle_time_ms: :int32, error_code: :int16, tagged_fields: :tagged_fields]
+  end
+
   def response_schema(:end_txn, 0) do
     [throttle_time_ms: :int32, error_code: :int16]
   end
 
   def response_schema(:end_txn, 1) do
     [throttle_time_ms: :int32, error_code: :int16]
+  end
+
+  def response_schema(:end_txn, 2) do
+    [throttle_time_ms: :int32, error_code: :int16]
+  end
+
+  def response_schema(:end_txn, 3) do
+    [throttle_time_ms: :int32, error_code: :int16, tagged_fields: :tagged_fields]
+  end
+
+  def response_schema(:end_txn, 4) do
+    [throttle_time_ms: :int32, error_code: :int16, tagged_fields: :tagged_fields]
+  end
+
+  def response_schema(:end_txn, 5) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      producer_id: :int64,
+      producer_epoch: :int16,
+      tagged_fields: :tagged_fields
+    ]
   end
 
   def response_schema(:txn_offset_commit, 0) do
@@ -6519,6 +6901,62 @@ defmodule Kayrock.KafkaSchemaMetadata do
       throttle_time_ms: :int32,
       topics:
         {:array, name: :string, partitions: {:array, partition_index: :int32, error_code: :int16}}
+    ]
+  end
+
+  def response_schema(:txn_offset_commit, 3) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32, error_code: :int16, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:txn_offset_commit, 4) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32, error_code: :int16, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:txn_offset_commit, 5) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32, error_code: :int16, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:txn_offset_commit, 6) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         topic_id: :uuid,
+         partitions:
+           {:compact_array,
+            partition_index: :int32, error_code: :int16, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -7944,6 +8382,99 @@ defmodule Kayrock.KafkaSchemaMetadata do
          user: :compact_string,
          error_code: :int16,
          error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_producers, 0) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            active_producers:
+              {:compact_array,
+               producer_id: :int64,
+               producer_epoch: :int32,
+               last_sequence: :int32,
+               last_timestamp: :int64,
+               coordinator_epoch: :int32,
+               current_txn_start_offset: :int64,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_transactions, 0) do
+    [
+      throttle_time_ms: :int32,
+      transaction_states:
+        {:compact_array,
+         error_code: :int16,
+         transactional_id: :compact_string,
+         transaction_state: :compact_string,
+         transaction_timeout_ms: :int32,
+         transaction_start_time_ms: :int64,
+         producer_id: :int64,
+         producer_epoch: :int16,
+         topics:
+           {:compact_array,
+            topic: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_transactions, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      unknown_state_filters: {:compact_array, :compact_string},
+      transaction_states:
+        {:compact_array,
+         transactional_id: :compact_string,
+         producer_id: :int64,
+         transaction_state: :compact_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_transactions, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      unknown_state_filters: {:compact_array, :compact_string},
+      transaction_states:
+        {:compact_array,
+         transactional_id: :compact_string,
+         producer_id: :int64,
+         transaction_state: :compact_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_transactions, 2) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      unknown_state_filters: {:compact_array, :compact_string},
+      transaction_states:
+        {:compact_array,
+         transactional_id: :compact_string,
+         producer_id: :int64,
+         transaction_state: :compact_string,
          tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
