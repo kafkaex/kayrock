@@ -29,9 +29,9 @@ defmodule Kayrock.TestSupport do
   def api_version_range(:delete_groups), do: 0..2
 
   # Admin: Topics
-  def api_version_range(:create_topics), do: 0..5
-  def api_version_range(:delete_topics), do: 0..4
-  def api_version_range(:create_partitions), do: 0..1
+  def api_version_range(:create_topics), do: 0..7
+  def api_version_range(:delete_topics), do: 0..6
+  def api_version_range(:create_partitions), do: 0..3
   def api_version_range(:delete_records), do: 0..1
 
   # Admin: Config
@@ -40,8 +40,8 @@ defmodule Kayrock.TestSupport do
   def api_version_range(:incremental_alter_configs), do: 0..1
 
   # Admin: Logs
-  def api_version_range(:alter_replica_log_dirs), do: 0..1
-  def api_version_range(:describe_log_dirs), do: 0..1
+  def api_version_range(:alter_replica_log_dirs), do: 0..2
+  def api_version_range(:describe_log_dirs), do: 0..5
 
   # Admin: ACLs
   def api_version_range(:describe_acls), do: 0..1
@@ -49,7 +49,7 @@ defmodule Kayrock.TestSupport do
   def api_version_range(:delete_acls), do: 0..1
 
   # Admin: Partition reassignment
-  def api_version_range(:alter_partition_reassignments), do: 0..0
+  def api_version_range(:alter_partition_reassignments), do: 0..1
   def api_version_range(:list_partition_reassignments), do: 0..0
   def api_version_range(:elect_leaders), do: 0..2
 
@@ -75,7 +75,17 @@ defmodule Kayrock.TestSupport do
   def api_version_range(:sasl_authenticate), do: 0..1
 
   # API versions
-  def api_version_range(:api_versions), do: 0..3
+  def api_version_range(:api_versions), do: 0..5
+
+  # Admin: Cluster (JSON-only APIs)
+  def api_version_range(:describe_cluster), do: 0..2
+  def api_version_range(:describe_topic_partitions), do: 0..0
+  def api_version_range(:list_config_resources), do: 0..1
+  def api_version_range(:describe_quorum), do: 0..2
+  def api_version_range(:update_features), do: 0..2
+  def api_version_range(:unregister_broker), do: 0..0
+  def api_version_range(:add_raft_voter), do: 0..1
+  def api_version_range(:remove_raft_voter), do: 0..0
 
   @doc """
   Returns a unique string for use in tests.

@@ -52,7 +52,9 @@ defmodule Kayrock.Integration.TopicManagementTest do
   end
 
   defp create_topic_partition(topic_name, api_version) do
-    api_version = min(Kayrock.CreatePartitions.max_vsn(), api_version)
+    # kpro-era field names (`topic_partitions`, `timeout`); v2+ uses Kafka's
+    # JSON names (`topics`, `timeout_ms`) and is covered by the kafka4 suite
+    api_version = min(1, api_version)
     request = Kayrock.CreatePartitions.get_request_struct(api_version)
     partition_config = %{topic: topic_name, new_partitions: %{count: 5, assignment: nil}}
     %{request | topic_partitions: [partition_config], timeout: 1000, validate_only: false}

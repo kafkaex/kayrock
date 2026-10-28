@@ -35,7 +35,9 @@ defmodule Kayrock.Kafka4.EndToEndTest do
         assert created.error_code == 0
         :ok = wait_for_leaders(client, name, 3)
 
-        delete_version = min(version, Kayrock.DeleteTopics.max_vsn())
+        # topic_names layout (v4-v5); v6+ (topics by name or id) is covered by
+        # test/integration/kafka4/topics_test.exs
+        delete_version = min(version, 5)
         request = Kayrock.DeleteTopics.get_request_struct(delete_version)
         request = %{request | topic_names: [name], timeout_ms: 10_000}
 

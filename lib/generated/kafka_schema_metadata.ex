@@ -48,7 +48,15 @@ defmodule Kayrock.KafkaSchemaMetadata do
       :list_partition_reassignments,
       :offset_delete,
       :consumer_group_heartbeat,
-      :consumer_group_describe
+      :consumer_group_describe,
+      :describe_quorum,
+      :update_features,
+      :describe_cluster,
+      :unregister_broker,
+      :list_config_resources,
+      :describe_topic_partitions,
+      :add_raft_voter,
+      :remove_raft_voter
     ]
   end
 
@@ -109,15 +117,15 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:api_versions) do
-    {0, 3}
-  end
-
-  def version_range(:create_topics) do
     {0, 5}
   end
 
+  def version_range(:create_topics) do
+    {0, 7}
+  end
+
   def version_range(:delete_topics) do
-    {0, 4}
+    {0, 6}
   end
 
   def version_range(:delete_records) do
@@ -169,11 +177,11 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:alter_replica_log_dirs) do
-    {0, 1}
+    {0, 2}
   end
 
   def version_range(:describe_log_dirs) do
-    {0, 1}
+    {0, 5}
   end
 
   def version_range(:sasl_authenticate) do
@@ -181,7 +189,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:create_partitions) do
-    {0, 1}
+    {0, 3}
   end
 
   def version_range(:create_delegation_token) do
@@ -213,7 +221,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:alter_partition_reassignments) do
-    {0, 0}
+    {0, 1}
   end
 
   def version_range(:list_partition_reassignments) do
@@ -230,6 +238,38 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
   def version_range(:consumer_group_describe) do
     {0, 1}
+  end
+
+  def version_range(:describe_quorum) do
+    {0, 2}
+  end
+
+  def version_range(:update_features) do
+    {0, 2}
+  end
+
+  def version_range(:describe_cluster) do
+    {0, 2}
+  end
+
+  def version_range(:unregister_broker) do
+    {0, 0}
+  end
+
+  def version_range(:list_config_resources) do
+    {0, 1}
+  end
+
+  def version_range(:describe_topic_partitions) do
+    {0, 0}
+  end
+
+  def version_range(:add_raft_voter) do
+    {0, 1}
+  end
+
+  def version_range(:remove_raft_voter) do
+    {0, 0}
   end
 
   (
@@ -679,6 +719,86 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
     def api_key(69) do
       :consumer_group_describe
+    end
+  )
+
+  (
+    def api_key(:describe_quorum) do
+      55
+    end
+
+    def api_key(55) do
+      :describe_quorum
+    end
+  )
+
+  (
+    def api_key(:update_features) do
+      57
+    end
+
+    def api_key(57) do
+      :update_features
+    end
+  )
+
+  (
+    def api_key(:describe_cluster) do
+      60
+    end
+
+    def api_key(60) do
+      :describe_cluster
+    end
+  )
+
+  (
+    def api_key(:unregister_broker) do
+      64
+    end
+
+    def api_key(64) do
+      :unregister_broker
+    end
+  )
+
+  (
+    def api_key(:list_config_resources) do
+      74
+    end
+
+    def api_key(74) do
+      :list_config_resources
+    end
+  )
+
+  (
+    def api_key(:describe_topic_partitions) do
+      75
+    end
+
+    def api_key(75) do
+      :describe_topic_partitions
+    end
+  )
+
+  (
+    def api_key(:add_raft_voter) do
+      80
+    end
+
+    def api_key(80) do
+      :add_raft_voter
+    end
+  )
+
+  (
+    def api_key(:remove_raft_voter) do
+      81
+    end
+
+    def api_key(81) do
+      :remove_raft_voter
     end
   )
 
@@ -2325,6 +2445,24 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:api_versions, 4) do
+    [
+      client_software_name: :compact_string,
+      client_software_version: :compact_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:api_versions, 5) do
+    [
+      client_software_name: :compact_string,
+      client_software_version: :compact_string,
+      cluster_id: :compact_nullable_string,
+      node_id: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:create_topics, 0) do
     [
       topics:
@@ -2416,6 +2554,50 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:create_topics, 6) do
+    [
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         num_partitions: :int32,
+         replication_factor: :int16,
+         assignments:
+           {:compact_array,
+            partition_index: :int32,
+            broker_ids: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         configs:
+           {:compact_array,
+            name: :compact_string, value: :compact_nullable_string, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      timeout_ms: :int32,
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:create_topics, 7) do
+    [
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         num_partitions: :int32,
+         replication_factor: :int16,
+         assignments:
+           {:compact_array,
+            partition_index: :int32,
+            broker_ids: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         configs:
+           {:compact_array,
+            name: :compact_string, value: :compact_nullable_string, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      timeout_ms: :int32,
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:delete_topics, 0) do
     [topic_names: {:array, :string}, timeout_ms: :int32]
   end
@@ -2435,6 +2617,24 @@ defmodule Kayrock.KafkaSchemaMetadata do
   def request_schema(:delete_topics, 4) do
     [
       topic_names: {:compact_array, :compact_string},
+      timeout_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:delete_topics, 5) do
+    [
+      topic_names: {:compact_array, :compact_string},
+      timeout_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:delete_topics, 6) do
+    [
+      topics:
+        {:compact_array,
+         name: :compact_nullable_string, topic_id: :uuid, tagged_fields: :tagged_fields},
       timeout_ms: :int32,
       tagged_fields: :tagged_fields
     ]
@@ -2768,12 +2968,71 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:alter_replica_log_dirs, 2) do
+    [
+      dirs:
+        {:compact_array,
+         path: :compact_string,
+         topics:
+           {:compact_array,
+            name: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:describe_log_dirs, 0) do
     [topics: {:array, topic: :string, partitions: {:array, :int32}}]
   end
 
   def request_schema(:describe_log_dirs, 1) do
     [topics: {:array, topic: :string, partitions: {:array, :int32}}]
+  end
+
+  def request_schema(:describe_log_dirs, 2) do
+    [
+      topics:
+        {:compact_array,
+         topic: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_log_dirs, 3) do
+    [
+      topics:
+        {:compact_array,
+         topic: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_log_dirs, 4) do
+    [
+      topics:
+        {:compact_array,
+         topic: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_log_dirs, 5) do
+    [
+      topics:
+        {:compact_array,
+         topic: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
   end
 
   def request_schema(:sasl_authenticate, 0) do
@@ -2801,6 +3060,36 @@ defmodule Kayrock.KafkaSchemaMetadata do
          topic: :string, new_partitions: [count: :int32, assignment: {:array, {:array, :int32}}]},
       timeout: :int32,
       validate_only: :boolean
+    ]
+  end
+
+  def request_schema(:create_partitions, 2) do
+    [
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         count: :int32,
+         assignments:
+           {:compact_array, broker_ids: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      timeout_ms: :int32,
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:create_partitions, 3) do
+    [
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         count: :int32,
+         assignments:
+           {:compact_array, broker_ids: {:compact_array, :int32}, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      timeout_ms: :int32,
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -2943,6 +3232,23 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:alter_partition_reassignments, 1) do
+    [
+      timeout_ms: :int32,
+      allow_replication_factor_change: :boolean,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            replicas: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:list_partition_reassignments, 0) do
     [
       timeout_ms: :int32,
@@ -3009,6 +3315,166 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [
       group_ids: {:compact_array, :compact_string},
       include_authorized_operations: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_quorum, 0) do
+    [
+      topics:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions: {:compact_array, partition_index: :int32, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_quorum, 1) do
+    [
+      topics:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions: {:compact_array, partition_index: :int32, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_quorum, 2) do
+    [
+      topics:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions: {:compact_array, partition_index: :int32, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:update_features, 0) do
+    [
+      timeout_ms: :int32,
+      feature_updates:
+        {:compact_array,
+         feature: :compact_string,
+         max_version_level: :int16,
+         allow_downgrade: :boolean,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:update_features, 1) do
+    [
+      timeout_ms: :int32,
+      feature_updates:
+        {:compact_array,
+         feature: :compact_string,
+         max_version_level: :int16,
+         upgrade_type: :int8,
+         tagged_fields: :tagged_fields},
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:update_features, 2) do
+    [
+      timeout_ms: :int32,
+      feature_updates:
+        {:compact_array,
+         feature: :compact_string,
+         max_version_level: :int16,
+         upgrade_type: :int8,
+         tagged_fields: :tagged_fields},
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_cluster, 0) do
+    [include_cluster_authorized_operations: :boolean, tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:describe_cluster, 1) do
+    [
+      include_cluster_authorized_operations: :boolean,
+      endpoint_type: :int8,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_cluster, 2) do
+    [
+      include_cluster_authorized_operations: :boolean,
+      endpoint_type: :int8,
+      include_fenced_brokers: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:unregister_broker, 0) do
+    [broker_id: :int32, tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:list_config_resources, 0) do
+    [tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:list_config_resources, 1) do
+    [resource_types: {:compact_array, :int8}, tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:describe_topic_partitions, 0) do
+    [
+      topics: {:compact_array, name: :compact_string, tagged_fields: :tagged_fields},
+      response_partition_limit: :int32,
+      cursor:
+        {:nullable_struct,
+         topic_name: :compact_string, partition_index: :int32, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:add_raft_voter, 0) do
+    [
+      cluster_id: :compact_nullable_string,
+      timeout_ms: :int32,
+      voter_id: :int32,
+      voter_directory_id: :uuid,
+      listeners:
+        {:compact_array,
+         name: :compact_string,
+         host: :compact_string,
+         port: :uint16,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:add_raft_voter, 1) do
+    [
+      cluster_id: :compact_nullable_string,
+      timeout_ms: :int32,
+      voter_id: :int32,
+      voter_directory_id: :uuid,
+      listeners:
+        {:compact_array,
+         name: :compact_string,
+         host: :compact_string,
+         port: :uint16,
+         tagged_fields: :tagged_fields},
+      ack_when_committed: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:remove_raft_voter, 0) do
+    [
+      cluster_id: :compact_nullable_string,
+      voter_id: :int32,
+      voter_directory_id: :uuid,
       tagged_fields: :tagged_fields
     ]
   end
@@ -5346,6 +5812,78 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:api_versions, 4) do
+    [
+      error_code: :int16,
+      api_keys:
+        {:compact_array,
+         api_key: :int16, min_version: :int16, max_version: :int16, tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      supported_features:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            name: :compact_string,
+            min_version: :int16,
+            max_version: :int16,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      finalized_features_epoch:
+        {:tagged_field, tag: 1, type: :int64, default: -1, nullable: false},
+      finalized_features:
+        {:tagged_field,
+         tag: 2,
+         type:
+           {:compact_array,
+            name: :compact_string,
+            max_version_level: :int16,
+            min_version_level: :int16,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      zk_migration_ready: {:tagged_field, tag: 3, type: :boolean, default: 0, nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:api_versions, 5) do
+    [
+      error_code: :int16,
+      api_keys:
+        {:compact_array,
+         api_key: :int16, min_version: :int16, max_version: :int16, tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      supported_features:
+        {:tagged_field,
+         tag: 0,
+         type:
+           {:compact_array,
+            name: :compact_string,
+            min_version: :int16,
+            max_version: :int16,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      finalized_features_epoch:
+        {:tagged_field, tag: 1, type: :int64, default: -1, nullable: false},
+      finalized_features:
+        {:tagged_field,
+         tag: 2,
+         type:
+           {:compact_array,
+            name: :compact_string,
+            max_version_level: :int16,
+            min_version_level: :int16,
+            tagged_fields: :tagged_fields},
+         default: [],
+         nullable: false},
+      zk_migration_ready: {:tagged_field, tag: 3, type: :boolean, default: 0, nullable: false},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:create_topics, 0) do
     [topics: {:array, name: :string, error_code: :int16}]
   end
@@ -5398,6 +5936,57 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:create_topics, 6) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         num_partitions: :int32,
+         replication_factor: :int16,
+         configs:
+           {:compact_array,
+            name: :compact_string,
+            value: :compact_nullable_string,
+            read_only: :boolean,
+            config_source: :int8,
+            is_sensitive: :boolean,
+            tagged_fields: :tagged_fields},
+         topic_config_error_code:
+           {:tagged_field, tag: 0, type: :int16, default: 0, nullable: false},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:create_topics, 7) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         name: :compact_string,
+         topic_id: :uuid,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         num_partitions: :int32,
+         replication_factor: :int16,
+         configs:
+           {:compact_array,
+            name: :compact_string,
+            value: :compact_nullable_string,
+            read_only: :boolean,
+            config_source: :int8,
+            is_sensitive: :boolean,
+            tagged_fields: :tagged_fields},
+         topic_config_error_code:
+           {:tagged_field, tag: 0, type: :int16, default: 0, nullable: false},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:delete_topics, 0) do
     [responses: {:array, name: :string, error_code: :int16}]
   end
@@ -5419,6 +6008,33 @@ defmodule Kayrock.KafkaSchemaMetadata do
       throttle_time_ms: :int32,
       responses:
         {:compact_array, name: :compact_string, error_code: :int16, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:delete_topics, 5) do
+    [
+      throttle_time_ms: :int32,
+      responses:
+        {:compact_array,
+         name: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:delete_topics, 6) do
+    [
+      throttle_time_ms: :int32,
+      responses:
+        {:compact_array,
+         name: :compact_nullable_string,
+         topic_id: :uuid,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
   end
@@ -5783,6 +6399,20 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:alter_replica_log_dirs, 2) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32, error_code: :int16, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:describe_log_dirs, 0) do
     [
       throttle_time_ms: :int32,
@@ -5813,6 +6443,106 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:describe_log_dirs, 2) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         error_code: :int16,
+         log_dir: :compact_string,
+         topics:
+           {:compact_array,
+            name: :compact_string,
+            partitions:
+              {:compact_array,
+               partition_index: :int32,
+               partition_size: :int64,
+               offset_lag: :int64,
+               is_future_key: :boolean,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_log_dirs, 3) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      results:
+        {:compact_array,
+         error_code: :int16,
+         log_dir: :compact_string,
+         topics:
+           {:compact_array,
+            name: :compact_string,
+            partitions:
+              {:compact_array,
+               partition_index: :int32,
+               partition_size: :int64,
+               offset_lag: :int64,
+               is_future_key: :boolean,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_log_dirs, 4) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      results:
+        {:compact_array,
+         error_code: :int16,
+         log_dir: :compact_string,
+         topics:
+           {:compact_array,
+            name: :compact_string,
+            partitions:
+              {:compact_array,
+               partition_index: :int32,
+               partition_size: :int64,
+               offset_lag: :int64,
+               is_future_key: :boolean,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         total_bytes: :int64,
+         usable_bytes: :int64,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_log_dirs, 5) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      results:
+        {:compact_array,
+         error_code: :int16,
+         log_dir: :compact_string,
+         topics:
+           {:compact_array,
+            name: :compact_string,
+            partitions:
+              {:compact_array,
+               partition_index: :int32,
+               partition_size: :int64,
+               offset_lag: :int64,
+               is_future_key: :boolean,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         total_bytes: :int64,
+         usable_bytes: :int64,
+         is_cordoned: :boolean,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:sasl_authenticate, 0) do
     [error_code: :int16, error_message: :nullable_string, auth_bytes: :bytes]
   end
@@ -5837,6 +6567,32 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [
       throttle_time_ms: :int32,
       topic_errors: {:array, topic: :string, error_code: :int16, error_message: :nullable_string}
+    ]
+  end
+
+  def response_schema(:create_partitions, 2) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         name: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:create_partitions, 3) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         name: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -6050,6 +6806,26 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:alter_partition_reassignments, 1) do
+    [
+      throttle_time_ms: :int32,
+      allow_replication_factor_change: :boolean,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      responses:
+        {:compact_array,
+         name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:list_partition_reassignments, 0) do
     [
       throttle_time_ms: :int32,
@@ -6206,6 +6982,297 @@ defmodule Kayrock.KafkaSchemaMetadata do
             tagged_fields: :tagged_fields},
          authorized_operations: :int32,
          tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_quorum, 0) do
+    [
+      error_code: :int16,
+      topics:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            leader_id: :int32,
+            leader_epoch: :int32,
+            high_watermark: :int64,
+            current_voters:
+              {:compact_array,
+               replica_id: :int32, log_end_offset: :int64, tagged_fields: :tagged_fields},
+            observers:
+              {:compact_array,
+               replica_id: :int32, log_end_offset: :int64, tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_quorum, 1) do
+    [
+      error_code: :int16,
+      topics:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            leader_id: :int32,
+            leader_epoch: :int32,
+            high_watermark: :int64,
+            current_voters:
+              {:compact_array,
+               replica_id: :int32,
+               log_end_offset: :int64,
+               last_fetch_timestamp: :int64,
+               last_caught_up_timestamp: :int64,
+               tagged_fields: :tagged_fields},
+            observers:
+              {:compact_array,
+               replica_id: :int32,
+               log_end_offset: :int64,
+               last_fetch_timestamp: :int64,
+               last_caught_up_timestamp: :int64,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_quorum, 2) do
+    [
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      topics:
+        {:compact_array,
+         topic_name: :compact_string,
+         partitions:
+           {:compact_array,
+            partition_index: :int32,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            leader_id: :int32,
+            leader_epoch: :int32,
+            high_watermark: :int64,
+            current_voters:
+              {:compact_array,
+               replica_id: :int32,
+               replica_directory_id: :uuid,
+               log_end_offset: :int64,
+               last_fetch_timestamp: :int64,
+               last_caught_up_timestamp: :int64,
+               tagged_fields: :tagged_fields},
+            observers:
+              {:compact_array,
+               replica_id: :int32,
+               replica_directory_id: :uuid,
+               log_end_offset: :int64,
+               last_fetch_timestamp: :int64,
+               last_caught_up_timestamp: :int64,
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      nodes:
+        {:compact_array,
+         node_id: :int32,
+         listeners:
+           {:compact_array,
+            name: :compact_string,
+            host: :compact_string,
+            port: :uint16,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:update_features, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      results:
+        {:compact_array,
+         feature: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:update_features, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      results:
+        {:compact_array,
+         feature: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:update_features, 2) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_cluster, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      cluster_id: :compact_string,
+      controller_id: :int32,
+      brokers:
+        {:compact_array,
+         broker_id: :int32,
+         host: :compact_string,
+         port: :int32,
+         rack: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      cluster_authorized_operations: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_cluster, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      endpoint_type: :int8,
+      cluster_id: :compact_string,
+      controller_id: :int32,
+      brokers:
+        {:compact_array,
+         broker_id: :int32,
+         host: :compact_string,
+         port: :int32,
+         rack: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      cluster_authorized_operations: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_cluster, 2) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      endpoint_type: :int8,
+      cluster_id: :compact_string,
+      controller_id: :int32,
+      brokers:
+        {:compact_array,
+         broker_id: :int32,
+         host: :compact_string,
+         port: :int32,
+         rack: :compact_nullable_string,
+         is_fenced: :boolean,
+         tagged_fields: :tagged_fields},
+      cluster_authorized_operations: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:unregister_broker, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_config_resources, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      config_resources:
+        {:compact_array, resource_name: :compact_string, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:list_config_resources, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      config_resources:
+        {:compact_array,
+         resource_name: :compact_string, resource_type: :int8, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_topic_partitions, 0) do
+    [
+      throttle_time_ms: :int32,
+      topics:
+        {:compact_array,
+         error_code: :int16,
+         name: :compact_nullable_string,
+         topic_id: :uuid,
+         is_internal: :boolean,
+         partitions:
+           {:compact_array,
+            error_code: :int16,
+            partition_index: :int32,
+            leader_id: :int32,
+            leader_epoch: :int32,
+            replica_nodes: {:compact_array, :int32},
+            isr_nodes: {:compact_array, :int32},
+            eligible_leader_replicas: {:compact_array, :int32},
+            last_known_elr: {:compact_array, :int32},
+            offline_replicas: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         topic_authorized_operations: :int32,
+         tagged_fields: :tagged_fields},
+      next_cursor:
+        {:nullable_struct,
+         topic_name: :compact_string, partition_index: :int32, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:add_raft_voter, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:add_raft_voter, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:remove_raft_voter, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
       tagged_fields: :tagged_fields
     ]
   end
