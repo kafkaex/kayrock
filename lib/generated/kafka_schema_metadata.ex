@@ -56,7 +56,11 @@ defmodule Kayrock.KafkaSchemaMetadata do
       :list_config_resources,
       :describe_topic_partitions,
       :add_raft_voter,
-      :remove_raft_voter
+      :remove_raft_voter,
+      :describe_client_quotas,
+      :alter_client_quotas,
+      :describe_user_scram_credentials,
+      :alter_user_scram_credentials
     ]
   end
 
@@ -157,23 +161,23 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:describe_acls) do
-    {0, 1}
+    {0, 3}
   end
 
   def version_range(:create_acls) do
-    {0, 1}
+    {0, 3}
   end
 
   def version_range(:delete_acls) do
-    {0, 1}
+    {0, 3}
   end
 
   def version_range(:describe_configs) do
-    {0, 2}
+    {0, 4}
   end
 
   def version_range(:alter_configs) do
-    {0, 1}
+    {0, 2}
   end
 
   def version_range(:alter_replica_log_dirs) do
@@ -185,7 +189,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:sasl_authenticate) do
-    {0, 1}
+    {0, 2}
   end
 
   def version_range(:create_partitions) do
@@ -193,19 +197,19 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:create_delegation_token) do
-    {0, 2}
+    {0, 3}
   end
 
   def version_range(:renew_delegation_token) do
-    {0, 1}
+    {0, 2}
   end
 
   def version_range(:expire_delegation_token) do
-    {0, 1}
+    {0, 2}
   end
 
   def version_range(:describe_delegation_token) do
-    {0, 1}
+    {0, 3}
   end
 
   def version_range(:delete_groups) do
@@ -269,6 +273,22 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:remove_raft_voter) do
+    {0, 0}
+  end
+
+  def version_range(:describe_client_quotas) do
+    {0, 1}
+  end
+
+  def version_range(:alter_client_quotas) do
+    {0, 1}
+  end
+
+  def version_range(:describe_user_scram_credentials) do
+    {0, 0}
+  end
+
+  def version_range(:alter_user_scram_credentials) do
     {0, 0}
   end
 
@@ -799,6 +819,46 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
     def api_key(81) do
       :remove_raft_voter
+    end
+  )
+
+  (
+    def api_key(:describe_client_quotas) do
+      48
+    end
+
+    def api_key(48) do
+      :describe_client_quotas
+    end
+  )
+
+  (
+    def api_key(:alter_client_quotas) do
+      49
+    end
+
+    def api_key(49) do
+      :alter_client_quotas
+    end
+  )
+
+  (
+    def api_key(:describe_user_scram_credentials) do
+      50
+    end
+
+    def api_key(50) do
+      :describe_user_scram_credentials
+    end
+  )
+
+  (
+    def api_key(:alter_user_scram_credentials) do
+      51
+    end
+
+    def api_key(51) do
+      :alter_user_scram_credentials
     end
   )
 
@@ -2855,6 +2915,32 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:describe_acls, 2) do
+    [
+      resource_type_filter: :int8,
+      resource_name_filter: :compact_nullable_string,
+      pattern_type_filter: :int8,
+      principal_filter: :compact_nullable_string,
+      host_filter: :compact_nullable_string,
+      operation: :int8,
+      permission_type: :int8,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_acls, 3) do
+    [
+      resource_type_filter: :int8,
+      resource_name_filter: :compact_nullable_string,
+      pattern_type_filter: :int8,
+      principal_filter: :compact_nullable_string,
+      host_filter: :compact_nullable_string,
+      operation: :int8,
+      permission_type: :int8,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:create_acls, 0) do
     [
       creations:
@@ -2879,6 +2965,38 @@ defmodule Kayrock.KafkaSchemaMetadata do
          host: :string,
          operation: :int8,
          permission_type: :int8}
+    ]
+  end
+
+  def request_schema(:create_acls, 2) do
+    [
+      creations:
+        {:compact_array,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         resource_pattern_type: :int8,
+         principal: :compact_string,
+         host: :compact_string,
+         operation: :int8,
+         permission_type: :int8,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:create_acls, 3) do
+    [
+      creations:
+        {:compact_array,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         resource_pattern_type: :int8,
+         principal: :compact_string,
+         host: :compact_string,
+         operation: :int8,
+         permission_type: :int8,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -2909,6 +3027,38 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:delete_acls, 2) do
+    [
+      filters:
+        {:compact_array,
+         resource_type_filter: :int8,
+         resource_name_filter: :compact_nullable_string,
+         pattern_type_filter: :int8,
+         principal_filter: :compact_nullable_string,
+         host_filter: :compact_nullable_string,
+         operation: :int8,
+         permission_type: :int8,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:delete_acls, 3) do
+    [
+      filters:
+        {:compact_array,
+         resource_type_filter: :int8,
+         resource_name_filter: :compact_nullable_string,
+         pattern_type_filter: :int8,
+         principal_filter: :compact_nullable_string,
+         host_filter: :compact_nullable_string,
+         operation: :int8,
+         permission_type: :int8,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:describe_configs, 0) do
     [
       resources:
@@ -2932,6 +3082,30 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:describe_configs, 3) do
+    [
+      resources:
+        {:array,
+         resource_type: :int8, resource_name: :string, configuration_keys: {:array, :string}},
+      include_synonyms: :boolean,
+      include_documentation: :boolean
+    ]
+  end
+
+  def request_schema(:describe_configs, 4) do
+    [
+      resources:
+        {:compact_array,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         configuration_keys: {:compact_array, :compact_string},
+         tagged_fields: :tagged_fields},
+      include_synonyms: :boolean,
+      include_documentation: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:alter_configs, 0) do
     [
       resources:
@@ -2951,6 +3125,21 @@ defmodule Kayrock.KafkaSchemaMetadata do
          resource_name: :string,
          config_entries: {:array, config_name: :string, config_value: :nullable_string}},
       validate_only: :boolean
+    ]
+  end
+
+  def request_schema(:alter_configs, 2) do
+    [
+      resources:
+        {:compact_array,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         configs:
+           {:compact_array,
+            name: :compact_string, value: :compact_nullable_string, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -3043,6 +3232,10 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [auth_bytes: :bytes]
   end
 
+  def request_schema(:sasl_authenticate, 2) do
+    [auth_bytes: :compact_bytes, tagged_fields: :tagged_fields]
+  end
+
   def request_schema(:create_partitions, 0) do
     [
       topic_partitions:
@@ -3119,12 +3312,30 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def request_schema(:create_delegation_token, 3) do
+    [
+      owner_principal_type: :compact_nullable_string,
+      owner_principal_name: :compact_nullable_string,
+      renewers:
+        {:compact_array,
+         principal_type: :compact_string,
+         principal_name: :compact_string,
+         tagged_fields: :tagged_fields},
+      max_lifetime_ms: :int64,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def request_schema(:renew_delegation_token, 0) do
     [hmac: :bytes, renew_period_ms: :int64]
   end
 
   def request_schema(:renew_delegation_token, 1) do
     [hmac: :bytes, renew_period_ms: :int64]
+  end
+
+  def request_schema(:renew_delegation_token, 2) do
+    [hmac: :compact_bytes, renew_period_ms: :int64, tagged_fields: :tagged_fields]
   end
 
   def request_schema(:expire_delegation_token, 0) do
@@ -3135,12 +3346,38 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [hmac: :bytes, expiry_time_period_ms: :int64]
   end
 
+  def request_schema(:expire_delegation_token, 2) do
+    [hmac: :compact_bytes, expiry_time_period_ms: :int64, tagged_fields: :tagged_fields]
+  end
+
   def request_schema(:describe_delegation_token, 0) do
     [owners: {:array, principal_type: :string, principal_name: :string}]
   end
 
   def request_schema(:describe_delegation_token, 1) do
     [owners: {:array, principal_type: :string, principal_name: :string}]
+  end
+
+  def request_schema(:describe_delegation_token, 2) do
+    [
+      owners:
+        {:compact_array,
+         principal_type: :compact_string,
+         principal_name: :compact_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_delegation_token, 3) do
+    [
+      owners:
+        {:compact_array,
+         principal_type: :compact_string,
+         principal_name: :compact_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
   end
 
   def request_schema(:delete_groups, 0) do
@@ -3475,6 +3712,77 @@ defmodule Kayrock.KafkaSchemaMetadata do
       cluster_id: :compact_nullable_string,
       voter_id: :int32,
       voter_directory_id: :uuid,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_client_quotas, 0) do
+    [
+      components: {:array, entity_type: :string, match_type: :int8, match: :nullable_string},
+      strict: :boolean
+    ]
+  end
+
+  def request_schema(:describe_client_quotas, 1) do
+    [
+      components:
+        {:compact_array,
+         entity_type: :compact_string,
+         match_type: :int8,
+         match: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      strict: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:alter_client_quotas, 0) do
+    [
+      entries:
+        {:array,
+         entity: {:array, entity_type: :string, entity_name: :nullable_string},
+         ops: {:array, key: :string, value: :float64, remove: :boolean}},
+      validate_only: :boolean
+    ]
+  end
+
+  def request_schema(:alter_client_quotas, 1) do
+    [
+      entries:
+        {:compact_array,
+         entity:
+           {:compact_array,
+            entity_type: :compact_string,
+            entity_name: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         ops:
+           {:compact_array,
+            key: :compact_string, value: :float64, remove: :boolean, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      validate_only: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:describe_user_scram_credentials, 0) do
+    [
+      users: {:compact_array, name: :compact_string, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:alter_user_scram_credentials, 0) do
+    [
+      deletions:
+        {:compact_array, name: :compact_string, mechanism: :int8, tagged_fields: :tagged_fields},
+      upsertions:
+        {:compact_array,
+         name: :compact_string,
+         mechanism: :int8,
+         iterations: :int32,
+         salt: :compact_bytes,
+         salted_password: :compact_bytes,
+         tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
   end
@@ -6243,6 +6551,50 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:describe_acls, 2) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      resources:
+        {:compact_array,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         pattern_type: :int8,
+         acls:
+           {:compact_array,
+            principal: :compact_string,
+            host: :compact_string,
+            operation: :int8,
+            permission_type: :int8,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_acls, 3) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      resources:
+        {:compact_array,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         pattern_type: :int8,
+         acls:
+           {:compact_array,
+            principal: :compact_string,
+            host: :compact_string,
+            operation: :int8,
+            permission_type: :int8,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:create_acls, 0) do
     [
       throttle_time_ms: :int32,
@@ -6254,6 +6606,30 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [
       throttle_time_ms: :int32,
       creation_responses: {:array, error_code: :int16, error_message: :nullable_string}
+    ]
+  end
+
+  def response_schema(:create_acls, 2) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:create_acls, 3) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -6295,6 +6671,54 @@ defmodule Kayrock.KafkaSchemaMetadata do
             host: :string,
             operation: :int8,
             permission_type: :int8}}
+    ]
+  end
+
+  def response_schema(:delete_acls, 2) do
+    [
+      throttle_time_ms: :int32,
+      filter_results:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         matching_acls:
+           {:compact_array,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            resource_type: :int8,
+            resource_name: :compact_string,
+            pattern_type: :int8,
+            principal: :compact_string,
+            host: :compact_string,
+            operation: :int8,
+            permission_type: :int8,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:delete_acls, 3) do
+    [
+      throttle_time_ms: :int32,
+      filter_results:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         matching_acls:
+           {:compact_array,
+            error_code: :int16,
+            error_message: :compact_nullable_string,
+            resource_type: :int8,
+            resource_name: :compact_string,
+            pattern_type: :int8,
+            principal: :compact_string,
+            host: :compact_string,
+            operation: :int8,
+            permission_type: :int8,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -6359,6 +6783,58 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:describe_configs, 3) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:array,
+         error_code: :int16,
+         error_message: :nullable_string,
+         resource_type: :int8,
+         resource_name: :string,
+         configs:
+           {:array,
+            name: :string,
+            value: :nullable_string,
+            read_only: :boolean,
+            config_source: :int8,
+            is_sensitive: :boolean,
+            synonyms: {:array, name: :string, value: :nullable_string, source: :int8},
+            config_type: :int8,
+            documentation: :nullable_string}}
+    ]
+  end
+
+  def response_schema(:describe_configs, 4) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         configs:
+           {:compact_array,
+            name: :compact_string,
+            value: :compact_nullable_string,
+            read_only: :boolean,
+            config_source: :int8,
+            is_sensitive: :boolean,
+            synonyms:
+              {:compact_array,
+               name: :compact_string,
+               value: :compact_nullable_string,
+               source: :int8,
+               tagged_fields: :tagged_fields},
+            config_type: :int8,
+            documentation: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:alter_configs, 0) do
     [
       throttle_time_ms: :int32,
@@ -6380,6 +6856,20 @@ defmodule Kayrock.KafkaSchemaMetadata do
          error_message: :nullable_string,
          resource_type: :int8,
          resource_name: :string}
+    ]
+  end
+
+  def response_schema(:alter_configs, 2) do
+    [
+      throttle_time_ms: :int32,
+      responses:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         resource_type: :int8,
+         resource_name: :compact_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -6556,6 +7046,16 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:sasl_authenticate, 2) do
+    [
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      auth_bytes: :compact_bytes,
+      session_lifetime_ms: :int64,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:create_partitions, 0) do
     [
       throttle_time_ms: :int32,
@@ -6639,6 +7139,23 @@ defmodule Kayrock.KafkaSchemaMetadata do
     ]
   end
 
+  def response_schema(:create_delegation_token, 3) do
+    [
+      error_code: :int16,
+      principal_type: :compact_string,
+      principal_name: :compact_string,
+      token_requester_principal_type: :compact_string,
+      token_requester_principal_name: :compact_string,
+      issue_timestamp_ms: :int64,
+      expiry_timestamp_ms: :int64,
+      max_timestamp_ms: :int64,
+      token_id: :compact_string,
+      hmac: :compact_bytes,
+      throttle_time_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:renew_delegation_token, 0) do
     [error_code: :int16, expiry_timestamp_ms: :int64, throttle_time_ms: :int32]
   end
@@ -6647,12 +7164,30 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [error_code: :int16, expiry_timestamp_ms: :int64, throttle_time_ms: :int32]
   end
 
+  def response_schema(:renew_delegation_token, 2) do
+    [
+      error_code: :int16,
+      expiry_timestamp_ms: :int64,
+      throttle_time_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
   def response_schema(:expire_delegation_token, 0) do
     [error_code: :int16, expiry_timestamp_ms: :int64, throttle_time_ms: :int32]
   end
 
   def response_schema(:expire_delegation_token, 1) do
     [error_code: :int16, expiry_timestamp_ms: :int64, throttle_time_ms: :int32]
+  end
+
+  def response_schema(:expire_delegation_token, 2) do
+    [
+      error_code: :int16,
+      expiry_timestamp_ms: :int64,
+      throttle_time_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
   end
 
   def response_schema(:describe_delegation_token, 0) do
@@ -6686,6 +7221,54 @@ defmodule Kayrock.KafkaSchemaMetadata do
          hmac: :bytes,
          renewers: {:array, principal_type: :string, principal_name: :string}},
       throttle_time_ms: :int32
+    ]
+  end
+
+  def response_schema(:describe_delegation_token, 2) do
+    [
+      error_code: :int16,
+      tokens:
+        {:compact_array,
+         principal_type: :compact_string,
+         principal_name: :compact_string,
+         issue_timestamp: :int64,
+         expiry_timestamp: :int64,
+         max_timestamp: :int64,
+         token_id: :compact_string,
+         hmac: :compact_bytes,
+         renewers:
+           {:compact_array,
+            principal_type: :compact_string,
+            principal_name: :compact_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_delegation_token, 3) do
+    [
+      error_code: :int16,
+      tokens:
+        {:compact_array,
+         principal_type: :compact_string,
+         principal_name: :compact_string,
+         token_requester_principal_type: :compact_string,
+         token_requester_principal_name: :compact_string,
+         issue_timestamp: :int64,
+         expiry_timestamp: :int64,
+         max_timestamp: :int64,
+         token_id: :compact_string,
+         hmac: :compact_bytes,
+         renewers:
+           {:compact_array,
+            principal_type: :compact_string,
+            principal_name: :compact_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      throttle_time_ms: :int32,
+      tagged_fields: :tagged_fields
     ]
   end
 
@@ -7273,6 +7856,95 @@ defmodule Kayrock.KafkaSchemaMetadata do
       throttle_time_ms: :int32,
       error_code: :int16,
       error_message: :compact_nullable_string,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_client_quotas, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :nullable_string,
+      entries:
+        {:array,
+         entity: {:array, entity_type: :string, entity_name: :nullable_string},
+         values: {:array, key: :string, value: :float64}}
+    ]
+  end
+
+  def response_schema(:describe_client_quotas, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      entries:
+        {:compact_array,
+         entity:
+           {:compact_array,
+            entity_type: :compact_string,
+            entity_name: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         values:
+           {:compact_array, key: :compact_string, value: :float64, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:alter_client_quotas, 0) do
+    [
+      throttle_time_ms: :int32,
+      entries:
+        {:array,
+         error_code: :int16,
+         error_message: :nullable_string,
+         entity: {:array, entity_type: :string, entity_name: :nullable_string}}
+    ]
+  end
+
+  def response_schema(:alter_client_quotas, 1) do
+    [
+      throttle_time_ms: :int32,
+      entries:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         entity:
+           {:compact_array,
+            entity_type: :compact_string,
+            entity_name: :compact_nullable_string,
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:describe_user_scram_credentials, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      results:
+        {:compact_array,
+         user: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         credential_infos:
+           {:compact_array, mechanism: :int8, iterations: :int32, tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:alter_user_scram_credentials, 0) do
+    [
+      throttle_time_ms: :int32,
+      results:
+        {:compact_array,
+         user: :compact_string,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
       tagged_fields: :tagged_fields
     ]
   end

@@ -36,12 +36,15 @@ defmodule Kayrock.Kafka4.VersionCompatibilityTest do
     list_offsets: [replica_id: -1],
     offset_for_leader_epoch: [replica_id: -1],
     # UNKNOWN (0) enum values make the broker fail the request without a
-    # response; use ANY (1)
+    # response; use ANY (1). v0-v1 (kpro) and v2+ (JSON) name the filters
+    # differently; struct/2 ignores the names a version does not have.
     describe_acls: [
       resource_type: 1,
       operation: 1,
       permission_type: 1,
-      resource_pattern_type_filter: 1
+      resource_pattern_type_filter: 1,
+      resource_type_filter: 1,
+      pattern_type_filter: 1
     ]
   }
 
