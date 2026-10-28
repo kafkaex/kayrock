@@ -53,7 +53,7 @@ mix kayrock.fetch_kafka_messages 4.4.0
 1. `lib/mix/tasks/gen.kafka_protocol.ex` - Mix task that invokes code generation
 2. `lib/kayrock/generate/api_table.ex` - **The** allowlist of APIs and the max version generated for each. Raise a max here to add a version.
 3. `lib/kayrock/generate/schema_source.ex` - `kpro_schema`-shaped schema source. Versions `<= ApiTable.kpro_max_versions` come from `:kpro_schema` (so existing generated code stays byte-identical); higher versions come from the JSON specs. `validate!/0` runs before generation (rejects `latestVersionUnstable` versions, gaps, unknown APIs).
-4. `lib/kayrock/generate/json_spec.ex` - Translates Apache Kafka JSON message specs (`priv/kafka_messages/<version>/`, vendored by `mix kayrock.fetch_kafka_messages`) into kpro-shaped schemas: versions/nullableVersions/flexibleVersions, `[]T`, nested structs, `commonStructs`, compact encodings, header versions. `taggedVersions` fields are skipped (they stay in the raw `tagged_fields` bucket).
+4. `lib/kayrock/generate/json_spec.ex` - Translates Apache Kafka JSON message specs (`priv/kafka_messages/<version>/`, vendored by `mix kayrock.fetch_kafka_messages`) into kpro-shaped schemas: versions/nullableVersions/flexibleVersions, `[]T`, nested structs, `commonStructs`, compact encodings, header versions, and named tagged fields (`taggedVersions` -> `{name, {:tagged_field, [tag:, type:, default:, nullable:]}}`, sorted by tag, just before `tagged_fields`).
 5. `lib/kayrock/generate.ex` - Core macro-based code generation logic
 6. Outputs generated modules to `lib/generated/`
 
@@ -64,6 +64,10 @@ After `mix gen.kafka_protocol`, `git diff lib/generated` must not touch versions
 Beyond kpro's types the generator understands `:uuid` (16-byte binary; `nil` serializes as the zero UUID, which deserializes as `<<0::128>>`), `:uint16`, `:float64` (NaN/Infinity as raw 8-byte binary), `:compact_records` (flexible record sets) and `{:nullable_struct, schema}` (int8 -1/1 presence marker).
 
 Known `kpro_schema` quirk kept for compatibility: Fetch v7-v11 `forgotten_topics_data[].partitions` is modelled as an array of structs (Kafka defines `[]int32`).
+
+### Tagged fields (KIP-482)
+
+In JSON-derived versions, `taggedVersions` fields are named struct keys (default = the JSON `"default"`, see `JsonSpec.tagged_default/3`). The generator writes them into the struct's tagged-field section only when they differ from the default (`nil` means "not set" unless the field is nullable), merged in ascending tag order with any unknown tags in `tagged_fields`; a raw tag that duplicates a named one raises. On decode, known tags fill the named fields (absent ones get the default) and unknown tags stay in `tagged_fields`. kpro-sourced versions have no named tagged fields (their tags stay raw), so their structs are unchanged. Test-only specs for this live in `test/fixtures/kafka_messages/tagged_fields/`; `Kayrock.Test.GeneratedCode` compiles generator output in tests without touching `lib/generated`.
 
 ### Generated Module Structure
 

@@ -14,9 +14,15 @@ defmodule Kayrock.Generate.JsonSpec do
   For a message at version `v` (flexible when `v` is in the message's
   `flexibleVersions`):
 
-    * a field is present when `v` is in its `versions` and is *not* in its
-      `taggedVersions` (tagged fields are carried in the `tagged_fields` bucket
-      as raw `{tag, binary}` pairs, exactly as today)
+    * a field is present when `v` is in its `versions`
+    * a field whose `taggedVersions` include `v` is a *named tagged field*
+      (KIP-482): it becomes
+      `{name, {:tagged_field, [tag: tag, type: type, default: default, nullable: boolean]}}`
+      (see `tagged_default/3`). Tagged fields follow the struct's regular
+      fields, sorted by tag, just before `{:tagged_fields, :tagged_fields}`;
+      they are encoded in the tagged-field section, never inline. Tags
+      without a named field stay in the raw `tagged_fields` bucket as
+      `{tag, binary}` pairs
     * field names are `Macro.underscore/1` of the JSON name, as atoms
     * `bool` -> `:boolean`; `int8`/`int16`/`int32`/`int64`/`uint16`/`float64`/`uuid`
       map to the atom of the same name
@@ -342,17 +348,164 @@ defmodule Kayrock.Generate.JsonSpec do
   # Field translation
 
   defp struct_schema(fields, vsn, flexible, common_structs) do
-    translated =
+    {tagged, regular} =
       fields
-      |> Enum.filter(&present?(&1, vsn))
-      |> Enum.map(&translate_field(&1, vsn, flexible, common_structs))
+      |> Enum.filter(&in_range?(Map.fetch!(&1, "versions"), vsn))
+      |> Enum.split_with(&tagged?(&1, vsn))
 
-    if flexible, do: translated ++ [tagged_fields: :tagged_fields], else: translated
+    translated = Enum.map(regular, &translate_field(&1, vsn, flexible, common_structs))
+
+    cond do
+      flexible ->
+        tagged_schema = translate_tagged_fields(tagged, vsn, common_structs)
+        translated ++ tagged_schema ++ [tagged_fields: :tagged_fields]
+
+      tagged == [] ->
+        translated
+
+      true ->
+        names = Enum.map(tagged, &Map.fetch!(&1, "name"))
+        raise ArgumentError, "Tagged fields #{inspect(names)} in non-flexible version #{vsn}"
+    end
   end
 
-  defp present?(field, vsn) do
-    in_range?(Map.fetch!(field, "versions"), vsn) and
-      not in_range?(Map.get(field, "taggedVersions"), vsn)
+  defp tagged?(field, vsn), do: in_range?(Map.get(field, "taggedVersions"), vsn)
+
+  # Named tagged fields (KIP-482): `{name, {:tagged_field, opts}}`, sorted by
+  # tag.  Tagged fields only exist in flexible versions, so `type` always uses
+  # the compact encodings.
+  defp translate_tagged_fields(fields, vsn, common_structs) do
+    translated =
+      fields
+      |> Enum.map(fn field ->
+        {name, type} = translate_field(field, vsn, true, common_structs)
+
+        opts = [
+          tag: tag!(field),
+          type: type,
+          default: tagged_default(field, type, vsn),
+          nullable: in_range?(Map.get(field, "nullableVersions"), vsn)
+        ]
+
+        {name, {:tagged_field, opts}}
+      end)
+      |> Enum.sort_by(fn {_name, {:tagged_field, opts}} -> opts[:tag] end)
+
+    tags = Enum.map(translated, fn {_name, {:tagged_field, opts}} -> opts[:tag] end)
+
+    if tags != Enum.uniq(tags) do
+      raise ArgumentError, "Duplicate tags #{inspect(tags)} in version #{vsn}"
+    end
+
+    translated
+  end
+
+  defp tag!(field) do
+    case Map.fetch(field, "tag") do
+      {:ok, tag} when is_integer(tag) and tag >= 0 ->
+        tag
+
+      _ ->
+        raise ArgumentError,
+              "Tagged field #{inspect(Map.get(field, "name"))} has no valid \"tag\""
+    end
+  end
+
+  @doc """
+  The default value of a tagged field, in the form Kayrock's decoder produces.
+
+  A tagged field that is absent from the wire takes this value when decoded,
+  and is omitted from the wire when serialized with this value (or `nil`).
+  It follows Kafka's rules (`"default"` when given, otherwise the type's zero
+  value), expressed the way Kayrock decodes that type:
+
+    * integers: the JSON default (decimal or `0x` hex) or `0`
+    * `float64`: the JSON default or `0.0`
+    * `bool`: `1` / `0` (Kayrock decodes booleans as integers)
+    * `string` / `bytes`: `nil` for `"null"`, otherwise the literal (`""` when absent)
+    * `uuid`: the zero UUID, `<<0::128>>`
+    * arrays: `nil` for `"null"`, otherwise `[]`
+    * structs: `nil` (absent); Kafka's default struct is not materialized
+  """
+  @spec tagged_default(map(), term(), non_neg_integer()) :: term()
+  def tagged_default(field, type, vsn) do
+    raw = Map.get(field, "default")
+    nullable = in_range?(Map.get(field, "nullableVersions"), vsn)
+    default_for(type, normalize_default(raw), nullable, field)
+  end
+
+  defp normalize_default(nil), do: nil
+  defp normalize_default(raw) when is_binary(raw), do: String.trim(raw)
+  defp normalize_default(raw), do: raw
+
+  defp default_for(_type, "null", true, _field), do: nil
+
+  defp default_for(_type, "null", false, field) do
+    raise ArgumentError,
+          "Field #{inspect(Map.get(field, "name"))} defaults to null but is not nullable"
+  end
+
+  defp default_for(type, raw, _nullable, field)
+       when type in [:int8, :int16, :int32, :int64, :uint16] do
+    parse_integer_default(raw, field)
+  end
+
+  defp default_for(:float64, nil, _nullable, _field), do: 0.0
+  defp default_for(:float64, raw, _nullable, _field) when is_number(raw), do: raw * 1.0
+
+  defp default_for(:float64, raw, _nullable, _field) when is_binary(raw) do
+    {value, ""} = Float.parse(raw)
+    value
+  end
+
+  defp default_for(:boolean, raw, _nullable, _field) when raw in [nil, false, "false"], do: 0
+  defp default_for(:boolean, raw, _nullable, _field) when raw in [true, "true"], do: 1
+  defp default_for(:uuid, nil, _nullable, _field), do: <<0::128>>
+
+  defp default_for(type, raw, _nullable, _field)
+       when type in [
+              :compact_string,
+              :compact_nullable_string,
+              :compact_bytes,
+              :compact_nullable_bytes
+            ] do
+    raw || ""
+  end
+
+  defp default_for({:compact_array, _}, nil, _nullable, _field), do: []
+  defp default_for(schema, nil, _nullable, _field) when is_list(schema), do: nil
+  defp default_for({:nullable_struct, _}, nil, _nullable, _field), do: nil
+
+  defp default_for(type, raw, _nullable, field) do
+    raise ArgumentError,
+          "Unsupported default #{inspect(raw)} for tagged field " <>
+            "#{inspect(Map.get(field, "name"))} of type #{inspect(type)}"
+  end
+
+  defp parse_integer_default(nil, _field), do: 0
+  defp parse_integer_default(raw, _field) when is_integer(raw), do: raw
+
+  defp parse_integer_default(raw, field) when is_binary(raw) do
+    {sign, digits} =
+      case raw do
+        "-" <> rest -> {-1, rest}
+        rest -> {1, rest}
+      end
+
+    parsed =
+      case digits do
+        "0x" <> hex -> Integer.parse(hex, 16)
+        dec -> Integer.parse(dec)
+      end
+
+    case parsed do
+      {value, ""} ->
+        sign * value
+
+      _ ->
+        raise ArgumentError,
+              "Invalid integer default #{inspect(raw)} for #{inspect(Map.get(field, "name"))}"
+    end
   end
 
   defp translate_field(field, vsn, flexible, common_structs) do

@@ -17,6 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New primitive types in `Kayrock.Serialize` / `Kayrock.Deserialize`: `:uuid`
   (16-byte binary), `:uint16` and `:float64`, plus compact record set
   serialization for flexible Produce/Fetch versions.
+- Named tagged fields (KIP-482 `taggedVersions`) for JSON-derived versions:
+  each tagged field is a regular struct key (defaulting to its JSON
+  `"default"`), written to the tagged-field section only when it differs from
+  that default (ascending tag order), and decoded back into its named field.
+  Unknown tags still round-trip through `tagged_fields`. Versions sourced from
+  `kpro_schema` (everything generated today) are unchanged: their tagged
+  fields stay in the raw `tagged_fields` bucket.
 
 ## [1.0.1] - 2026-09-04
 

@@ -128,6 +128,13 @@ Schemas come from two sources:
   encoding stay byte-for-byte identical. (Kafka 4.x also dropped many old
   versions from its JSON files, per KIP-896.)
 
+In JSON-derived versions, KIP-482 tagged fields are ordinary struct fields: a
+field left at its default is not sent, and a decoded response fills them in
+(with their defaults when absent). Tags Kayrock doesn't know about are kept as
+raw `{tag, binary}` pairs in `tagged_fields`, in both directions. Versions
+sourced from `kpro_schema` keep every tagged field in `tagged_fields`, as
+before.
+
 Which APIs are generated, and up to which version, is decided by one table:
 `Kayrock.Generate.ApiTable` (`lib/kayrock/generate/api_table.ex`). Supporting a
 newer version of an API means raising its maximum there and running

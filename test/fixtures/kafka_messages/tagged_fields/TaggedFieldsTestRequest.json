@@ -1,0 +1,45 @@
+// Test-only message spec (not a real Kafka API) exercising named tagged
+// fields (KIP-482) in Kayrock's generator.  Same format as Apache Kafka's
+// clients/src/main/resources/common/message/*.json.
+//
+// Version 0 is not flexible (no tagged fields); version 1 is flexible.
+{
+  "apiKey": 32000,
+  "type": "request",
+  "name": "TaggedFieldsTestRequest",
+  "validVersions": "0-1",
+  "flexibleVersions": "1+",
+  "fields": [
+    { "name": "Id", "type": "int32", "versions": "0+" },
+    // declared before the inline Name field: tagged fields are never inline
+    { "name": "Note", "type": "string", "versions": "1+", "nullableVersions": "1+",
+      "default": "null", "taggedVersions": "1+", "tag": 0 },
+    { "name": "Name", "type": "string", "versions": "0+" },
+    // declared out of tag order
+    { "name": "BigTag", "type": "int64", "versions": "1+", "taggedVersions": "1+", "tag": 200 },
+    { "name": "Count", "type": "int32", "versions": "1+", "default": "-1",
+      "taggedVersions": "1+", "tag": 1 },
+    { "name": "Flag", "type": "bool", "versions": "1+", "default": "false",
+      "taggedVersions": "1+", "tag": 2 },
+    { "name": "Ids", "type": "[]int32", "versions": "1+", "taggedVersions": "1+", "tag": 3 },
+    { "name": "Items", "type": "[]Item", "versions": "0+", "fields": [
+      { "name": "Key", "type": "string", "versions": "0+" },
+      { "name": "Weight", "type": "int32", "versions": "1+", "default": "1",
+        "taggedVersions": "1+", "tag": 0 },
+      { "name": "Blob", "type": "bytes", "versions": "1+", "nullableVersions": "1+",
+        "default": "null", "taggedVersions": "1+", "tag": 1 }
+    ]},
+    { "name": "Leader", "type": "Leader", "versions": "1+", "taggedVersions": "1+", "tag": 4,
+      "fields": [
+      { "name": "LeaderId", "type": "int32", "versions": "1+", "default": "-1" },
+      { "name": "Info", "type": "string", "versions": "1+", "nullableVersions": "1+",
+        "default": "null", "taggedVersions": "1+", "tag": 0 }
+    ]},
+    { "name": "Inline", "type": "Inline", "versions": "0+", "fields": [
+      { "name": "X", "type": "int32", "versions": "0+" },
+      { "name": "Y", "type": "int16", "versions": "1+", "default": "0x7fff",
+        "taggedVersions": "1+", "tag": 7 }
+    ]},
+    { "name": "DirId", "type": "uuid", "versions": "1+", "taggedVersions": "1+", "tag": 5 }
+  ]
+}
