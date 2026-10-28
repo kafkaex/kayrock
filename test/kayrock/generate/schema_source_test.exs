@@ -32,9 +32,21 @@ defmodule Kayrock.Generate.SchemaSourceTest do
     end
   end
 
-  test "this table generates exactly what kpro_schema defines (no new versions yet)" do
-    for api <- ApiTable.apis() do
-      assert SchemaSource.vsn_range(api) == :kpro_schema.vsn_range(api), "#{api}"
+  test "kpro-sourced APIs keep kpro_schema's min version and generate at least its max" do
+    for {api, kpro_max} <- ApiTable.kpro_max_versions() do
+      {kpro_min, ^kpro_max} = :kpro_schema.vsn_range(api)
+      {min, max} = SchemaSource.vsn_range(api)
+      assert min == kpro_min, "#{api}"
+      assert max >= kpro_max, "#{api}"
+    end
+  end
+
+  test "JSON-only APIs start at the JSON specs' lowest valid version" do
+    spec = SchemaSource.json_spec()
+
+    for api <- ApiTable.apis(), ApiTable.kpro_max_version(api) == nil do
+      {json_min, _} = Kayrock.Generate.JsonSpec.valid_versions(spec, api)
+      assert {^json_min, _} = SchemaSource.vsn_range(api), "#{api}"
     end
   end
 
@@ -44,11 +56,19 @@ defmodule Kayrock.Generate.SchemaSourceTest do
     end
   end
 
-  test "flexible-version metadata agrees with :kpro_schema for generated versions" do
+  test "flexible-version metadata agrees with each version's source" do
+    spec = SchemaSource.json_spec()
+
     for api <- ApiTable.apis(), {min, max} = SchemaSource.vsn_range(api), vsn <- min..max do
       ours = vsn >= SchemaSource.min_flexible_vsn(api)
-      kpro = vsn >= :kpro_schema.min_flexible_vsn(api)
-      assert ours == kpro, "#{api} v#{vsn}"
+
+      expected =
+        case SchemaSource.source(api, vsn) do
+          :kpro -> vsn >= :kpro_schema.min_flexible_vsn(api)
+          :json -> Kayrock.Generate.JsonSpec.flexible?(spec, api, vsn)
+        end
+
+      assert ours == expected, "#{api} v#{vsn}"
     end
   end
 
