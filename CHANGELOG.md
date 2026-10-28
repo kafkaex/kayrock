@@ -32,6 +32,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configs/ACLs/security up to Kafka 4.4.0: DescribeConfigs v3-v4, AlterConfigs v2, Describe/Create/DeleteAcls v2-v3, SaslAuthenticate v2, CreateDelegationToken v3, Renew/ExpireDelegationToken v2, DescribeDelegationToken v2-v3, and new DescribeClientQuotas/AlterClientQuotas v0-v1, DescribeUserScramCredentials/AlterUserScramCredentials v0.
 - Transactions: InitProducerId v3-v5, AddPartitionsToTxn v2-v3, AddOffsetsToTxn v2-v4, EndTxn v2-v5, TxnOffsetCommit v3-v6, and the new DescribeProducers v0, DescribeTransactions v0 and ListTransactions v0-v2.
 - KIP-932 share group APIs: ShareGroupHeartbeat v1, ShareGroupDescribe v1, ShareFetch v1-v2, ShareAcknowledge v1-v2, DescribeShareGroupOffsets v0-v1, AlterShareGroupOffsets v0, DeleteShareGroupOffsets v0.
+- Streams groups (KIP-1071: StreamsGroupHeartbeat v0-v1, StreamsGroupDescribe v0-v1, StreamsGroupTopologyDescriptionUpdate v0) and client telemetry (KIP-714: GetTelemetrySubscriptions v0, PushTelemetry v0).
+- `Kayrock.ErrorCode` knows every Kafka 4.4.0 error code (120-136 added: share sessions, streams topologies, KRaft voters, `transaction_abortable`, `rebootstrap_required`, ...), checked against a vendored `Errors.java`.
 
 ## [1.0.1] - 2026-09-04
 

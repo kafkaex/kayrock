@@ -3,7 +3,7 @@ defmodule Kayrock.ErrorCode do
   Utility for converting Kafka error codes to/from atom names
 
   Note the actual error code values are determined by `:kpro_schema.c/1` for codes -1 to 71.
-  Extended error codes (72-119) are defined locally to support newer Kafka versions.
+  Extended error codes (72-136, matching Apache Kafka 4.4.0's `Errors.java`) are defined locally to support newer Kafka versions.
 
   See https://kafka.apache.org/protocol#protocol_error_codes
   """
@@ -36,7 +36,7 @@ defmodule Kayrock.ErrorCode do
 
   alias Kayrock.KafkaSchemaMetadata
 
-  # Extended error codes not in kafka_protocol (72-119)
+  # Extended error codes not in kafka_protocol (72-136)
   # These were added in Kafka 2.1+ versions
   # See: https://kafka.apache.org/protocol#protocol_error_codes
   @extended_codes %{
@@ -87,7 +87,24 @@ defmodule Kayrock.ErrorCode do
     116 => :unknown_controller_id,
     117 => :unknown_subscription_id,
     118 => :telemetry_too_large,
-    119 => :invalid_registration
+    119 => :invalid_registration,
+    120 => :transaction_abortable,
+    121 => :invalid_record_state,
+    122 => :share_session_not_found,
+    123 => :invalid_share_session_epoch,
+    124 => :fenced_state_epoch,
+    125 => :invalid_voter_key,
+    126 => :duplicate_voter,
+    127 => :voter_not_found,
+    128 => :invalid_regular_expression,
+    129 => :rebootstrap_required,
+    130 => :streams_invalid_topology,
+    131 => :streams_invalid_topology_epoch,
+    132 => :streams_topology_fenced,
+    133 => :share_session_limit_reached,
+    134 => :group_deletion_failed,
+    135 => :streams_topology_description_update_failed,
+    136 => :controller_id_not_registered
   }
 
   # Reverse mapping for extended codes

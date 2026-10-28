@@ -70,6 +70,18 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | DescribeShareGroupOffsets (90) | 0-1   | 0-1    |                       |
   | AlterShareGroupOffsets (91)  | 0       | 0      |                       |
   | DeleteShareGroupOffsets (92) | 0       | 0      |                       |
+  | GetTelemetrySubscriptions (71) | 0     | -      | (0 answered, not advertised) |
+  | PushTelemetry (72)           | 0       | -      | (0 answered, not advertised) |
+  | StreamsGroupHeartbeat (88)   | 0-1     | 0-1    |                       |
+  | StreamsGroupDescribe (89)    | 0-1     | 0-1    |                       |
+  | StreamsGroupTopologyDescriptionUpdate (93) | 0 | 0 |                  |
+
+  GetTelemetrySubscriptions and PushTelemetry (KIP-714) are only advertised
+  when the broker has a client telemetry exporter plugin (`metric.reporters`
+  implementing `ClientTelemetryExporterProvider`), and the `apache/kafka`
+  image ships none. The broker still answers them, so they are listed in
+  `@removed_by_broker` here and in `@answered_but_not_advertised` in
+  `Kayrock.Kafka4.VersionCompatibilityTest`.
 
   Produce v0-v2 are a special case: Kafka 4.x still advertises them but
   does not answer them (KIP-896 keeps them advertised only for old-client
@@ -101,7 +113,10 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
     create_delegation_token: 0..0,
     renew_delegation_token: 0..0,
     expire_delegation_token: 0..0,
-    describe_delegation_token: 0..0
+    describe_delegation_token: 0..0,
+    # not advertised without a client telemetry exporter plugin
+    get_telemetry_subscriptions: 0..0,
+    push_telemetry: 0..0
   }
 
   describe "ApiVersions against Kafka 4.4.0" do
@@ -134,9 +149,10 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
       {:ok, client} = build_client(kafka)
       broker = broker_api_versions(client)
 
-      for api <- Kayrock.KafkaSchemaMetadata.all_apis() do
+      for api <- Kayrock.KafkaSchemaMetadata.all_apis(),
+          {kayrock_min, kayrock_max} = Kayrock.KafkaSchemaMetadata.version_range(api),
+          Map.get(@removed_by_broker, api) != kayrock_min..kayrock_max//1 do
         api_key = Kayrock.KafkaSchemaMetadata.api_key(api)
-        {kayrock_min, kayrock_max} = Kayrock.KafkaSchemaMetadata.version_range(api)
 
         assert {broker_min, broker_max} = Map.get(broker, api_key),
                "broker does not advertise #{api} (key #{api_key})"

@@ -70,7 +70,12 @@ defmodule Kayrock.KafkaSchemaMetadata do
       :share_acknowledge,
       :describe_share_group_offsets,
       :alter_share_group_offsets,
-      :delete_share_group_offsets
+      :delete_share_group_offsets,
+      :get_telemetry_subscriptions,
+      :push_telemetry,
+      :streams_group_heartbeat,
+      :streams_group_describe,
+      :streams_group_topology_description_update
     ]
   end
 
@@ -339,6 +344,26 @@ defmodule Kayrock.KafkaSchemaMetadata do
   end
 
   def version_range(:delete_share_group_offsets) do
+    {0, 0}
+  end
+
+  def version_range(:get_telemetry_subscriptions) do
+    {0, 0}
+  end
+
+  def version_range(:push_telemetry) do
+    {0, 0}
+  end
+
+  def version_range(:streams_group_heartbeat) do
+    {0, 1}
+  end
+
+  def version_range(:streams_group_describe) do
+    {0, 1}
+  end
+
+  def version_range(:streams_group_topology_description_update) do
     {0, 0}
   end
 
@@ -1009,6 +1034,56 @@ defmodule Kayrock.KafkaSchemaMetadata do
 
     def api_key(92) do
       :delete_share_group_offsets
+    end
+  )
+
+  (
+    def api_key(:get_telemetry_subscriptions) do
+      71
+    end
+
+    def api_key(71) do
+      :get_telemetry_subscriptions
+    end
+  )
+
+  (
+    def api_key(:push_telemetry) do
+      72
+    end
+
+    def api_key(72) do
+      :push_telemetry
+    end
+  )
+
+  (
+    def api_key(:streams_group_heartbeat) do
+      88
+    end
+
+    def api_key(88) do
+      :streams_group_heartbeat
+    end
+  )
+
+  (
+    def api_key(:streams_group_describe) do
+      89
+    end
+
+    def api_key(89) do
+      :streams_group_describe
+    end
+  )
+
+  (
+    def api_key(:streams_group_topology_description_update) do
+      93
+    end
+
+    def api_key(93) do
+      :streams_group_topology_description_update
     end
   )
 
@@ -4364,6 +4439,248 @@ defmodule Kayrock.KafkaSchemaMetadata do
     [
       group_id: :compact_string,
       topics: {:compact_array, topic_name: :compact_string, tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:get_telemetry_subscriptions, 0) do
+    [client_instance_id: :uuid, tagged_fields: :tagged_fields]
+  end
+
+  def request_schema(:push_telemetry, 0) do
+    [
+      client_instance_id: :uuid,
+      subscription_id: :int32,
+      terminating: :boolean,
+      compression_type: :int8,
+      metrics: :compact_bytes,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:streams_group_heartbeat, 0) do
+    [
+      group_id: :compact_string,
+      member_id: :compact_string,
+      member_epoch: :int32,
+      endpoint_information_epoch: :int32,
+      instance_id: :compact_nullable_string,
+      rack_id: :compact_nullable_string,
+      rebalance_timeout_ms: :int32,
+      topology:
+        {:nullable_struct,
+         epoch: :int32,
+         subtopologies:
+           {:compact_array,
+            subtopology_id: :compact_string,
+            source_topics: {:compact_array, :compact_string},
+            source_topic_regex: {:compact_array, :compact_string},
+            state_changelog_topics:
+              {:compact_array,
+               name: :compact_string,
+               partitions: :int32,
+               replication_factor: :int16,
+               topic_configs:
+                 {:compact_array,
+                  key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+               tagged_fields: :tagged_fields},
+            repartition_sink_topics: {:compact_array, :compact_string},
+            repartition_source_topics:
+              {:compact_array,
+               name: :compact_string,
+               partitions: :int32,
+               replication_factor: :int16,
+               topic_configs:
+                 {:compact_array,
+                  key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+               tagged_fields: :tagged_fields},
+            copartition_groups:
+              {:compact_array,
+               source_topics: {:compact_array, :int16},
+               source_topic_regex: {:compact_array, :int16},
+               repartition_source_topics: {:compact_array, :int16},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      active_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      standby_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      warmup_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      process_id: :compact_nullable_string,
+      user_endpoint:
+        {:nullable_struct, host: :compact_string, port: :uint16, tagged_fields: :tagged_fields},
+      client_tags:
+        {:compact_array,
+         key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+      task_offsets:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partition: :int32,
+         offset: :int64,
+         tagged_fields: :tagged_fields},
+      task_end_offsets:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partition: :int32,
+         offset: :int64,
+         tagged_fields: :tagged_fields},
+      shutdown_application: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:streams_group_heartbeat, 1) do
+    [
+      group_id: :compact_string,
+      member_id: :compact_string,
+      member_epoch: :int32,
+      endpoint_information_epoch: :int32,
+      instance_id: :compact_nullable_string,
+      rack_id: :compact_nullable_string,
+      rebalance_timeout_ms: :int32,
+      topology:
+        {:nullable_struct,
+         epoch: :int32,
+         subtopologies:
+           {:compact_array,
+            subtopology_id: :compact_string,
+            source_topics: {:compact_array, :compact_string},
+            source_topic_regex: {:compact_array, :compact_string},
+            state_changelog_topics:
+              {:compact_array,
+               name: :compact_string,
+               partitions: :int32,
+               replication_factor: :int16,
+               topic_configs:
+                 {:compact_array,
+                  key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+               tagged_fields: :tagged_fields},
+            repartition_sink_topics: {:compact_array, :compact_string},
+            repartition_source_topics:
+              {:compact_array,
+               name: :compact_string,
+               partitions: :int32,
+               replication_factor: :int16,
+               topic_configs:
+                 {:compact_array,
+                  key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+               tagged_fields: :tagged_fields},
+            copartition_groups:
+              {:compact_array,
+               source_topics: {:compact_array, :int16},
+               source_topic_regex: {:compact_array, :int16},
+               repartition_source_topics: {:compact_array, :int16},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      active_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      standby_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      warmup_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      process_id: :compact_nullable_string,
+      user_endpoint:
+        {:nullable_struct, host: :compact_string, port: :uint16, tagged_fields: :tagged_fields},
+      client_tags:
+        {:compact_array,
+         key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+      task_offsets:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partition: :int32,
+         offset: :int64,
+         tagged_fields: :tagged_fields},
+      task_end_offsets:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partition: :int32,
+         offset: :int64,
+         tagged_fields: :tagged_fields},
+      shutdown_application: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:streams_group_describe, 0) do
+    [
+      group_ids: {:compact_array, :compact_string},
+      include_authorized_operations: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:streams_group_describe, 1) do
+    [
+      group_ids: {:compact_array, :compact_string},
+      include_authorized_operations: :boolean,
+      include_topology_description: :boolean,
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def request_schema(:streams_group_topology_description_update, 0) do
+    [
+      group_id: :compact_string,
+      member_id: :compact_string,
+      topology_epoch: :int32,
+      topology_description: [
+        subtopologies:
+          {:compact_array,
+           subtopology_id: :compact_string,
+           nodes:
+             {:compact_array,
+              name: :compact_string,
+              node_type: :int8,
+              source_topics: {:compact_array, :compact_string},
+              sink_topic: :compact_nullable_string,
+              stores: {:compact_array, :compact_string},
+              successors: {:compact_array, :compact_string},
+              tagged_fields: :tagged_fields},
+           tagged_fields: :tagged_fields},
+        global_stores:
+          {:compact_array,
+           source: [
+             name: :compact_string,
+             node_type: :int8,
+             source_topics: {:compact_array, :compact_string},
+             sink_topic: :compact_nullable_string,
+             stores: {:compact_array, :compact_string},
+             successors: {:compact_array, :compact_string},
+             tagged_fields: :tagged_fields
+           ],
+           processor: [
+             name: :compact_string,
+             node_type: :int8,
+             source_topics: {:compact_array, :compact_string},
+             sink_topic: :compact_nullable_string,
+             stores: {:compact_array, :compact_string},
+             successors: {:compact_array, :compact_string},
+             tagged_fields: :tagged_fields
+           ],
+           tagged_fields: :tagged_fields},
+        tagged_fields: :tagged_fields
+      ],
       tagged_fields: :tagged_fields
     ]
   end
@@ -9051,6 +9368,390 @@ defmodule Kayrock.KafkaSchemaMetadata do
          error_code: :int16,
          error_message: :compact_nullable_string,
          tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:get_telemetry_subscriptions, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      client_instance_id: :uuid,
+      subscription_id: :int32,
+      accepted_compression_types: {:compact_array, :int8},
+      push_interval_ms: :int32,
+      telemetry_max_bytes: :int32,
+      delta_temporality: :boolean,
+      requested_metrics: {:compact_array, :compact_string},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:push_telemetry, 0) do
+    [throttle_time_ms: :int32, error_code: :int16, tagged_fields: :tagged_fields]
+  end
+
+  def response_schema(:streams_group_heartbeat, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      member_id: :compact_string,
+      member_epoch: :int32,
+      heartbeat_interval_ms: :int32,
+      acceptable_recovery_lag_legacy: :int32,
+      task_offset_interval_ms: :int32,
+      status:
+        {:compact_array,
+         status_code: :int8, status_detail: :compact_string, tagged_fields: :tagged_fields},
+      active_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      standby_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      warmup_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      endpoint_information_epoch: :int32,
+      partitions_by_user_endpoint:
+        {:compact_array,
+         user_endpoint: [host: :compact_string, port: :uint16, tagged_fields: :tagged_fields],
+         active_partitions:
+           {:compact_array,
+            topic: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         standby_partitions:
+           {:compact_array,
+            topic: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:streams_group_heartbeat, 1) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
+      member_id: :compact_string,
+      member_epoch: :int32,
+      heartbeat_interval_ms: :int32,
+      task_offset_interval_ms: :int32,
+      acceptable_recovery_lag: :int64,
+      status:
+        {:compact_array,
+         status_code: :int8, status_detail: :compact_string, tagged_fields: :tagged_fields},
+      active_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      standby_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      warmup_tasks:
+        {:compact_array,
+         subtopology_id: :compact_string,
+         partitions: {:compact_array, :int32},
+         tagged_fields: :tagged_fields},
+      topology_description_required: :boolean,
+      endpoint_information_epoch: :int32,
+      partitions_by_user_endpoint:
+        {:compact_array,
+         user_endpoint: [host: :compact_string, port: :uint16, tagged_fields: :tagged_fields],
+         active_partitions:
+           {:compact_array,
+            topic: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         standby_partitions:
+           {:compact_array,
+            topic: :compact_string,
+            partitions: {:compact_array, :int32},
+            tagged_fields: :tagged_fields},
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:streams_group_describe, 0) do
+    [
+      throttle_time_ms: :int32,
+      groups:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         group_id: :compact_string,
+         group_state: :compact_string,
+         group_epoch: :int32,
+         assignment_epoch: :int32,
+         topology:
+           {:nullable_struct,
+            epoch: :int32,
+            subtopologies:
+              {:compact_array,
+               subtopology_id: :compact_string,
+               source_topics: {:compact_array, :compact_string},
+               repartition_sink_topics: {:compact_array, :compact_string},
+               state_changelog_topics:
+                 {:compact_array,
+                  name: :compact_string,
+                  partitions: :int32,
+                  replication_factor: :int16,
+                  topic_configs:
+                    {:compact_array,
+                     key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+                  tagged_fields: :tagged_fields},
+               repartition_source_topics:
+                 {:compact_array,
+                  name: :compact_string,
+                  partitions: :int32,
+                  replication_factor: :int16,
+                  topic_configs:
+                    {:compact_array,
+                     key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+                  tagged_fields: :tagged_fields},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         members:
+           {:compact_array,
+            member_id: :compact_string,
+            member_epoch: :int32,
+            instance_id: :compact_nullable_string,
+            rack_id: :compact_nullable_string,
+            client_id: :compact_string,
+            client_host: :compact_string,
+            topology_epoch: :int32,
+            process_id: :compact_string,
+            user_endpoint:
+              {:nullable_struct,
+               host: :compact_string, port: :uint16, tagged_fields: :tagged_fields},
+            client_tags:
+              {:compact_array,
+               key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+            task_offsets:
+              {:compact_array,
+               subtopology_id: :compact_string,
+               partition: :int32,
+               offset: :int64,
+               tagged_fields: :tagged_fields},
+            task_end_offsets:
+              {:compact_array,
+               subtopology_id: :compact_string,
+               partition: :int32,
+               offset: :int64,
+               tagged_fields: :tagged_fields},
+            assignment: [
+              active_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              standby_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              warmup_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              tagged_fields: :tagged_fields
+            ],
+            target_assignment: [
+              active_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              standby_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              warmup_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              tagged_fields: :tagged_fields
+            ],
+            is_classic: :boolean,
+            tagged_fields: :tagged_fields},
+         authorized_operations: :int32,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:streams_group_describe, 1) do
+    [
+      throttle_time_ms: :int32,
+      groups:
+        {:compact_array,
+         error_code: :int16,
+         error_message: :compact_nullable_string,
+         group_id: :compact_string,
+         group_state: :compact_string,
+         group_epoch: :int32,
+         assignment_epoch: :int32,
+         topology:
+           {:nullable_struct,
+            epoch: :int32,
+            subtopologies:
+              {:compact_array,
+               subtopology_id: :compact_string,
+               source_topics: {:compact_array, :compact_string},
+               repartition_sink_topics: {:compact_array, :compact_string},
+               state_changelog_topics:
+                 {:compact_array,
+                  name: :compact_string,
+                  partitions: :int32,
+                  replication_factor: :int16,
+                  topic_configs:
+                    {:compact_array,
+                     key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+                  tagged_fields: :tagged_fields},
+               repartition_source_topics:
+                 {:compact_array,
+                  name: :compact_string,
+                  partitions: :int32,
+                  replication_factor: :int16,
+                  topic_configs:
+                    {:compact_array,
+                     key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+                  tagged_fields: :tagged_fields},
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         members:
+           {:compact_array,
+            member_id: :compact_string,
+            member_epoch: :int32,
+            instance_id: :compact_nullable_string,
+            rack_id: :compact_nullable_string,
+            client_id: :compact_string,
+            client_host: :compact_string,
+            topology_epoch: :int32,
+            process_id: :compact_string,
+            user_endpoint:
+              {:nullable_struct,
+               host: :compact_string, port: :uint16, tagged_fields: :tagged_fields},
+            client_tags:
+              {:compact_array,
+               key: :compact_string, value: :compact_string, tagged_fields: :tagged_fields},
+            task_offsets:
+              {:compact_array,
+               subtopology_id: :compact_string,
+               partition: :int32,
+               offset: :int64,
+               tagged_fields: :tagged_fields},
+            task_end_offsets:
+              {:compact_array,
+               subtopology_id: :compact_string,
+               partition: :int32,
+               offset: :int64,
+               tagged_fields: :tagged_fields},
+            assignment: [
+              active_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              standby_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              warmup_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              tagged_fields: :tagged_fields
+            ],
+            target_assignment: [
+              active_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              standby_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              warmup_tasks:
+                {:compact_array,
+                 subtopology_id: :compact_string,
+                 partitions: {:compact_array, :int32},
+                 tagged_fields: :tagged_fields},
+              tagged_fields: :tagged_fields
+            ],
+            is_classic: :boolean,
+            tagged_fields: :tagged_fields},
+         authorized_operations: :int32,
+         topology_description:
+           {:nullable_struct,
+            subtopologies:
+              {:compact_array,
+               subtopology_id: :compact_string,
+               nodes:
+                 {:compact_array,
+                  name: :compact_string,
+                  node_type: :int8,
+                  source_topics: {:compact_array, :compact_string},
+                  sink_topic: :compact_nullable_string,
+                  stores: {:compact_array, :compact_string},
+                  successors: {:compact_array, :compact_string},
+                  tagged_fields: :tagged_fields},
+               tagged_fields: :tagged_fields},
+            global_stores:
+              {:compact_array,
+               source: [
+                 name: :compact_string,
+                 node_type: :int8,
+                 source_topics: {:compact_array, :compact_string},
+                 sink_topic: :compact_nullable_string,
+                 stores: {:compact_array, :compact_string},
+                 successors: {:compact_array, :compact_string},
+                 tagged_fields: :tagged_fields
+               ],
+               processor: [
+                 name: :compact_string,
+                 node_type: :int8,
+                 source_topics: {:compact_array, :compact_string},
+                 sink_topic: :compact_nullable_string,
+                 stores: {:compact_array, :compact_string},
+                 successors: {:compact_array, :compact_string},
+                 tagged_fields: :tagged_fields
+               ],
+               tagged_fields: :tagged_fields},
+            tagged_fields: :tagged_fields},
+         topology_description_status: :int8,
+         assignor_name: :compact_nullable_string,
+         tagged_fields: :tagged_fields},
+      tagged_fields: :tagged_fields
+    ]
+  end
+
+  def response_schema(:streams_group_topology_description_update, 0) do
+    [
+      throttle_time_ms: :int32,
+      error_code: :int16,
+      error_message: :compact_nullable_string,
       tagged_fields: :tagged_fields
     ]
   end

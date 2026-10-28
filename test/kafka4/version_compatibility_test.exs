@@ -14,7 +14,9 @@ defmodule Kayrock.Kafka4.VersionCompatibilityTest do
 
   Produce v0-v2 are advertised but not answered by 4.4.0 (KIP-896 keeps
   them in ApiVersions only for old-client negotiation), so they are listed in
-  `@advertised_but_rejected`.
+  `@advertised_but_rejected`. The client telemetry APIs are the opposite:
+  not advertised without a telemetry exporter plugin, but answered
+  (`@answered_but_not_advertised`).
 
   SaslAuthenticate is skipped: without a preceding SaslHandshake the broker
   closes the connection regardless of version.
@@ -27,6 +29,10 @@ defmodule Kayrock.Kafka4.VersionCompatibilityTest do
 
   # Advertised by apache/kafka:4.4.0 but rejected on use.
   @advertised_but_rejected %{produce: [0, 1, 2]}
+
+  # Not advertised by apache/kafka:4.4.0 (no client telemetry exporter
+  # plugin) but answered.
+  @answered_but_not_advertised %{get_telemetry_subscriptions: [0], push_telemetry: [0]}
 
   # Field overrides needed for the broker to send any response at all.
   @overrides %{
@@ -45,6 +51,10 @@ defmodule Kayrock.Kafka4.VersionCompatibilityTest do
       resource_pattern_type_filter: 1,
       resource_type_filter: 1,
       pattern_type_filter: 1
+    ],
+    # a required (non-nullable) struct
+    streams_group_topology_description_update: [
+      topology_description: %{subtopologies: [], global_stores: []}
     ]
   }
 
@@ -64,8 +74,9 @@ defmodule Kayrock.Kafka4.VersionCompatibilityTest do
         version = unquote(version)
 
         expected =
-          if Kafka4Helpers.broker_supports?(broker, api, version) and
-               version not in Map.get(@advertised_but_rejected, api, []) do
+          if (Kafka4Helpers.broker_supports?(broker, api, version) and
+                version not in Map.get(@advertised_but_rejected, api, [])) or
+               version in Map.get(@answered_but_not_advertised, api, []) do
             :accepted
           else
             :rejected
