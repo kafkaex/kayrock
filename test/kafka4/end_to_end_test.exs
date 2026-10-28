@@ -64,7 +64,8 @@ defmodule Kayrock.Kafka4.EndToEndTest do
   end
 
   describe "metadata" do
-    for version <- Kayrock.Metadata.min_vsn()..Kayrock.Metadata.max_vsn() do
+    # v10+ (topic ids) is covered by Kayrock.Kafka4.KIP848ConsumerGroupTest
+    for version <- Kayrock.Metadata.min_vsn()..9 do
       test "Metadata v#{version} describes a topic", %{kafka: kafka} do
         version = unquote(version)
         {:ok, client} = build_client(kafka)
@@ -189,8 +190,11 @@ defmodule Kayrock.Kafka4.EndToEndTest do
         assert response.error_code == 0, "Heartbeat v#{version}: #{inspect(response)}"
       end
 
-      # OffsetCommit v0-v1 and OffsetFetch v0 are removed in 4.x.
-      for version <- 2..Kayrock.OffsetCommit.max_vsn() do
+      # OffsetCommit v0-v1 and OffsetFetch v0 are removed in 4.x. The
+      # JSON-sourced OffsetCommit v9+ (generation_id_or_member_epoch, topic
+      # ids) and OffsetFetch v7+ (require_stable, batched groups) are covered by
+      # Kayrock.Kafka4.KIP848ConsumerGroupTest.
+      for version <- 2..8 do
         offset = 10 + version
 
         request =
@@ -207,7 +211,7 @@ defmodule Kayrock.Kafka4.EndToEndTest do
         assert [%{partitions: [%{error_code: 0}]}] = response.topics,
                "OffsetCommit v#{version}: #{inspect(response)}"
 
-        for fetch_version <- 1..Kayrock.OffsetFetch.max_vsn() do
+        for fetch_version <- 1..6 do
           request =
             offset_fetch_request(
               group_id,

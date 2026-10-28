@@ -39,10 +39,10 @@ defmodule Kayrock.Generate.ApiTable do
     produce: 8,
     fetch: 11,
     list_offsets: 5,
-    metadata: 9,
-    offset_commit: 8,
-    offset_fetch: 6,
-    find_coordinator: 3,
+    metadata: 13,
+    offset_commit: 10,
+    offset_fetch: 10,
+    find_coordinator: 6,
     join_group: 6,
     heartbeat: 4,
     leave_group: 4,
@@ -78,7 +78,9 @@ defmodule Kayrock.Generate.ApiTable do
     incremental_alter_configs: 1,
     alter_partition_reassignments: 0,
     list_partition_reassignments: 0,
-    offset_delete: 0
+    offset_delete: 0,
+    consumer_group_heartbeat: 1,
+    consumer_group_describe: 1
   ]
 
   # The version ranges defined by kafka_protocol 4.3.x's :kpro_schema.  These

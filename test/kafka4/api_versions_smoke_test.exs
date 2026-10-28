@@ -18,10 +18,10 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | Produce (0)                  | 0-8     | 0-13   | (0-2 advertised but not answered) |
   | Fetch (1)                    | 0-11    | 4-18   | 0-3                   |
   | ListOffsets (2)              | 0-5     | 1-11   | 0                     |
-  | Metadata (3)                 | 0-9     | 0-13   |                       |
-  | OffsetCommit (8)             | 0-8     | 2-10   | 0-1                   |
-  | OffsetFetch (9)              | 0-6     | 1-10   | 0                     |
-  | FindCoordinator (10)         | 0-3     | 0-6    |                       |
+  | Metadata (3)                 | 0-13    | 0-13   |                       |
+  | OffsetCommit (8)             | 0-10    | 2-10   | 0-1                   |
+  | OffsetFetch (9)              | 0-10    | 1-10   | 0                     |
+  | FindCoordinator (10)         | 0-6     | 0-6    |                       |
   | JoinGroup (11)               | 0-6     | 0-9    |                       |
   | Heartbeat (12)               | 0-4     | 0-4    |                       |
   | LeaveGroup (13)              | 0-4     | 0-5    |                       |
@@ -58,6 +58,8 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | AlterPartitionReassignments (45) | 0   | 0-1    |                       |
   | ListPartitionReassignments (46)  | 0   | 0      |                       |
   | OffsetDelete (47)            | 0       | 0      |                       |
+  | ConsumerGroupHeartbeat (68)  | 0-1     | 0-1    |                       |
+  | ConsumerGroupDescribe (69)   | 0-1     | 0-1    |                       |
 
   Produce v0-v2 are a special case: Kafka 4.x still advertises them but
   does not answer them (KIP-896 keeps them advertised only for old-client
