@@ -22,12 +22,12 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | OffsetCommit (8)             | 0-10    | 2-10   | 0-1                   |
   | OffsetFetch (9)              | 0-10    | 1-10   | 0                     |
   | FindCoordinator (10)         | 0-6     | 0-6    |                       |
-  | JoinGroup (11)               | 0-6     | 0-9    |                       |
+  | JoinGroup (11)               | 0-9     | 0-9    |                       |
   | Heartbeat (12)               | 0-4     | 0-4    |                       |
-  | LeaveGroup (13)              | 0-4     | 0-5    |                       |
-  | SyncGroup (14)               | 0-4     | 0-5    |                       |
-  | DescribeGroups (15)          | 0-5     | 0-6    |                       |
-  | ListGroups (16)              | 0-3     | 0-5    |                       |
+  | LeaveGroup (13)              | 0-5     | 0-5    |                       |
+  | SyncGroup (14)               | 0-5     | 0-5    |                       |
+  | DescribeGroups (15)          | 0-6     | 0-6    |                       |
+  | ListGroups (16)              | 0-5     | 0-5    |                       |
   | SaslHandshake (17)           | 0-1     | 0-1    |                       |
   | ApiVersions (18)             | 0-3     | 0-5    |                       |
   | CreateTopics (19)            | 0-5     | 2-7    | 0-1                   |
@@ -52,7 +52,7 @@ defmodule Kayrock.Kafka4.ApiVersionsSmokeTest do
   | RenewDelegationToken (39)    | 0-1     | 1-2    | 0                     |
   | ExpireDelegationToken (40)   | 0-1     | 1-2    | 0                     |
   | DescribeDelegationToken (41) | 0-1     | 1-3    | 0                     |
-  | DeleteGroups (42)            | 0-2     | 0-3    |                       |
+  | DeleteGroups (42)            | 0-3     | 0-3    |                       |
   | ElectLeaders (43)            | 0-2     | 0-2    |                       |
   | IncrementalAlterConfigs (44) | 0-1     | 0-1    |                       |
   | AlterPartitionReassignments (45) | 0   | 0-1    |                       |

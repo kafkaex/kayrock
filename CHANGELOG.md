@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `kpro_schema` (everything generated today) are unchanged: their tagged
   fields stay in the raw `tagged_fields` bucket.
 - KIP-848 consumer group protocol: ConsumerGroupHeartbeat v0-v1 and ConsumerGroupDescribe v0-v1 (new), Metadata v10-v13, OffsetCommit v9-v10, OffsetFetch v7-v10 and FindCoordinator v4-v6.
+- Classic group APIs at their Kafka 4.4.0 maxima: JoinGroup v7-v9, LeaveGroup v5, SyncGroup v5, DescribeGroups v6, ListGroups v4-v5 (states/types filters), DeleteGroups v3.
 
 ## [1.0.1] - 2026-09-04
 
