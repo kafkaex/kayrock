@@ -5,15 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.0] - 2026-11-07
 
 ### Added
 - Code generation from Apache Kafka's JSON message definitions (pinned to
   Kafka 4.4.0, vendored under `priv/kafka_messages/4.4.0/`), with
   `mix kayrock.fetch_kafka_messages <tag>` to re-fetch them.
 - `Kayrock.Generate.ApiTable`: a single allowlist of generated APIs and their
-  maximum versions. It currently matches the previous output exactly, so
-  `lib/generated` is unchanged.
+  maximum versions.
 - New primitive types in `Kayrock.Serialize` / `Kayrock.Deserialize`: `:uuid`
   (16-byte binary), `:uint16` and `:float64`, plus compact record set
   serialization for flexible Produce/Fetch versions.
@@ -22,18 +21,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `"default"`), written to the tagged-field section only when it differs from
   that default (ascending tag order), and decoded back into its named field.
   Unknown tags still round-trip through `tagged_fields`. Versions sourced from
-  `kpro_schema` (everything generated today) are unchanged: their tagged
-  fields stay in the raw `tagged_fields` bucket.
+  `kpro_schema` (every version that already existed in 1.0.1) are unchanged:
+  their tagged fields stay in the raw `tagged_fields` bucket.
 - KIP-848 consumer group protocol: ConsumerGroupHeartbeat v0-v1 and ConsumerGroupDescribe v0-v1 (new), Metadata v10-v13, OffsetCommit v9-v10, OffsetFetch v7-v10 and FindCoordinator v4-v6.
 - Classic group APIs at their Kafka 4.4.0 maxima: JoinGroup v7-v9, LeaveGroup v5, SyncGroup v5, DescribeGroups v6, ListGroups v4-v5 (states/types filters), DeleteGroups v3.
 - Produce v9-v13, Fetch v12-v18, ListOffsets v6-v11, DeleteRecords v2 and OffsetForLeaderEpoch v4 (flexible versions, topic IDs, `compact_records`).
-- Produce v9-v13, Fetch v12-v18, ListOffsets v6-v11, DeleteRecords v2 and OffsetForLeaderEpoch v4 (flexible versions, topic IDs, `compact_records`). **Upgrade note:** `KafkaSchemaMetadata.version_range/1` now reports these higher maxima, so clients that cap negotiation by it (e.g. kafka_ex <= 1.1.x) must cap at the versions they implement before upgrading.
 - Topic/cluster admin: ApiVersions v4-5, CreateTopics v6-7, DeleteTopics v5-6 (delete by topic ID), CreatePartitions v2-3, AlterPartitionReassignments v1, DescribeLogDirs v2-5, AlterReplicaLogDirs v2, and new DescribeCluster v0-2, DescribeTopicPartitions v0, ListConfigResources v0-1, DescribeQuorum v0-2, UpdateFeatures v0-2, AddRaftVoter v0-1, RemoveRaftVoter v0, UnregisterBroker v0.
 - Configs/ACLs/security up to Kafka 4.4.0: DescribeConfigs v3-v4, AlterConfigs v2, Describe/Create/DeleteAcls v2-v3, SaslAuthenticate v2, CreateDelegationToken v3, Renew/ExpireDelegationToken v2, DescribeDelegationToken v2-v3, and new DescribeClientQuotas/AlterClientQuotas v0-v1, DescribeUserScramCredentials/AlterUserScramCredentials v0.
 - Transactions: InitProducerId v3-v5, AddPartitionsToTxn v2-v3, AddOffsetsToTxn v2-v4, EndTxn v2-v5, TxnOffsetCommit v3-v6, and the new DescribeProducers v0, DescribeTransactions v0 and ListTransactions v0-v2.
 - KIP-932 share group APIs: ShareGroupHeartbeat v1, ShareGroupDescribe v1, ShareFetch v1-v2, ShareAcknowledge v1-v2, DescribeShareGroupOffsets v0-v1, AlterShareGroupOffsets v0, DeleteShareGroupOffsets v0.
 - Streams groups (KIP-1071: StreamsGroupHeartbeat v0-v1, StreamsGroupDescribe v0-v1, StreamsGroupTopologyDescriptionUpdate v0) and client telemetry (KIP-714: GetTelemetrySubscriptions v0, PushTelemetry v0).
 - `Kayrock.ErrorCode` knows every Kafka 4.4.0 error code (120-136 added: share sessions, streams topologies, KRaft voters, `transaction_abortable`, `rebootstrap_required`, ...), checked against a vendored `Errors.java`.
+
+### Changed
+
+- **`KafkaSchemaMetadata.version_range/1` now reports the Kafka 4.4.0 maxima**
+  (e.g. Fetch v18, Produce v13, Metadata v13, JoinGroup v9). All version
+  structs that existed in 1.0.1 are byte-for-byte unchanged on the wire; this
+  release only adds newer versions. A client that negotiates
+  `min(broker max, kayrock max)` without its own cap will therefore start
+  selecting versions it may not implement. Consumers of Kayrock must cap
+  negotiation at the versions they support: **KafkaEx 1.1.3+ does**
+  (`KafkaEx.Protocol.KayrockProtocol.max_supported_version/1`); **KafkaEx
+  <= 1.1.2 does not and must be upgraded before Kayrock 1.1.0.**
 
 ## [1.0.1] - 2026-09-04
 
@@ -176,7 +186,8 @@ First stable release of Kayrock.
 
 ---
 
-[Unreleased]: https://github.com/kafkaex/kayrock/compare/v1.0.1...HEAD
+[Unreleased]: https://github.com/kafkaex/kayrock/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/kafkaex/kayrock/compare/v1.0.1...v1.1.0
 [1.0.1]: https://github.com/kafkaex/kayrock/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/kafkaex/kayrock/compare/v0.3.0...v1.0.0
 [0.3.0]: https://github.com/kafkaex/kayrock/compare/v0.2.0...v0.3.0

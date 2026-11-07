@@ -22,7 +22,7 @@ Add `kayrock` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:kayrock, "~> 1.0"}
+    {:kayrock, "~> 1.1"}
   ]
 end
 ```
@@ -31,6 +31,12 @@ end
 
 - Elixir 1.14 or later
 - Erlang/OTP 24.3 or later
+
+> **Upgrading from 1.0.x:** 1.1.0 reports the Kafka 4.4.0 maximum versions from
+> `KafkaSchemaMetadata.version_range/1`. If you use Kayrock through KafkaEx,
+> upgrade to KafkaEx 1.1.3 or later first: it caps negotiation at the versions
+> it implements. KafkaEx <= 1.1.2 would start negotiating versions it cannot
+> build.
 
 ## Basic Architecture and Usage
 
@@ -93,7 +99,7 @@ Add the compression libraries you need to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:kayrock, "~> 1.0"},
+    {:kayrock, "~> 1.1"},
 
     # Add compression libraries as needed:
     {:snappyer, "~> 1.2"},     # For Snappy compression
