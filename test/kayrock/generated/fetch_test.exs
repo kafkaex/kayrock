@@ -615,6 +615,44 @@ defmodule Kayrock.FetchTest do
       assert got == expect
     end
 
+    # Kafka 3.0-3.9 brokers send null records (length -1) for an unknown or unauthorized partition.
+    test "V0 deserializes a null record set as nil" do
+      data =
+        <<4::32, 1::32, 1::16, "t", 2::32, 0::32, 3::16, -1::64, -1::32-signed, 1::32, 0::16,
+          5::64, 0::32>>
+
+      {got, ""} = Kayrock.Fetch.V0.Response.deserialize(data)
+
+      assert [%{topic: "t", partition_responses: [first, second]}] = got.responses
+
+      assert first == %{
+               partition_header: %{error_code: 3, high_watermark: -1, partition: 0},
+               record_set: nil
+             }
+
+      assert second == %{
+               partition_header: %{error_code: 0, high_watermark: 5, partition: 1},
+               record_set: nil
+             }
+    end
+
+    test "V11 deserializes null records as nil" do
+      partition = fn index, error_code, records ->
+        <<index::32, error_code::16, -1::64, -1::64, -1::64, 0::32, -1::32-signed,
+          records::binary>>
+      end
+
+      data =
+        <<4::32, 0::32, 0::16, 0::32, 1::32, 1::16, "t", 2::32>> <>
+          partition.(0, 3, <<-1::32-signed>>) <> partition.(1, 0, <<0::32>>)
+
+      {got, ""} = Kayrock.Fetch.V11.Response.deserialize(data)
+
+      assert [%{topic: "t", partition_responses: [first, second]}] = got.responses
+      assert %{partition_header: %{partition: 0, error_code: 3}, record_set: nil} = first
+      assert %{partition_header: %{partition: 1, error_code: 0}, record_set: nil} = second
+    end
+
     test "deserialize response with RecordBatch format and 20 messages" do
       # This binary contains a RecordBatch with 20 messages
       # Using module-level deserialize which handles RecordBatch format

@@ -1097,9 +1097,17 @@ defmodule Kayrock.Generate do
   def generate_field_deserializer(scope, {field_name, :records}, next_field_name, _dups) do
     quote do
       defp deserialize_field(unquote(scope), unquote(field_name), acc, data) do
-        <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
+        {val, rest} =
+          case data do
+            <<-1::32-signed, rest::bits>> ->
+              {nil, rest}
 
-        val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+            _ ->
+              <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+                data
+
+              {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+          end
 
         deserialize_field(
           unquote(scope),

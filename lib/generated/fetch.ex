@@ -4807,8 +4807,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -4978,8 +4988,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5149,8 +5169,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5320,8 +5350,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5557,8 +5597,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5808,8 +5858,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6059,8 +6119,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6332,8 +6402,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6605,8 +6685,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6878,8 +6968,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -7151,8 +7251,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -7432,8 +7542,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
