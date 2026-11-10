@@ -24,11 +24,28 @@ defmodule Kayrock.Generate.SchemaSourceTest do
     for {api, kpro_max} <- ApiTable.kpro_max_versions() do
       {min, _} = SchemaSource.vsn_range(api)
 
-      for vsn <- min..kpro_max do
+      for vsn <- min..kpro_max, not (api == :fetch and vsn in 7..11) do
         assert SchemaSource.source(api, vsn) == :kpro
         assert SchemaSource.req(api, vsn) == :kpro_schema.req(api, vsn)
         assert SchemaSource.rsp(api, vsn) == :kpro_schema.rsp(api, vsn)
       end
+    end
+  end
+
+  test "Fetch v7-v11 requests correct only kpro_schema's forgotten_topics_data partitions" do
+    for vsn <- 7..11 do
+      kpro = :kpro_schema.req(:fetch, vsn)
+      corrected = SchemaSource.req(:fetch, vsn)
+
+      {:array, kpro_forgotten} = Keyword.fetch!(kpro, :forgotten_topics_data)
+      expected_forgotten = Keyword.replace!(kpro_forgotten, :partitions, {:array, :int32})
+
+      assert corrected ==
+               Keyword.replace!(kpro, :forgotten_topics_data, {:array, expected_forgotten}),
+             "v#{vsn}"
+
+      assert SchemaSource.source(:fetch, vsn) == :kpro
+      assert SchemaSource.rsp(:fetch, vsn) == :kpro_schema.rsp(:fetch, vsn)
     end
   end
 

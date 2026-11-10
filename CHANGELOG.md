@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   raising `MatchError`. `Records` is nullable in Kafka's `FetchResponse`, and
   Kafka 3.0-3.9 brokers send null for an unknown or unauthorized topic or
   partition. Fetch v12+ already handled it.
+- Fetch v7-v11 requests serialize `forgotten_topics_data[].partitions` as a
+  list of partition ids (`[]int32`), as Kafka defines it. They were modelled
+  as partition structs (inherited from `kpro_schema`), so any non-empty value
+  either raised or produced a malformed request. An empty list is unchanged.
 
 ## [1.1.0] - 2026-11-07
 

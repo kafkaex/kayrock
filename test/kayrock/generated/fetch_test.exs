@@ -984,27 +984,35 @@ defmodule Kayrock.FetchTest do
       assert request.session_epoch == 5
     end
 
-    test "V7 request with forgotten_topics_data" do
-      request = %Kayrock.Fetch.V7.Request{
-        correlation_id: 7,
-        client_id: "test",
-        replica_id: -1,
-        max_wait_time: 100,
-        min_bytes: 1,
-        max_bytes: 10_000_000,
-        isolation_level: 0,
-        session_id: 123,
-        session_epoch: 5,
-        topics: [],
-        # forgotten_topics_data requires specific partition structure
-        forgotten_topics_data: []
-      }
+    test "V7-V11 requests serialize forgotten_topics_data partitions as int32s" do
+      forgotten = <<1::32, 1::16, "t", 2::32, 3::32, 4::32>>
 
-      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
-      assert is_binary(serialized)
+      for version <- 7..11 do
+        tail = if version == 11, do: forgotten <> <<0::16>>, else: forgotten
+        request_module = Module.concat([Kayrock.Fetch, :"V#{version}", :Request])
 
-      # Note: full forgotten_topics_data testing requires understanding
-      # the exact partition structure expected by the generated serializer
+        request =
+          struct(request_module, %{
+            correlation_id: version,
+            client_id: "test",
+            replica_id: -1,
+            max_wait_time: 100,
+            min_bytes: 1,
+            max_bytes: 10_000_000,
+            isolation_level: 0,
+            session_id: 123,
+            session_epoch: 5,
+            topics: [],
+            forgotten_topics_data: [%{topic: "t", partitions: [3, 4]}],
+            rack_id: ""
+          })
+
+        serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+
+        assert binary_part(serialized, byte_size(serialized) - byte_size(tail), byte_size(tail)) ==
+                 tail,
+               "V#{version}"
+      end
     end
   end
 
