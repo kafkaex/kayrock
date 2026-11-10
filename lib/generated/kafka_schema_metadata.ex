@@ -1378,15 +1378,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
             fetch_offset: :int64,
             log_start_offset: :int64,
             partition_max_bytes: :int32}},
-      forgotten_topics_data:
-        {:array,
-         topic: :string,
-         partitions:
-           {:array,
-            partition: :int32,
-            fetch_offset: :int64,
-            log_start_offset: :int64,
-            partition_max_bytes: :int32}}
+      forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     ]
   end
 
@@ -1408,15 +1400,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
             fetch_offset: :int64,
             log_start_offset: :int64,
             partition_max_bytes: :int32}},
-      forgotten_topics_data:
-        {:array,
-         topic: :string,
-         partitions:
-           {:array,
-            partition: :int32,
-            fetch_offset: :int64,
-            log_start_offset: :int64,
-            partition_max_bytes: :int32}}
+      forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     ]
   end
 
@@ -1439,16 +1423,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
             fetch_offset: :int64,
             log_start_offset: :int64,
             partition_max_bytes: :int32}},
-      forgotten_topics_data:
-        {:array,
-         topic: :string,
-         partitions:
-           {:array,
-            partition: :int32,
-            current_leader_epoch: :int32,
-            fetch_offset: :int64,
-            log_start_offset: :int64,
-            partition_max_bytes: :int32}}
+      forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     ]
   end
 
@@ -1471,16 +1446,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
             fetch_offset: :int64,
             log_start_offset: :int64,
             partition_max_bytes: :int32}},
-      forgotten_topics_data:
-        {:array,
-         topic: :string,
-         partitions:
-           {:array,
-            partition: :int32,
-            current_leader_epoch: :int32,
-            fetch_offset: :int64,
-            log_start_offset: :int64,
-            partition_max_bytes: :int32}}
+      forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     ]
   end
 
@@ -1503,16 +1469,7 @@ defmodule Kayrock.KafkaSchemaMetadata do
             fetch_offset: :int64,
             log_start_offset: :int64,
             partition_max_bytes: :int32}},
-      forgotten_topics_data:
-        {:array,
-         topic: :string,
-         partitions:
-           {:array,
-            partition: :int32,
-            current_leader_epoch: :int32,
-            fetch_offset: :int64,
-            log_start_offset: :int64,
-            partition_max_bytes: :int32}},
+      forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}},
       rack_id: :string
     ]
   end

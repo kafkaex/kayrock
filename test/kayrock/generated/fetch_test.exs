@@ -615,6 +615,44 @@ defmodule Kayrock.FetchTest do
       assert got == expect
     end
 
+    # Kafka 3.0-3.9 brokers send null records (length -1) for an unknown or unauthorized partition.
+    test "V0 deserializes a null record set as nil" do
+      data =
+        <<4::32, 1::32, 1::16, "t", 2::32, 0::32, 3::16, -1::64, -1::32-signed, 1::32, 0::16,
+          5::64, 0::32>>
+
+      {got, ""} = Kayrock.Fetch.V0.Response.deserialize(data)
+
+      assert [%{topic: "t", partition_responses: [first, second]}] = got.responses
+
+      assert first == %{
+               partition_header: %{error_code: 3, high_watermark: -1, partition: 0},
+               record_set: nil
+             }
+
+      assert second == %{
+               partition_header: %{error_code: 0, high_watermark: 5, partition: 1},
+               record_set: nil
+             }
+    end
+
+    test "V11 deserializes null records as nil" do
+      partition = fn index, error_code, records ->
+        <<index::32, error_code::16, -1::64, -1::64, -1::64, 0::32, -1::32-signed,
+          records::binary>>
+      end
+
+      data =
+        <<4::32, 0::32, 0::16, 0::32, 1::32, 1::16, "t", 2::32>> <>
+          partition.(0, 3, <<-1::32-signed>>) <> partition.(1, 0, <<0::32>>)
+
+      {got, ""} = Kayrock.Fetch.V11.Response.deserialize(data)
+
+      assert [%{topic: "t", partition_responses: [first, second]}] = got.responses
+      assert %{partition_header: %{partition: 0, error_code: 3}, record_set: nil} = first
+      assert %{partition_header: %{partition: 1, error_code: 0}, record_set: nil} = second
+    end
+
     test "deserialize response with RecordBatch format and 20 messages" do
       # This binary contains a RecordBatch with 20 messages
       # Using module-level deserialize which handles RecordBatch format
@@ -946,27 +984,35 @@ defmodule Kayrock.FetchTest do
       assert request.session_epoch == 5
     end
 
-    test "V7 request with forgotten_topics_data" do
-      request = %Kayrock.Fetch.V7.Request{
-        correlation_id: 7,
-        client_id: "test",
-        replica_id: -1,
-        max_wait_time: 100,
-        min_bytes: 1,
-        max_bytes: 10_000_000,
-        isolation_level: 0,
-        session_id: 123,
-        session_epoch: 5,
-        topics: [],
-        # forgotten_topics_data requires specific partition structure
-        forgotten_topics_data: []
-      }
+    test "V7-V11 requests serialize forgotten_topics_data partitions as int32s" do
+      forgotten = <<1::32, 1::16, "t", 2::32, 3::32, 4::32>>
 
-      serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
-      assert is_binary(serialized)
+      for version <- 7..11 do
+        tail = if version == 11, do: forgotten <> <<0::16>>, else: forgotten
+        request_module = Module.concat([Kayrock.Fetch, :"V#{version}", :Request])
 
-      # Note: full forgotten_topics_data testing requires understanding
-      # the exact partition structure expected by the generated serializer
+        request =
+          struct(request_module, %{
+            correlation_id: version,
+            client_id: "test",
+            replica_id: -1,
+            max_wait_time: 100,
+            min_bytes: 1,
+            max_bytes: 10_000_000,
+            isolation_level: 0,
+            session_id: 123,
+            session_epoch: 5,
+            topics: [],
+            forgotten_topics_data: [%{topic: "t", partitions: [3, 4]}],
+            rack_id: ""
+          })
+
+        serialized = IO.iodata_to_binary(Kayrock.Request.serialize(request))
+
+        assert binary_part(serialized, byte_size(serialized) - byte_size(tail), byte_size(tail)) ==
+                 tail,
+               "V#{version}"
+      end
     end
   end
 

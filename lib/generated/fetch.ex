@@ -1168,15 +1168,7 @@ The schema of this API is
                   fetch_offset: :int64,
                   log_start_offset: :int64,
                   partition_max_bytes: :int32}},
-            forgotten_topics_data:
-              {:array,
-               topic: :string,
-               partitions:
-                 {:array,
-                  partition: :int32,
-                  fetch_offset: :int64,
-                  log_start_offset: :int64,
-                  partition_max_bytes: :int32}}
+            forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     @moduledoc "Kayrock-generated request struct for Kafka `#{@api}` v#{@vsn} API
 messages
 
@@ -1223,19 +1215,7 @@ The schema of this API is
                 ]
               }
             ],
-            forgotten_topics_data: [
-              %{
-                topic: nil | binary(),
-                partitions: [
-                  %{
-                    partition: nil | integer(),
-                    fetch_offset: nil | integer(),
-                    log_start_offset: nil | integer(),
-                    partition_max_bytes: nil | integer()
-                  }
-                ]
-              }
-            ],
+            forgotten_topics_data: [%{topic: nil | binary(), partitions: [nil | integer()]}],
             correlation_id: nil | integer(),
             client_id: nil | binary()
           }
@@ -1277,15 +1257,7 @@ The schema of this API is
               fetch_offset: :int64,
               log_start_offset: :int64,
               partition_max_bytes: :int32}},
-        forgotten_topics_data:
-          {:array,
-           topic: :string,
-           partitions:
-             {:array,
-              partition: :int32,
-              fetch_offset: :int64,
-              log_start_offset: :int64,
-              partition_max_bytes: :int32}}
+        forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
       ]
     end
 
@@ -1356,26 +1328,7 @@ The schema of this API is
                 for v <- vals do
                   [
                     serialize(:string, Map.fetch!(v, :topic)),
-                    case Map.fetch!(v, :partitions) do
-                      nil ->
-                        <<-1::32-signed>>
-
-                      [] ->
-                        <<0::32-signed>>
-
-                      vals when is_list(vals) ->
-                        [
-                          <<length(vals)::32-signed>>,
-                          for v <- vals do
-                            [
-                              serialize(:int32, Map.fetch!(v, :partition)),
-                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
-                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
-                              serialize(:int32, Map.fetch!(v, :partition_max_bytes))
-                            ]
-                          end
-                        ]
-                    end
+                    serialize_array(:int32, Map.fetch!(v, :partitions))
                   ]
                 end
               ]
@@ -1422,15 +1375,7 @@ The schema of this API is
                   fetch_offset: :int64,
                   log_start_offset: :int64,
                   partition_max_bytes: :int32}},
-            forgotten_topics_data:
-              {:array,
-               topic: :string,
-               partitions:
-                 {:array,
-                  partition: :int32,
-                  fetch_offset: :int64,
-                  log_start_offset: :int64,
-                  partition_max_bytes: :int32}}
+            forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     @moduledoc "Kayrock-generated request struct for Kafka `#{@api}` v#{@vsn} API
 messages
 
@@ -1477,19 +1422,7 @@ The schema of this API is
                 ]
               }
             ],
-            forgotten_topics_data: [
-              %{
-                topic: nil | binary(),
-                partitions: [
-                  %{
-                    partition: nil | integer(),
-                    fetch_offset: nil | integer(),
-                    log_start_offset: nil | integer(),
-                    partition_max_bytes: nil | integer()
-                  }
-                ]
-              }
-            ],
+            forgotten_topics_data: [%{topic: nil | binary(), partitions: [nil | integer()]}],
             correlation_id: nil | integer(),
             client_id: nil | binary()
           }
@@ -1531,15 +1464,7 @@ The schema of this API is
               fetch_offset: :int64,
               log_start_offset: :int64,
               partition_max_bytes: :int32}},
-        forgotten_topics_data:
-          {:array,
-           topic: :string,
-           partitions:
-             {:array,
-              partition: :int32,
-              fetch_offset: :int64,
-              log_start_offset: :int64,
-              partition_max_bytes: :int32}}
+        forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
       ]
     end
 
@@ -1610,26 +1535,7 @@ The schema of this API is
                 for v <- vals do
                   [
                     serialize(:string, Map.fetch!(v, :topic)),
-                    case Map.fetch!(v, :partitions) do
-                      nil ->
-                        <<-1::32-signed>>
-
-                      [] ->
-                        <<0::32-signed>>
-
-                      vals when is_list(vals) ->
-                        [
-                          <<length(vals)::32-signed>>,
-                          for v <- vals do
-                            [
-                              serialize(:int32, Map.fetch!(v, :partition)),
-                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
-                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
-                              serialize(:int32, Map.fetch!(v, :partition_max_bytes))
-                            ]
-                          end
-                        ]
-                    end
+                    serialize_array(:int32, Map.fetch!(v, :partitions))
                   ]
                 end
               ]
@@ -1677,16 +1583,7 @@ The schema of this API is
                   fetch_offset: :int64,
                   log_start_offset: :int64,
                   partition_max_bytes: :int32}},
-            forgotten_topics_data:
-              {:array,
-               topic: :string,
-               partitions:
-                 {:array,
-                  partition: :int32,
-                  current_leader_epoch: :int32,
-                  fetch_offset: :int64,
-                  log_start_offset: :int64,
-                  partition_max_bytes: :int32}}
+            forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     @moduledoc "Kayrock-generated request struct for Kafka `#{@api}` v#{@vsn} API
 messages
 
@@ -1734,20 +1631,7 @@ The schema of this API is
                 ]
               }
             ],
-            forgotten_topics_data: [
-              %{
-                topic: nil | binary(),
-                partitions: [
-                  %{
-                    partition: nil | integer(),
-                    current_leader_epoch: nil | integer(),
-                    fetch_offset: nil | integer(),
-                    log_start_offset: nil | integer(),
-                    partition_max_bytes: nil | integer()
-                  }
-                ]
-              }
-            ],
+            forgotten_topics_data: [%{topic: nil | binary(), partitions: [nil | integer()]}],
             correlation_id: nil | integer(),
             client_id: nil | binary()
           }
@@ -1790,16 +1674,7 @@ The schema of this API is
               fetch_offset: :int64,
               log_start_offset: :int64,
               partition_max_bytes: :int32}},
-        forgotten_topics_data:
-          {:array,
-           topic: :string,
-           partitions:
-             {:array,
-              partition: :int32,
-              current_leader_epoch: :int32,
-              fetch_offset: :int64,
-              log_start_offset: :int64,
-              partition_max_bytes: :int32}}
+        forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
       ]
     end
 
@@ -1871,27 +1746,7 @@ The schema of this API is
                 for v <- vals do
                   [
                     serialize(:string, Map.fetch!(v, :topic)),
-                    case Map.fetch!(v, :partitions) do
-                      nil ->
-                        <<-1::32-signed>>
-
-                      [] ->
-                        <<0::32-signed>>
-
-                      vals when is_list(vals) ->
-                        [
-                          <<length(vals)::32-signed>>,
-                          for v <- vals do
-                            [
-                              serialize(:int32, Map.fetch!(v, :partition)),
-                              serialize(:int32, Map.fetch!(v, :current_leader_epoch)),
-                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
-                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
-                              serialize(:int32, Map.fetch!(v, :partition_max_bytes))
-                            ]
-                          end
-                        ]
-                    end
+                    serialize_array(:int32, Map.fetch!(v, :partitions))
                   ]
                 end
               ]
@@ -1939,16 +1794,7 @@ The schema of this API is
                   fetch_offset: :int64,
                   log_start_offset: :int64,
                   partition_max_bytes: :int32}},
-            forgotten_topics_data:
-              {:array,
-               topic: :string,
-               partitions:
-                 {:array,
-                  partition: :int32,
-                  current_leader_epoch: :int32,
-                  fetch_offset: :int64,
-                  log_start_offset: :int64,
-                  partition_max_bytes: :int32}}
+            forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
     @moduledoc "Kayrock-generated request struct for Kafka `#{@api}` v#{@vsn} API
 messages
 
@@ -1996,20 +1842,7 @@ The schema of this API is
                 ]
               }
             ],
-            forgotten_topics_data: [
-              %{
-                topic: nil | binary(),
-                partitions: [
-                  %{
-                    partition: nil | integer(),
-                    current_leader_epoch: nil | integer(),
-                    fetch_offset: nil | integer(),
-                    log_start_offset: nil | integer(),
-                    partition_max_bytes: nil | integer()
-                  }
-                ]
-              }
-            ],
+            forgotten_topics_data: [%{topic: nil | binary(), partitions: [nil | integer()]}],
             correlation_id: nil | integer(),
             client_id: nil | binary()
           }
@@ -2052,16 +1885,7 @@ The schema of this API is
               fetch_offset: :int64,
               log_start_offset: :int64,
               partition_max_bytes: :int32}},
-        forgotten_topics_data:
-          {:array,
-           topic: :string,
-           partitions:
-             {:array,
-              partition: :int32,
-              current_leader_epoch: :int32,
-              fetch_offset: :int64,
-              log_start_offset: :int64,
-              partition_max_bytes: :int32}}
+        forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}}
       ]
     end
 
@@ -2133,27 +1957,7 @@ The schema of this API is
                 for v <- vals do
                   [
                     serialize(:string, Map.fetch!(v, :topic)),
-                    case Map.fetch!(v, :partitions) do
-                      nil ->
-                        <<-1::32-signed>>
-
-                      [] ->
-                        <<0::32-signed>>
-
-                      vals when is_list(vals) ->
-                        [
-                          <<length(vals)::32-signed>>,
-                          for v <- vals do
-                            [
-                              serialize(:int32, Map.fetch!(v, :partition)),
-                              serialize(:int32, Map.fetch!(v, :current_leader_epoch)),
-                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
-                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
-                              serialize(:int32, Map.fetch!(v, :partition_max_bytes))
-                            ]
-                          end
-                        ]
-                    end
+                    serialize_array(:int32, Map.fetch!(v, :partitions))
                   ]
                 end
               ]
@@ -2201,16 +2005,7 @@ The schema of this API is
                   fetch_offset: :int64,
                   log_start_offset: :int64,
                   partition_max_bytes: :int32}},
-            forgotten_topics_data:
-              {:array,
-               topic: :string,
-               partitions:
-                 {:array,
-                  partition: :int32,
-                  current_leader_epoch: :int32,
-                  fetch_offset: :int64,
-                  log_start_offset: :int64,
-                  partition_max_bytes: :int32}},
+            forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}},
             rack_id: :string
     @moduledoc "Kayrock-generated request struct for Kafka `#{@api}` v#{@vsn} API
 messages
@@ -2260,20 +2055,7 @@ The schema of this API is
                 ]
               }
             ],
-            forgotten_topics_data: [
-              %{
-                topic: nil | binary(),
-                partitions: [
-                  %{
-                    partition: nil | integer(),
-                    current_leader_epoch: nil | integer(),
-                    fetch_offset: nil | integer(),
-                    log_start_offset: nil | integer(),
-                    partition_max_bytes: nil | integer()
-                  }
-                ]
-              }
-            ],
+            forgotten_topics_data: [%{topic: nil | binary(), partitions: [nil | integer()]}],
             rack_id: nil | binary(),
             correlation_id: nil | integer(),
             client_id: nil | binary()
@@ -2317,16 +2099,7 @@ The schema of this API is
               fetch_offset: :int64,
               log_start_offset: :int64,
               partition_max_bytes: :int32}},
-        forgotten_topics_data:
-          {:array,
-           topic: :string,
-           partitions:
-             {:array,
-              partition: :int32,
-              current_leader_epoch: :int32,
-              fetch_offset: :int64,
-              log_start_offset: :int64,
-              partition_max_bytes: :int32}},
+        forgotten_topics_data: {:array, topic: :string, partitions: {:array, :int32}},
         rack_id: :string
       ]
     end
@@ -2399,27 +2172,7 @@ The schema of this API is
                 for v <- vals do
                   [
                     serialize(:string, Map.fetch!(v, :topic)),
-                    case Map.fetch!(v, :partitions) do
-                      nil ->
-                        <<-1::32-signed>>
-
-                      [] ->
-                        <<0::32-signed>>
-
-                      vals when is_list(vals) ->
-                        [
-                          <<length(vals)::32-signed>>,
-                          for v <- vals do
-                            [
-                              serialize(:int32, Map.fetch!(v, :partition)),
-                              serialize(:int32, Map.fetch!(v, :current_leader_epoch)),
-                              serialize(:int64, Map.fetch!(v, :fetch_offset)),
-                              serialize(:int64, Map.fetch!(v, :log_start_offset)),
-                              serialize(:int32, Map.fetch!(v, :partition_max_bytes))
-                            ]
-                          end
-                        ]
-                    end
+                    serialize_array(:int32, Map.fetch!(v, :partitions))
                   ]
                 end
               ]
@@ -4807,8 +4560,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -4978,8 +4741,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5149,8 +4922,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5320,8 +5103,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5557,8 +5350,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -5808,8 +5611,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6059,8 +5872,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6332,8 +6155,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6605,8 +6438,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -6878,8 +6721,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -7151,8 +7004,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 
@@ -7432,8 +7295,18 @@ The schema of this API is
     end
 
     defp deserialize_field(:partition_responses, :record_set, acc, data) do
-      <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> = data
-      val = Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data)
+      {val, rest} =
+        case data do
+          <<-1::32-signed, rest::bits>> ->
+            {nil, rest}
+
+          _ ->
+            <<msg_set_size::32-signed, msg_set_data::size(msg_set_size)-binary, rest::bits>> =
+              data
+
+            {Elixir.Kayrock.RecordBatch.deserialize(msg_set_size, msg_set_data), rest}
+        end
+
       deserialize_field(:partition_responses, nil, Map.put(acc, :record_set, val), rest)
     end
 

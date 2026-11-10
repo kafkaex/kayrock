@@ -9,7 +9,8 @@ defmodule Kayrock.Generate.SchemaSource do
   Which APIs and versions exist is decided by `Kayrock.Generate.ApiTable`:
 
     * versions `<= ApiTable.kpro_max_version(api)` are read from `:kpro_schema`
-      (keeping already-generated code byte-identical);
+      (keeping already-generated code byte-identical), except Fetch v7-v11
+      `forgotten_topics_data[].partitions`, corrected to Kafka's `[]int32`;
     * higher versions, up to `ApiTable.max_version(api)`, are translated from
       the vendored Apache Kafka JSON specs by `Kayrock.Generate.JsonSpec`.
 
@@ -66,10 +67,19 @@ defmodule Kayrock.Generate.SchemaSource do
   @spec req(atom(), non_neg_integer()) :: JsonSpec.schema()
   def req(api, vsn) do
     case source(api, vsn) do
-      :kpro -> :kpro_schema.req(api, vsn)
+      :kpro -> api |> :kpro_schema.req(vsn) |> correct_kpro_req(api, vsn)
       :json -> JsonSpec.request_schema(json_spec(), api, vsn)
     end
   end
+
+  # kpro_schema models these partitions as structs; Kafka's FetchRequest defines []int32.
+  defp correct_kpro_req(schema, :fetch, vsn) when vsn in 7..11 do
+    Keyword.update!(schema, :forgotten_topics_data, fn {:array, topic} ->
+      {:array, Keyword.replace!(topic, :partitions, {:array, :int32})}
+    end)
+  end
+
+  defp correct_kpro_req(schema, _api, _vsn), do: schema
 
   @spec rsp(atom(), non_neg_integer()) :: JsonSpec.schema()
   def rsp(api, vsn) do

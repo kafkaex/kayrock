@@ -66,9 +66,10 @@ defmodule Kayrock.MemberAssignment do
 
   defp deserialize_user_data(<<>>), do: ""
 
+  # UserData is nullable; a Kafka 4.x coordinator sends null for a classic member of a KIP-848 group.
   defp deserialize_user_data(data) do
-    {val, _rest} = Kayrock.Deserialize.deserialize(:bytes, data)
-    val
+    {val, _rest} = Kayrock.Deserialize.deserialize(:nullable_bytes, data)
+    val || ""
   end
 
   defp parse_assignments(0, rest, assignments), do: {assignments, rest}
