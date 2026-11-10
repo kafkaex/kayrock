@@ -98,19 +98,13 @@ defmodule Kayrock.Generated.FetchFlexibleTest do
     assert Kayrock.KafkaSchemaMetadata.version_range(:fetch) == {0, 18}
   end
 
-  test "v12+ model forgotten_topics_data partitions as []int32, unlike kpro-sourced v7-v11" do
-    for vsn <- 12..18 do
-      {:compact_array, forgotten} =
+  test "v7+ model forgotten_topics_data partitions as []int32" do
+    for vsn <- 7..18 do
+      {array, forgotten} =
         Keyword.fetch!(request_module(vsn).schema(), :forgotten_topics_data)
 
-      assert Keyword.fetch!(forgotten, :partitions) == {:compact_array, :int32}, "v#{vsn}"
+      assert Keyword.fetch!(forgotten, :partitions) == {array, :int32}, "v#{vsn}"
     end
-
-    {:array, forgotten} =
-      Keyword.fetch!(Kayrock.Fetch.V11.Request.schema(), :forgotten_topics_data)
-
-    # kpro_schema quirk: an array of partition structs
-    assert {:array, [{:partition, :int32} | _]} = Keyword.fetch!(forgotten, :partitions)
   end
 
   describe "requests" do

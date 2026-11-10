@@ -68,7 +68,7 @@ Beyond kpro's types the generator understands `:uuid` (16-byte binary; `nil` ser
 
 Nested structs are decoded by `deserialize_field/4` clauses scoped by the struct's field name; when two nested structs in one response share a field name (e.g. StreamsGroupDescribe v1 `topology.subtopologies` / `topology_description.subtopologies`) they are scoped by path (`:"topology.subtopologies"`) instead. A required (non-nullable) top-level struct field defaults to `nil`, so its type is `nil | %{...}`.
 
-Known `kpro_schema` quirk kept for compatibility: Fetch v7-v11 `forgotten_topics_data[].partitions` is modelled as an array of structs (Kafka defines `[]int32`).
+`kpro_schema` correction: Fetch v7-v11 `forgotten_topics_data[].partitions` is an array of structs in `kpro_schema`, but Kafka defines `[]int32`. `SchemaSource.req/2` replaces it with `{:array, :int32}` (since 1.1.1), so only that field differs from `kpro_schema`.
 
 ### Tagged fields (KIP-482)
 
