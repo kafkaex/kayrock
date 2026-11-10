@@ -201,6 +201,47 @@ defmodule Kayrock.MemberAssignmentTest do
     test "handles empty binary" do
       assert %MemberAssignment{} = MemberAssignment.deserialize_content(<<>>)
     end
+
+    test "null user_data (length -1) decodes as an empty binary" do
+      inner = <<0::16, 1::32, 5::16, "topic", 2::32, 0::32, 1::32, -1::32-signed>>
+
+      assert %MemberAssignment{user_data: "", partition_assignments: [pa]} =
+               MemberAssignment.deserialize_content(inner)
+
+      assert Enum.sort(pa.partitions) == [0, 1]
+    end
+  end
+
+  describe "null user_data" do
+    test "deserialize/1 decodes it as an empty binary" do
+      inner = <<0::16, 1::32, 5::16, "topic", 1::32, 7::32, -1::32-signed>>
+      wire = <<byte_size(inner)::32-signed, inner::binary, "rest">>
+
+      assert {%MemberAssignment{user_data: "", partition_assignments: [pa]}, "rest"} =
+               MemberAssignment.deserialize(wire)
+
+      assert pa.partitions == [7]
+    end
+
+    # Captured from apache/kafka:4.4.0: a classic member of a group converted to
+    # the consumer protocol (KIP-848) gets a broker-built assignment with null user data.
+    test "SyncGroup v4 response from Kafka 4.4.0" do
+      topic = "kafka4_migrate_UKICWKBMKTQACGEIBYJG"
+
+      wire =
+        <<0, 0, 0, 13, 0, 0, 0, 0, 0, 0, 0, 60, 0, 0, 0, 0, 0, 1, 0, 35>> <>
+          topic <> <<0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 1, 255, 255, 255, 255, 0>>
+
+      assert {%Kayrock.SyncGroup.V4.Response{correlation_id: 13, error_code: 0} = response, <<>>} =
+               Kayrock.SyncGroup.V4.Response.deserialize(wire)
+
+      assert %MemberAssignment{
+               user_data: "",
+               partition_assignments: [%MemberAssignment.PartitionAssignment{topic: ^topic} = pa]
+             } = response.assignment
+
+      assert Enum.sort(pa.partitions) == [0, 1]
+    end
   end
 
   describe "serialize/1" do
