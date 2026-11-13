@@ -64,6 +64,6 @@ defmodule Kayrock.Compression.Zstd do
   end
 
   defp has_stdlib_zstd? do
-    function_exported?(:zstd, :compress, 2)
+    Code.ensure_loaded?(:zstd) and function_exported?(:zstd, :compress, 2)
   end
 end

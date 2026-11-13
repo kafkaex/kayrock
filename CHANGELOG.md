@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Zstandard compression on OTP 28+ now loads the native `:zstd` module before
+  it checks for it. In interactive code loading (`mix test`, `iex -S mix`)
+  the module was not loaded yet, so Kayrock used `:ezstd` and raised when
+  `:ezstd` was not installed.
+
 ## [1.1.0] - 2026-11-07
 
 ### Added

@@ -85,6 +85,18 @@ defmodule Kayrock.CompressionTest do
     end
   end
 
+  describe "zstd stdlib detection" do
+    test "available?/0 loads the OTP :zstd module when it is not loaded yet" do
+      if :code.which(:zstd) != :non_existing do
+        :code.delete(:zstd)
+        :code.purge(:zstd)
+
+        assert Kayrock.Compression.Zstd.available?()
+        assert {:file, _} = :code.is_loaded(:zstd)
+      end
+    end
+  end
+
   test "available_codecs includes at least gzip" do
     codecs = Compression.available_codecs()
     assert :gzip in codecs
